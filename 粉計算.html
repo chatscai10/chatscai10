@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>配方計算器</title>
+    <style>
+        /* 基礎響應式設置 */
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 100%;
+            margin: 10px;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+
+        @media (min-width: 840px) {
+            body {
+                max-width: 800px;
+                margin: 20px auto;
+                padding: 0 20px;
+            }
+        }
+
+        .calculator {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            font-size: 1.5em;
+            margin: 10px 0 20px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-size: 16px;
+        }
+
+        input {
+            width: calc(100% - 16px);
+            padding: 12px 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            -webkit-appearance: none;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+            min-height: 44px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .results {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th, td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+            font-size: 14px;
+            white-space: nowrap;
+        }
+
+        th {
+            background-color: #4CAF50;
+            color: white;
+            position: sticky;
+            top: 0;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        .formatted-outputs {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        @media (min-width: 768px) {
+            .formatted-outputs {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 20px;
+                margin-top: 30px;
+            }
+        }
+
+        .output-box {
+            background: white;
+            padding: 12px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            min-height: 100px;
+            white-space: pre-wrap;
+            font-family: Arial, sans-serif;
+            -webkit-tap-highlight-color: rgba(0,0,0,0);
+        }
+
+        .copy-button {
+            background-color: #007bff;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 5px;
+            font-size: 14px;
+            width: auto;
+            min-height: 36px;
+        }
+
+        .copy-button:hover {
+            background-color: #0056b3;
+        }
+
+        .output-container {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .remaining-positive {
+            color: #28a745;
+        }
+
+        .remaining-negative {
+            color: #dc3545;
+        }
+
+        @media (max-width: 480px) {
+            th, td {
+                padding: 6px;
+                font-size: 12px;
+            }
+            
+            .calculator {
+                padding: 10px;
+            }
+            
+            h1 {
+                font-size: 1.3em;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="calculator">
+        <h1>配方計算器</h1>
+        
+        <div class="input-group">
+            <label for="packages">要製作的包數：</label>
+            <input type="number" id="packages" min="1" value="1" inputmode="numeric" pattern="[0-9]*">
+        </div>
+
+        <button onclick="calculate()">計算</button>
+
+        <div class="results" id="results">
+            <table>
+                <thead>
+                    <tr>
+                        <th>成分</th>
+                        <th>單包重量(g)</th>
+                        <th>需要重量(g)</th>
+                        <th>需要包數</th>
+                        <th>剩下的粉(g)</th>
+                    </tr>
+                </thead>
+                <tbody id="resultsBody">
+                </tbody>
+            </table>
+        </div>
+
+        <div class="formatted-outputs">
+            <div class="output-container">
+                <div id="output1" class="output-box"></div>
+                <button class="copy-button" onclick="copyToClipboard('output1')">複製</button>
+            </div>
+            <div class="output-container">
+                <div id="output2" class="output-box"></div>
+                <button class="copy-button" onclick="copyToClipboard('output2')">複製</button>
+            </div>
+            <div class="output-container">
+                <div id="output3" class="output-box"></div>
+                <button class="copy-button" onclick="copyToClipboard('output3')">複製</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const ingredients = {
+            '樹薯粉': { weight: 20000, ratio: 11200 },
+            '麵粉': { weight: 22000, ratio: 2200 },
+            '玉米粉': { weight: 25000, ratio: 3600 },
+            '澄粉': { weight: 25000, ratio: 3000 }
+        };
+
+        function calculate() {
+            const packages = parseFloat(document.getElementById('packages').value) || 0;
+            const resultsBody = document.getElementById('resultsBody');
+            resultsBody.innerHTML = '';
+
+            let neededPackages = {};
+
+            for (const [name, data] of Object.entries(ingredients)) {
+                const neededWeight = data.ratio * packages;
+                const packageCount = Math.ceil(neededWeight / data.weight);
+                const remainingPowder = (packageCount * data.weight) - neededWeight;
+                neededPackages[name] = packageCount;
+
+                const remainingClass = remainingPowder >= 0 ? 'remaining-positive' : 'remaining-negative';
+
+                const row = `
+                    <tr>
+                        <td>${name}</td>
+                        <td>${data.weight.toLocaleString()}</td>
+                        <td>${neededWeight.toLocaleString()}</td>
+                        <td>${packageCount}</td>
+                        <td class="${remainingClass}">${remainingPowder.toLocaleString()}</td>
+                    </tr>
+                `;
+                resultsBody.innerHTML += row;
+            }
+
+            // 更新三個輸出框
+            document.getElementById('output1').textContent = 
+                `太白粉${neededPackages['樹薯粉']}包\n澄粉${neededPackages['澄粉']}包`;
+
+            document.getElementById('output2').textContent = 
+                `老闆你好麻煩再幫我寄\n桃園市八德區茄苳路91巷12號\n蔡易霖 0936219719\n黃色玉米粉${neededPackages['玉米粉']}包\n幫我挑細一點的,謝謝`;
+
+            document.getElementById('output3').textContent = 
+                `麵粉${neededPackages['麵粉']}包`;
+        }
+
+        async function copyToClipboard(elementId) {
+            const text = document.getElementById(elementId).textContent;
+            try {
+                await navigator.clipboard.writeText(text);
+                // 使用更溫和的提示方式
+                const button = document.querySelector(`#${elementId}`).nextElementSibling;
+                const originalText = button.textContent;
+                button.textContent = '已複製！';
+                setTimeout(() => {
+                    button.textContent = originalText;
+                }, 2000);
+            } catch (err) {
+                console.error('複製失敗：', err);
+                alert('複製失敗，請手動複製');
+            }
+        }
+
+        // 初始計算
+        calculate();
+
+        // 監聽輸入變化，即時更新結果
+        document.getElementById('packages').addEventListener('input', calculate);
+    </script>
+</body>
+</html>
