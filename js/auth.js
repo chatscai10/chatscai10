@@ -759,3 +759,117 @@ async function logout(fbAuth) {
         window.location.href = '/';
     }
 }
+
+/**
+ * Require login and check level (加入頁面權限檢查和 Level 0 處理)
+ * @param {number|FirebaseAuth} defaultMinLevelOrFbAuth - 如果未設定權限，使用的預設最低等級，或 Firebase Auth 實例
+ * @param {FirebaseAuth|Firestore} fbAuthOrDb - Firebase Auth 實例或 Firestore 實例
+ * @param {Firestore} [dbParam] - Firestore 實例，當第一個參數是數字時使用
+ * @returns {Promise<object|null>} - Returns user info object or null
+ */
+async function requireLogin(defaultMinLevelOrFbAuth, fbAuthOrDb, dbParam) {
+    // 處理參數兼容性
+    let defaultMinLevel = 1;
+    let fbAuth, db;
+    
+    // 檢查第一個參數的類型，並據此分配參數
+    if (typeof defaultMinLevelOrFbAuth === 'number') {
+        // 標準調用: (level, fbAuth, db)
+        defaultMinLevel = defaultMinLevelOrFbAuth;
+        fbAuth = fbAuthOrDb;
+        db = dbParam;
+    } else {
+        // 舊版調用: (fbAuth, db)
+        defaultMinLevel = 1; // 使用預設等級
+        fbAuth = defaultMinLevelOrFbAuth;
+        db = fbAuthOrDb;
+        console.warn("警告: requireLogin 使用了舊的參數順序 (fbAuth, db)，請更新為 (level, fbAuth, db)");
+    }
+    
+    // 檢查 fbAuth 和 db 是否有效
+    if (!fbAuth || !db) {
+        console.error("requireLogin: fbAuth or db instance not provided!");
+        // 避免在 index.html 上無限重定向自己
+        if (window.location.pathname !== '/' && !window.location.pathname.endsWith('index.html')) {
+            window.location.href = '/index.html';
+        }
+        return null;
+    }
+
+    // 1. 檢查登入狀態 (優先 Session Storage)
+    const currentUserInfo = checkLoginStatus(fbAuth);
+    if (!currentUserInfo) {
+        console.log("requireLogin: User not logged in. Redirecting...");
+        if (window.location.pathname !== '/' && !window.location.pathname.endsWith('index.html')) {
+            window.location.href = '/index.html';
+        }
+        return null;
+    }
+
+    // 2. 獲取用戶等級
+    const userLevel = currentUserInfo.roles?.level ?? -1; // 預設 -1 (異常)
+
+    // 3. 處理異常或 Level 0
+    if (userLevel < 0) {
+        console.warn(`requireLogin: User level unknown or invalid (${userLevel}) for ${currentUserInfo.authUid}. Logging out.`);
+        alert('帳號狀態異常，請聯繫管理員或重新登入。');
+        handleLogout(fbAuth); // 登出
+        return null;
+    }
+
+    if (userLevel === 0) {
+        // Level 0 用戶的處理
+        const currentPath = window.location.pathname;
+        const allowedPendingPages = ['/register.html', '/pending.html'];
+
+        if (allowedPendingPages.includes(currentPath)) {
+            // 允許訪問註冊頁或等待頁
+            console.log(`requireLogin: Level 0 user accessing allowed page ${currentPath}. OK.`);
+            // 特別檢查：如果在註冊頁，必須要有 pendingEmployeeDocId
+            if (currentPath === '/register.html' && !sessionStorage.getItem('pendingEmployeeDocId')) {
+                console.warn("Level 0 user on register.html but missing pendingEmployeeDocId. Redirecting to index.");
+                alert('缺少註冊資訊，請重新登入。');
+                window.location.href = '/index.html';
+                return null;
+            }
+            return currentUserInfo; // 返回用戶信息，允許留在當前頁面
+        } else if (currentPath === '/' || currentPath.endsWith('index.html')) {
+             // 在首頁， auth.js 的 loginWithLiff 或 handleExistingFirebaseSession 會處理跳轉邏輯
+             console.log("requireLogin: Level 0 user on index page. Allowing auth.js to handle redirection.");
+             return currentUserInfo;
+        } else {
+            // 訪問其他任何頁面，都強制跳轉到 pending.html
+            console.warn(`requireLogin: Level 0 user denied access to ${currentPath}. Redirecting to pending.html.`);
+            window.location.href = '/pending.html';
+            return null;
+        }
+    }
+
+    // --- 對於 Level > 0 的用戶，檢查頁面權限 ---
+    const permissions = await fetchPagePermissions(db);
+    let requiredLevel = defaultMinLevel; // 先使用函數傳入的預設值
+
+    // 獲取當前頁面文件名 (處理根目錄和 .html 後綴)
+    let currentPage = window.location.pathname.substring(window.location.pathname.lastIndexOf('/') + 1);
+    if (currentPage === '') currentPage = 'index.html'; // 根目錄視為 index.html
+    // if (!currentPage.endsWith('.html')) currentPage += '.html'; // 確保有 .html 後綴 (如果需要)
+
+    if (permissions && permissions.hasOwnProperty(currentPage)) {
+        requiredLevel = permissions[currentPage];
+        console.log(`Permission check for ${currentPage}: Required Level ${requiredLevel} (from settings)`);
+    } else {
+        console.log(`Permission check for ${currentPage}: Required Level ${requiredLevel} (using default)`);
+    }
+
+    // 比較用戶等級和所需等級
+    if (userLevel < requiredLevel) {
+        console.warn(`requireLogin: User Level ${userLevel} insufficient (needs ${requiredLevel} for ${currentPage}). Redirecting to index.`);
+        alert(`權限不足 (需要等級 ${requiredLevel})。您將被導向首頁。`);
+        window.location.href = '/index.html'; // 跳轉到首頁
+        return null;
+    }
+    // --- 權限檢查結束 ---
+
+    console.log(`requireLogin: User ${currentUserInfo.name || currentUserInfo.authUid} (Level ${userLevel}) OK for ${currentPage} (Requires ${requiredLevel}).`);
+    return currentUserInfo; // 權限足夠，返回用戶資訊
+}

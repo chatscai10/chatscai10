@@ -395,7 +395,7 @@
                 await setupAuthStateListener(fbAuth);
                 
                 // 要求用戶登入
-                await requireLogin();
+                await requireLogin(1, fbAuth, db);
 
                 // 更新當前時間
                 function updateTime() {

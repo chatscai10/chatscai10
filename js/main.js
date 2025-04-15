@@ -16,6 +16,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     console.log('DOM fully loaded and parsed. main.js executing.');
     
     try {
+        // 檢查是否為Safari或受限的隱私模式
+        const isPrivacyRestricted = await checkStorageAvailability();
+        if (isPrivacyRestricted) {
+            console.warn("瀏覽器處於隱私模式或已限制儲存功能，將使用記憶體模式運作");
+            showNotification('您的瀏覽器已啟用隱私模式，部分功能可能無法正常運作。', 'warning');
+        }
+        
         // 1. 先載入菜單 (非阻塞)
         loadAndInjectMenu().catch(error => {
             console.error("Menu loading error:", error);
@@ -38,8 +45,87 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     } catch (error) {
         console.error("Error in main.js initialization:", error);
+        showNotification('初始化系統時發生錯誤，請重新整理頁面或聯絡系統管理員。', 'error');
     }
 });
+
+// 檢查儲存可用性
+async function checkStorageAvailability() {
+    // 檢查 IndexedDB
+    try {
+        const testDb = window.indexedDB.open('testDB');
+        await new Promise((resolve, reject) => {
+            testDb.onerror = () => resolve(true); // 無法使用 IndexedDB
+            testDb.onsuccess = () => {
+                testDb.result.close();
+                resolve(false); // 可以使用 IndexedDB
+            };
+        });
+        return false;
+    } catch (e) {
+        console.error("IndexedDB check error:", e);
+        return true;
+    }
+}
+
+// 顯示系統通知
+function showNotification(message, type = 'info', duration = 5000) {
+    let notificationContainer = document.getElementById('system-notifications');
+    if (!notificationContainer) {
+        notificationContainer = document.createElement('div');
+        notificationContainer.id = 'system-notifications';
+        notificationContainer.style.cssText = 'position:fixed;top:15px;right:15px;z-index:9999;width:300px;';
+        document.body.appendChild(notificationContainer);
+    }
+    
+    const notification = document.createElement('div');
+    notification.className = `notification notification-${type}`;
+    notification.style.cssText = 'background:#fff;border-left:4px solid #ccc;padding:12px;margin-bottom:10px;box-shadow:0 2px 4px rgba(0,0,0,0.1);border-radius:3px;opacity:0;transform:translateX(30px);transition:all 0.3s;position:relative;';
+    
+    if (type === 'error') notification.style.borderLeftColor = '#f44336';
+    else if (type === 'warning') notification.style.borderLeftColor = '#ff9800';
+    else if (type === 'success') notification.style.borderLeftColor = '#4caf50';
+    else notification.style.borderLeftColor = '#2196f3';
+    
+    notification.innerHTML = `
+        <span style="position:absolute;top:5px;right:8px;cursor:pointer;font-size:16px;" class="notification-close">&times;</span>
+        <div>${message}</div>
+    `;
+    
+    notificationContainer.appendChild(notification);
+    
+    // 添加關閉按鈕事件
+    notification.querySelector('.notification-close').addEventListener('click', () => {
+        notification.style.opacity = '0';
+        notification.style.transform = 'translateX(30px)';
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 300);
+    });
+    
+    // 淡入效果
+    setTimeout(() => {
+        notification.style.opacity = '1';
+        notification.style.transform = 'translateX(0)';
+    }, 10);
+    
+    // 自動消失
+    if (duration > 0) {
+        setTimeout(() => {
+            notification.style.opacity = '0';
+            notification.style.transform = 'translateX(30px)';
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 300);
+        }, duration);
+    }
+    
+    return notification;
+}
 
 // 菜單加載和注入
 async function loadAndInjectMenu() {
@@ -107,13 +193,39 @@ function setupMenuInteractions(pageType) {
     const slidingMenu = document.querySelector('.sliding-menu');
     const menuOverlay = document.querySelector('.sliding-menu-overlay');
     
-    if (!menuToggle || !slidingMenu || !menuOverlay) {
-        console.error("[Menu Debug] 找不到菜單元素", {
+    if (!menuToggle || !slidingMenu) {
+        console.error("[Menu Debug] 找不到主要菜單元素", {
             menuToggle: !!menuToggle,
-            slidingMenu: !!slidingMenu,
-            menuOverlay: !!menuOverlay
+            slidingMenu: !!slidingMenu
         });
+        
+        // 嘗試找其他可能的漢堡選單元素
+        const altMenuToggle = document.querySelector('.hamburger-menu') || 
+                            document.querySelector('.menu-toggle') || 
+                            document.querySelector('.navbar-toggler');
+        
+        if (altMenuToggle) {
+            console.log("[Menu Debug] 找到替代選單按鈕:", altMenuToggle);
+            altMenuToggle.addEventListener('click', () => {
+                const nav = document.querySelector('nav.main-nav') || 
+                          document.querySelector('.navbar-collapse') || 
+                          document.querySelector('.main-menu');
+                          
+                if (nav) {
+                    nav.classList.toggle('open');
+                    document.body.classList.toggle('menu-open');
+                }
+            });
+        }
         return;
+    }
+    
+    // 如果沒有找到覆蓋層，創建一個
+    if (!menuOverlay) {
+        console.log("[Menu Debug] 創建菜單覆蓋層元素");
+        menuOverlay = document.createElement('div');
+        menuOverlay.className = 'sliding-menu-overlay';
+        document.body.appendChild(menuOverlay);
     }
     
     // 切換菜單顯示/隱藏的函數
@@ -152,9 +264,7 @@ function setupMenuInteractions(pageType) {
     handleLogoutButton();
     
     // 填充用戶信息
-    setTimeout(() => {
-        populateUserInfoInMenu(window.fbAuth);
-    }, 200);
+    populateUserInfoInMenu(window.fbAuth);
     
     console.log("[Menu Debug] Menu interactions setup complete");
 }
@@ -163,93 +273,148 @@ function setupMenuInteractions(pageType) {
 function populateUserInfoInMenu(fbAuth) {
     console.log("Attempting to populate user info in menu...");
     
-    let currentUserInfo = null;
-    
-    // 檢查登入狀態
-    if (typeof checkLoginStatus === 'function') {
-        currentUserInfo = checkLoginStatus(fbAuth);
-    } else if (fbAuth && fbAuth.currentUser) {
-        // 基本用戶信息
-        const user = fbAuth.currentUser;
-        currentUserInfo = {
-            uid: user.uid,
-            displayNameFromAuth: user.displayName,
-            email: user.email || 'N/A',
-            roles: user.customClaims || {}
-        };
-    }
-    
-    console.log("populateUserInfoInMenu - currentUserInfo:", currentUserInfo);
-    
-    // 獲取菜單元素
+    // 輸出元素狀態，幫助調試
     const displayNameElement = document.getElementById('user-display-name');
     const userRoleElement = document.getElementById('user-role');
     const userProfilePic = document.getElementById('user-profile-pic');
-    const loginButton = document.getElementById('login-button');
-    const logoutButton = document.getElementById('logout-button');
-    const adminMenuItems = document.querySelectorAll('.admin-only');
+    const loginButton = document.querySelector('[data-action="login"]');
+    const logoutButton = document.querySelector('[data-action="logout"]');
+    const adminMenuItems = document.querySelectorAll('.admin-only-menu-item');
+    const welcomeNotification = document.getElementById('welcome-notification');
     
-    // 如果用戶已登入
-    if (currentUserInfo && currentUserInfo.uid) {
-        console.log("User is logged in, updating menu elements");
-        
-        // 顯示用戶信息
-        if (displayNameElement) {
-            const displayName = currentUserInfo.displayNameFromAuth || 
-                               currentUserInfo.displayName || 
-                               currentUserInfo.name || 
-                               '未命名用戶';
-            displayNameElement.textContent = displayName;
+    // 隱藏歡迎通知元素
+    if (welcomeNotification) {
+        welcomeNotification.style.display = 'none';
+    }
+    
+    console.log("Menu elements found:", {
+        displayNameElement: !!displayNameElement,
+        userRoleElement: !!userRoleElement, 
+        userProfilePic: !!userProfilePic,
+        loginButton: !!loginButton, 
+        logoutButton: !!logoutButton,
+        adminMenuItems: adminMenuItems.length,
+        welcomeNotification: !!welcomeNotification
+    });
+    
+    // 獲取用戶信息
+    let currentUserInfo = null;
+    
+    try {
+        // 優先從 sessionStorage 獲取最新用戶信息
+        const storedUserInfo = sessionStorage.getItem('userInfo');
+        if (storedUserInfo) {
+            try {
+                currentUserInfo = JSON.parse(storedUserInfo);
+                console.log("Retrieved user info from sessionStorage:", currentUserInfo);
+            } catch (e) {
+                console.error("Error parsing stored user info:", e);
+            }
         }
         
-        // 顯示用戶角色
-        if (userRoleElement) {
-            let roleText = '員工';
-            
-            // 根據用戶等級設置角色文本
-            if (currentUserInfo.roles && currentUserInfo.roles.admin) {
-                roleText = '管理員';
-            } else if (currentUserInfo.level >= 9) {
-                roleText = '管理員';
-            } else if (currentUserInfo.level >= 5) {
-                roleText = '店長';
+        // 如果 sessionStorage 中沒有，則嘗試從 checkLoginStatus 獲取
+        if (!currentUserInfo && typeof checkLoginStatus === 'function') {
+            try {
+                currentUserInfo = checkLoginStatus(fbAuth);
+                console.log("Retrieved user info from checkLoginStatus:", currentUserInfo);
+            } catch (e) {
+                console.warn("Error in checkLoginStatus:", e);
             }
+        } 
+        
+        // 備用檢查邏輯 - 從 Firebase Auth 直接獲取
+        if (!currentUserInfo && fbAuth && fbAuth.currentUser) {
+            let userRoles;
+            try {
+                // 嘗試獲取角色信息
+                const rolesStr = sessionStorage.getItem('userRoles');
+                userRoles = rolesStr ? JSON.parse(rolesStr) : {"level": 0};
+            } catch (e) {
+                console.warn("Error parsing user roles, using default:", e);
+                userRoles = {"level": 0};
+            }
+            
+            currentUserInfo = { 
+                name: fbAuth.currentUser.displayName || '用戶',
+                uid: fbAuth.currentUser.uid,
+                roles: userRoles,
+                pictureUrl: fbAuth.currentUser.photoURL || null
+            };
+            console.log("Created fallback user info from fbAuth:", currentUserInfo);
+        }
+    } catch (error) {
+        console.error("Error retrieving user info:", error);
+    }
+    
+    // 用戶已登入 - 顯示用戶信息
+    if (currentUserInfo && currentUserInfo.uid) {
+        console.log("User is logged in, updating menu with user info");
+        
+        // 顯示用戶名稱
+        if (displayNameElement) {
+            displayNameElement.textContent = currentUserInfo.name || '用戶';
+        }
+        
+        // 顯示角色/等級信息
+        if (userRoleElement) {
+            // 確保安全訪問 roles.level
+            const userRoles = currentUserInfo.roles || {};
+            const level = typeof userRoles.level !== 'undefined' ? userRoles.level : 
+                         (typeof currentUserInfo.level !== 'undefined' ? currentUserInfo.level : 0);
+            
+            let roleText = '一般用戶';
+            
+            if (level >= 9) roleText = '管理員';
+            else if (level >= 5) roleText = '幹部';
+            else if (level >= 1) roleText = '員工';
+            else roleText = '待審核';
             
             userRoleElement.textContent = roleText;
         }
         
-        // 設置頭像 (如果有)
-        if (userProfilePic && currentUserInfo.photoURL) {
-            userProfilePic.src = currentUserInfo.photoURL;
+        // 顯示頭像
+        if (userProfilePic) {
+            if (currentUserInfo.pictureUrl) {
+                userProfilePic.src = currentUserInfo.pictureUrl;
+                userProfilePic.style.display = 'block';
+                
+                // 添加錯誤處理 - 圖片載入失敗時顯示預設頭像
+                userProfilePic.onerror = () => {
+                    userProfilePic.src = '/images/default-avatar.png';
+                    console.log("Profile image load failed, using default");
+                };
+            } else {
+                userProfilePic.src = '/images/default-avatar.png';
+                userProfilePic.style.display = 'block';
+            }
         }
         
         // 顯示登出按鈕，隱藏登入按鈕
-        if (logoutButton) {
-            logoutButton.style.display = 'block';
-            // 設置登出處理
-            handleLogoutButton();
-        }
-        
-        if (loginButton) {
-            loginButton.style.display = 'none';
-        }
+        if (logoutButton) logoutButton.style.display = 'block';
+        if (loginButton) loginButton.style.display = 'none';
         
         // 顯示/隱藏管理員菜單項
         if (adminMenuItems.length > 0) {
-            const isAdmin = (currentUserInfo.roles && currentUserInfo.roles.admin) || 
-                           (currentUserInfo.level && currentUserInfo.level >= 9);
+            // 確保安全訪問 roles 屬性
+            const userRoles = currentUserInfo.roles || {};
+            const isAdmin = (userRoles.admin === true) || 
+                           (typeof userRoles.level !== 'undefined' && userRoles.level >= 9) ||
+                           (typeof currentUserInfo.level !== 'undefined' && currentUserInfo.level >= 9);
             
             adminMenuItems.forEach(item => {
                 item.style.display = isAdmin ? 'block' : 'none';
             });
         }
     } else {
+        // 用戶未登入 - 顯示訪客信息
         console.log("User is not logged in, updating menu accordingly");
         
-        // 未登入狀態
         if (displayNameElement) displayNameElement.textContent = '訪客';
         if (userRoleElement) userRoleElement.textContent = '未登入';
-        if (userProfilePic) userProfilePic.src = '/images/default-avatar.png';
+        if (userProfilePic) {
+            userProfilePic.src = '/images/default-avatar.png';
+            userProfilePic.style.display = 'block';
+        }
         
         // 顯示登入按鈕，隱藏登出按鈕
         if (loginButton) loginButton.style.display = 'block';
@@ -257,9 +422,7 @@ function populateUserInfoInMenu(fbAuth) {
         
         // 隱藏管理員菜單項
         if (adminMenuItems.length > 0) {
-            adminMenuItems.forEach(item => {
-                item.style.display = 'none';
-            });
+            adminMenuItems.forEach(item => { item.style.display = 'none'; });
         }
     }
 }

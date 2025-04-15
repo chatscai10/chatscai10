@@ -15,6 +15,7 @@ const CACHE_URLS = [
     '/js/main.js',
     '/js/firebase-config.js',
     '/js/app-init.js',
+    '/js/auth.js',
     '/js/version-manager.js',
     '/js/module-config.js',
     '/js/modules/core/index.js',

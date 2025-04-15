@@ -32,6 +32,34 @@ let paginationState = {
     // Add other sections that need pagination here later
 }; // 分頁狀態
 
+// 管理頁面內容映射
+const sectionMappings = {
+    'home': 'admin-home',
+    'users': 'admin-users',
+    'menu': 'admin-menu', 
+    'orders': 'admin-orders',
+    'inventory': 'admin-inventory',
+    'settings': 'admin-settings',
+    'reports': 'admin-reports',
+    'schedule': 'admin-schedule',
+    'schedule-stats': 'admin-schedule-stats',
+    'salary-stats': 'admin-salary-stats',
+    'bonus-tasks': 'admin-bonus-tasks', 
+    'announcements': 'admin-announcements',
+    'staff': 'admin-staff',
+    'products': 'admin-products',
+    'staffs': 'admin-staff',
+    'suppliers': 'admin-suppliers',
+    'finance': 'admin-finance',
+    'messages': 'admin-messages'
+};
+
+// 已加載的腳本緩存
+const loadedScripts = {};
+
+// 當前活動部分
+let currentActiveSection = null; 
+
 // --- 初始化函數 (儲存實例到模組變數) ---
 function initAdminPage(user, db, fbAuth) {
     console.log("initAdminPage called with:", { 
@@ -218,73 +246,115 @@ function initAdminPage(user, db, fbAuth) {
 
 // --- 顯示區塊 (接收 db, user) ---
 function showSection(sectionId) {
-    // MODIFIED: Added checks for sectionId and adminSections
-    if (!sectionId) {
-        console.error("showSection called with no sectionId.");
-        return;
-    }
-    if (!adminSections || adminSections.length === 0) {
-        console.error("showSection: adminSections NodeList is empty or not initialized. Cannot switch sections.");
-        return;
-    }
-
-    let sectionFound = false;
-    const saveButtonContainer = document.querySelector('.floating-save-button-container'); // Get save button container
-
-    adminSections.forEach(section => {
-        if (section.id === `section-${sectionId}`) {
-            section.style.display = 'block';
-            sectionFound = true;
-            console.log(`Displaying section: ${section.id}`);
-
-            // --- ADDED: Show/Hide Floating Save Button ---
-            if (saveButtonContainer) {
-                if (sectionId === 'parameters') {
-                    saveButtonContainer.style.display = 'block';
-                    console.log('Showing floating save button for parameters section.');
-                } else {
-                    saveButtonContainer.style.display = 'none';
-                }
-            } else {
-                console.warn('Floating save button container not found.');
-            }
-            // --- END ADDED ---
-
-            // Find the content container within the section
-            const contentContainer = section.querySelector('.section-content');
-
-            // Load content for the target section
-            if (logic_db && logic_currentUser) {
-                loadSectionContent(sectionId, section, logic_db, logic_currentUser);
-                // Make the content container visible AFTER starting to load
-                if (contentContainer) {
-                    contentContainer.style.display = 'block';
-                }
-            } else {
-                console.error(`Cannot load content for section ${sectionId}: db or user instance is missing.`);
-                section.innerHTML = `<p style="color: red;">載入區塊內容失敗：缺少資料庫或用戶信息。</p>`;
-                // Ensure content container is visible to show the error
-                if (contentContainer) {
-                    contentContainer.style.display = 'block';
-                }
-            }
-        } else {
+    console.log(`Showing section: ${sectionId}`);
+    
+    // 隱藏所有區塊
+    if (adminSections && adminSections.length > 0) {
+        adminSections.forEach(section => {
             section.style.display = 'none';
-            // Also hide the content container of inactive sections
-            const inactiveContent = section.querySelector('.section-content');
-            if (inactiveContent) {
-                inactiveContent.style.display = 'none';
-            }
+        });
+    }
+    
+    // 映射 section ID 到正確的 HTML 元素 ID
+    const sectionMappings = {
+        'employees': 'user-management',    // 員工管理
+        'parameters': 'parameters',        // 參數設定
+        'dashboard': 'dashboard',          // 儀表板
+        'schedule': 'schedule',            // 排班管理
+        'schedule-stats': 'schedule-stats', // 排班統計
+        'salary': 'salary-stats',          // 薪資統計
+        'salary-stats': 'salary-stats',    // 薪資統計 (別名)
+        'bonus': 'bonus-tasks',            // 獎金任務
+        'bonus-tasks': 'bonus-tasks',      // 獎金任務 (別名)
+        'bonus-groups': 'bonus-groups',    // 獎金小組
+        'leave': 'leave-requests',         // 請假管理
+        'leave-requests': 'leave-requests', // 請假管理 (別名)
+        'inventory': 'inventory',          // 庫存盤點
+        'announce': 'announcements',       // 公告管理
+        'announcements': 'announcements',  // 公告管理 (別名)
+        'sales': 'sales-stats',            // 銷售統計
+        'sales-stats': 'sales-stats',      // 銷售統計 (別名)
+        'analysis': 'analysis',            // 數據分析
+        'version-management': 'version-management' // 版本管理
+    };
+    
+    // 獲取映射的 ID 或使用原始 ID
+    const mappedId = sectionMappings[sectionId] || sectionId;
+    
+    // 嘗試不同的 section ID 命名模式
+    const possibleIds = [
+        `section-${mappedId}`,          // section-user-management
+        `${mappedId}-section`,          // user-management-section
+        mappedId                         // user-management
+    ];
+    
+    console.log(`Looking for section with IDs: ${possibleIds.join(', ')}`);
+    
+    // 嘗試找到匹配的 section 元素
+    let targetSection = null;
+    for (const id of possibleIds) {
+        const section = document.getElementById(id);
+        if (section) {
+            targetSection = section;
+            console.log(`Found section with ID: ${id}`);
+            break;
         }
-    });
-
-    if (!sectionFound) {
-        console.error(`Target section element not found in DOM: section-${sectionId}`);
-        if (messageElement) {
-            messageElement.textContent = `錯誤：找不到 ID 為 'section-${sectionId}' 的區塊。`;
-            messageElement.className = 'message error-message';
+    }
+    
+    if (targetSection) {
+        targetSection.style.display = 'block';
+        
+        // 更新URL
+        window.history.pushState(null, '', `/admin.html#section-${sectionId}`);
+        
+        // 如果區塊尚未載入過資料，載入資料
+        if (!loadedSections.has(sectionId)) {
+            console.log(`Loading content for section: ${sectionId} (section ID not in loadedSections)`);
+            loadSectionContent(sectionId, targetSection, logic_db, logic_currentUser);
+            loadedSections.add(sectionId);
+        }
+    } else {
+        console.error(`No section element found for: ${sectionId} / ${mappedId}`);
+        
+        // 創建一個錯誤提示區塊
+        const contentArea = document.getElementById('admin-content-area');
+        if (contentArea) {
+            console.log(`Creating error message in admin-content-area for section: ${sectionId}`);
+            // 隱藏所有可能的內容區塊
+            Array.from(contentArea.children).forEach(child => {
+                if (child.classList.contains('admin-section')) {
+                    child.style.display = 'none';
+                }
+            });
+            
+            // 檢查是否已存在錯誤消息區塊
+            let errorSection = document.getElementById('error-section');
+            if (!errorSection) {
+                errorSection = document.createElement('div');
+                errorSection.id = 'error-section';
+                errorSection.className = 'admin-section';
+                errorSection.innerHTML = `
+                    <div class="section-header">
+                        <h2>無法載入請求的區塊</h2>
+                    </div>
+                    <div class="section-content error-content">
+                        <p>無法找到或載入請求的管理區塊: <strong>${sectionId}</strong></p>
+                        <p>此功能可能尚未實現或模組未正確載入。</p>
+                        <p>請嘗試刷新頁面，或聯繫技術支持以獲取幫助。</p>
+                        <button class="btn btn-primary" onclick="location.reload()">刷新頁面</button>
+                    </div>
+                `;
+                contentArea.appendChild(errorSection);
+            } else {
+                // 更新錯誤消息
+                const sectionNameElement = errorSection.querySelector('strong');
+                if (sectionNameElement) {
+                    sectionNameElement.textContent = sectionId;
+                }
+                errorSection.style.display = 'block';
+            }
         } else {
-            alert(`錯誤：找不到區塊 ${sectionId}。`);
+            console.error('No admin-content-area found to show error message');
         }
     }
 }
@@ -295,338 +365,225 @@ function loadSectionContent(sectionId, sectionContainer, db, user) {
         console.error(`loadSectionContent: Missing essential args for section ${sectionId}.`);
         return;
     }
-
-    if (loadedSections.has(sectionId)) {
-        console.log(`Section ${sectionId} content already loaded. Skipping load.`);
-        return;
-    }
-
+    
     console.log(`Loading content for section: ${sectionId} (loadSectionContent)`);
-
-    // --- MODIFIED: Better dynamic loading logic with more error handling ---
+    
+    // 確保 section-content 存在
+    let contentArea = sectionContainer.querySelector('.section-content');
+    if (!contentArea) {
+        console.warn(`No .section-content found in ${sectionId}, creating one`);
+        contentArea = document.createElement('div');
+        contentArea.className = 'section-content';
+        sectionContainer.appendChild(contentArea);
+    }
+    
+    // 嘗試找出可用的載入函數和腳本
+    const sectionScripts = {
+        'employees': 'admin-employees.js',
+        'user-management': 'admin-employees.js',
+        'parameters': 'admin-parameters.js',
+        'dashboard': 'admin-dashboard.js',
+        'schedule': 'admin-schedule.js',
+        'schedule-stats': 'admin-schedule-stats.js',
+        'salary': 'admin-salary.js',
+        'salary-stats': 'admin-salary.js',
+        'bonus': 'admin-bonus-tasks.js',
+        'bonus-tasks': 'admin-bonus-tasks.js',
+        'bonus-groups': 'admin-bonus-groups.js',
+        'leave': 'admin-leave.js',
+        'leave-requests': 'admin-leave.js',
+        'inventory': 'admin-inventory.js',
+        'announce': 'admin-announcements.js',
+        'announcements': 'admin-announcements.js',
+        'sales': 'admin-sales.js',
+        'sales-stats': 'admin-sales.js',
+        'analysis': 'admin-analysis.js'
+    };
+    
+    // 為指定 section 顯示載入中訊息
+    contentArea.innerHTML = `
+        <div class="loading-container">
+            <p>載入中...</p>
+            <div class="spinner"></div>
+        </div>
+    `;
+    
+    // 檢查模組腳本是否已載入
+    const scriptSrc = sectionScripts[sectionId];
+    if (!scriptSrc) {
+        console.warn(`No script mapping found for section: ${sectionId}`);
+    }
+    
+    // --- 根據區塊 ID 動態選擇載入函數 ---
+    let functionToCall = null;
+    let functionName = null;
+    
     switch (sectionId) {
         case 'employees':
-            if (typeof loadEmployeesSection === 'function') {
-                loadEmployeesSection(sectionContainer, db, user);
-            } else {
-                console.error("loadEmployeesSection function not found. Ensure admin-employees.js is loaded.");
-                sectionContainer.querySelector('.section-content').innerHTML = `
-                    <div class="error-message">
-                        <p>無法載入員工管理功能。請重新整理頁面或聯繫系統管理員。</p>
-                        <p><small>技術詳情：loadEmployeesSection function not found.</small></p>
-                    </div>`;
-            }
+        case 'user-management':
+            functionName = 'loadEmployeesSection';
+            functionToCall = typeof loadEmployeesSection === 'function' ? loadEmployeesSection : null;
             break;
             
         case 'parameters':
-            if (typeof loadParametersSection === 'function') {
-                loadParametersSection(sectionContainer, db, user);
-            } else {
-                console.error("loadParametersSection function not found. Ensure admin-parameters.js is loaded.");
-                sectionContainer.querySelector('.section-content').innerHTML = `
-                    <div class="error-message">
-                        <p>無法載入系統參數設定功能。請重新整理頁面或聯繫系統管理員。</p>
-                        <p><small>技術詳情：loadParametersSection function not found.</small></p>
-                    </div>`;
-            }
+            functionName = 'loadParametersSection';
+            functionToCall = typeof loadParametersSection === 'function' ? loadParametersSection : null;
+            break;
+            
+        case 'dashboard':
+            functionName = 'loadDashboardSection';
+            functionToCall = typeof loadDashboardSection === 'function' ? loadDashboardSection : null;
             break;
             
         case 'schedule':
-            if (typeof loadScheduleSection === 'function') {
-                loadScheduleSection(sectionContainer, db, user);
-            } else {
-                console.error("loadScheduleSection function not found. Ensure admin-schedule.js is loaded.");
-                sectionContainer.querySelector('.section-content').innerHTML = `
-                    <div class="error-message">
-                        <p>無法載入排班管理功能。請重新整理頁面或聯繫系統管理員。</p>
-                        <p><small>技術詳情：loadScheduleSection function not found.</small></p>
-                    </div>`;
-            }
+            functionName = 'loadScheduleSection';
+            functionToCall = typeof loadScheduleSection === 'function' ? loadScheduleSection : null;
+            break;
+            
+        case 'schedule-stats':
+            functionName = 'loadScheduleStatsSection';
+            functionToCall = typeof loadScheduleStatsSection === 'function' ? loadScheduleStatsSection : null;
+            break;
+            
+        case 'salary':
+        case 'salary-stats':
+            functionName = 'loadSalarySection';
+            functionToCall = typeof loadSalarySection === 'function' ? loadSalarySection : null;
             break;
             
         case 'sales':
-            if (typeof loadSalesSection === 'function') {
-                loadSalesSection(sectionContainer, db, user);
-            } else {
-                console.error("loadSalesSection function not found. Ensure admin-sales.js is loaded.");
-                sectionContainer.querySelector('.section-content').innerHTML = `
-                    <div class="error-message">
-                        <p>無法載入業績查詢功能。請重新整理頁面或聯繫系統管理員。</p>
-                        <p><small>技術詳情：loadSalesSection function not found.</small></p>
-                    </div>`;
-            }
+        case 'sales-stats':
+            functionName = 'loadSalesSection';
+            functionToCall = typeof loadSalesSection === 'function' ? loadSalesSection : null;
             break;
             
-        case 'leave-requests':
-            if (typeof loadLeaveRequestsSection === 'function') {
-                loadLeaveRequestsSection(sectionContainer, db, user);
-            } else {
-                console.error("loadLeaveRequestsSection function not found. Ensure admin-leave.js is loaded.");
-                sectionContainer.querySelector('.section-content').innerHTML = `
-                    <div class="error-message">
-                        <p>無法載入請假審批功能。請重新整理頁面或聯繫系統管理員。</p>
-                        <p><small>技術詳情：loadLeaveRequestsSection function not found.</small></p>
-                    </div>`;
-            }
-            break;
-            
-        case 'announcements':
-            if (typeof loadAnnouncementsSection === 'function') {
-                loadAnnouncementsSection(sectionContainer, db, user);
-            } else {
-                console.error("loadAnnouncementsSection function not found. Ensure admin-announcements.js is loaded.");
-                sectionContainer.querySelector('.section-content').innerHTML = `
-                    <div class="error-message">
-                        <p>無法載入公告管理功能。請重新整理頁面或聯繫系統管理員。</p>
-                        <p><small>技術詳情：loadAnnouncementsSection function not found.</small></p>
-                    </div>`;
-            }
-            break;
-            
-        case 'orders':
-            if (typeof loadOrdersSection === 'function') {
-                loadOrdersSection(sectionContainer, db, user);
-            } else {
-                console.error("loadOrdersSection function not found. Ensure admin-orders.js is loaded.");
-                sectionContainer.querySelector('.section-content').innerHTML = `
-                    <div class="error-message">
-                        <p>無法載入訂單管理功能。請重新整理頁面或聯繫系統管理員。</p>
-                        <p><small>技術詳情：loadOrdersSection function not found.</small></p>
-                    </div>`;
-            }
-            break;
-            
-        // 推播通知功能區塊
-        case 'push-notifications':
-            if (typeof loadPushNotificationsSection === 'function') {
-                try {
-                    loadPushNotificationsSection(sectionContainer, db, user);
-                    console.log("推播通知模組已載入");
-                } catch (error) {
-                    console.error("推播通知模組載入失敗:", error);
-                    sectionContainer.querySelector('.section-content').innerHTML = `
-                        <div class="error-message">
-                            <p>載入推播通知功能時發生錯誤。請重新整理頁面或聯繫系統管理員。</p>
-                            <p><small>錯誤詳情：${error.message}</small></p>
-                        </div>`;
-                }
-            } else {
-                console.error("loadPushNotificationsSection function not found. Ensure admin-push.js is loaded.");
-                window.loadPushNotificationsSection = function(container, db, user) {
-                    console.warn("使用備用的推播通知載入函數");
-                    if (!container) return;
-                    
-                    const contentArea = container.querySelector('.section-content');
-                    if (contentArea) {
-                        contentArea.innerHTML = `
-                            <div class="module-container">
-                                <h4>推播通知管理</h4>
-                                <p>正在嘗試載入推播通知模組...</p>
-                                <button id="retry-load-push" class="btn btn-primary">重試載入</button>
-                            </div>`;
-                            
-                        const retryButton = contentArea.querySelector('#retry-load-push');
-                        if (retryButton) {
-                            retryButton.addEventListener('click', () => {
-                                // 動態載入推播通知模組
-                                const script = document.createElement('script');
-                                script.src = '/js/admin-push.js?v=' + (new Date().getTime());
-                                script.onload = () => {
-                                    if (typeof loadPushNotificationsSection === 'function') {
-                                        loadPushNotificationsSection(container, db, user);
-                                    } else {
-                                        contentArea.innerHTML = '<p class="error-message">推播通知模組載入失敗</p>';
-                                    }
-                                };
-                                script.onerror = () => {
-                                    contentArea.innerHTML = '<p class="error-message">推播通知模組載入失敗</p>';
-                                };
-                                document.head.appendChild(script);
-                            });
-                        }
-                    }
-                };
-                loadPushNotificationsSection(sectionContainer, db, user);
-            }
-            break;
-            
-        // 獎金小組管理區塊
-        case 'bonus-groups':
-            if (typeof initBonusGroups === 'function') {
-                try {
-                    initBonusGroups(sectionContainer, db, user);
-                    console.log("獎金小組管理模組已載入");
-                    loadedSections.add(sectionId);
-                } catch (error) {
-                    console.error("獎金小組管理模組載入失敗:", error);
-                    sectionContainer.querySelector('.section-content').innerHTML = `
-                        <div class="error-message">
-                            <p>載入獎金小組管理功能時發生錯誤。請重新整理頁面或聯繫系統管理員。</p>
-                            <p><small>錯誤詳情：${error.message}</small></p>
-                        </div>`;
-                }
-            } else {
-                console.error("initBonusGroups function not found. Ensure admin-bonus-groups.js is loaded.");
-                // 動態加載獎金小組管理模組
-                const script = document.createElement('script');
-                script.src = 'js/admin-bonus-groups.js?v=' + (new Date().getTime());
-                script.onload = function() {
-                    if (typeof initBonusGroups === 'function') {
-                        initBonusGroups(sectionContainer, db, user);
-                        loadedSections.add(sectionId);
-                    } else {
-                        sectionContainer.querySelector('.section-content').innerHTML = `
-                            <div class="error-message">
-                                <p>獎金小組管理模組載入失敗。請重新整理頁面或聯繫系統管理員。</p>
-                            </div>`;
-                    }
-                };
-                script.onerror = function() {
-                    sectionContainer.querySelector('.section-content').innerHTML = `
-                        <div class="error-message">
-                            <p>獎金小組管理模組載入失敗。請重新整理頁面或聯繫系統管理員。</p>
-                        </div>`;
-                };
-                document.head.appendChild(script);
-            }
-            break;
-            
-        // 獎金任務管理區塊
+        case 'bonus':
         case 'bonus-tasks':
-            if (typeof initBonusTasks === 'function') {
-                try {
-                    initBonusTasks(db);
-                    console.log("獎金任務管理模組已載入");
-                    loadedSections.add(sectionId);
-                } catch (error) {
-                    console.error("獎金任務管理模組載入失敗:", error);
-                    sectionContainer.querySelector('.section-content').innerHTML = `
-                        <div class="error-message">
-                            <p>載入獎金任務管理功能時發生錯誤。請重新整理頁面或聯繫系統管理員。</p>
-                            <p><small>錯誤詳情：${error.message}</small></p>
-                        </div>`;
-                }
-            } else {
-                console.error("initBonusTasks function not found. Ensure admin-bonus-tasks.js is loaded.");
-                // 動態加載獎金任務管理模組
-                const script = document.createElement('script');
-                script.src = 'js/admin-bonus-tasks.js?v=' + (new Date().getTime());
-                script.onload = function() {
-                    if (typeof initBonusTasks === 'function') {
-                        initBonusTasks(db);
-                        loadedSections.add(sectionId);
-                    } else {
-                        sectionContainer.querySelector('.section-content').innerHTML = `
-                            <div class="error-message">
-                                <p>獎金任務管理模組載入失敗。請重新整理頁面或聯繫系統管理員。</p>
-                            </div>`;
-                    }
-                };
-                script.onerror = function() {
-                    sectionContainer.querySelector('.section-content').innerHTML = `
-                        <div class="error-message">
-                            <p>獎金任務管理模組載入失敗。請重新整理頁面或聯繫系統管理員。</p>
-                        </div>`;
-                };
-                document.head.appendChild(script);
-            }
+            functionName = 'initBonusTasks';
+            functionToCall = typeof initBonusTasks === 'function' ? initBonusTasks : null;
             break;
             
-        // 數據分析功能區塊
+        case 'bonus-groups':
+            functionName = 'initBonusGroups';
+            functionToCall = typeof initBonusGroups === 'function' ? initBonusGroups : null;
+            break;
+            
+        case 'leave':
+        case 'leave-requests':
+            functionName = 'loadLeaveRequestsSection';
+            functionToCall = typeof loadLeaveRequestsSection === 'function' ? loadLeaveRequestsSection : null;
+            break;
+            
+        case 'inventory':
+            functionName = 'loadInventorySection';
+            functionToCall = typeof loadInventorySection === 'function' ? loadInventorySection : null;
+            break;
+            
+        case 'announce':
+        case 'announcements':
+            functionName = 'loadAnnouncementsSection';
+            functionToCall = typeof loadAnnouncementsSection === 'function' ? loadAnnouncementsSection : null;
+            break;
+            
         case 'analysis':
-            if (typeof loadAnalysisSection === 'function') {
-                try {
-                    loadAnalysisSection(sectionContainer, db, user);
-                    console.log("數據分析模組已載入");
-                } catch (error) {
-                    console.error("數據分析模組載入失敗:", error);
-                    sectionContainer.querySelector('.section-content').innerHTML = `
-                        <div class="error-message">
-                            <p>載入數據分析功能時發生錯誤。請重新整理頁面或聯繫系統管理員。</p>
-                            <p><small>錯誤詳情：${error.message}</small></p>
-                        </div>`;
-                }
-            } else {
-                console.error("loadAnalysisSection function not found. Ensure admin-analysis.js is loaded.");
-                
-                // 創建一個臨時的全局pageAdminData對象
-                if (typeof window.pageAdminData === 'undefined') {
-                    window.pageAdminData = {
-                        fbAuth: logic_fbAuth,
-                        db: db,
-                        functions: null, // 将在函数内部尝试初始化
-                        user: user
-                    };
-                    
-                    // 尝试初始化Firebase Functions
-                    try {
-                        if (firebase && firebase.functions) {
-                            window.pageAdminData.functions = firebase.functions();
-                            console.log("已初始化Firebase Functions");
-                        }
-                    } catch (e) {
-                        console.error("初始化Firebase Functions失败:", e);
-                    }
-                }
-                
-                window.loadAnalysisSection = function(container, db, user) {
-                    console.warn("使用備用的數據分析載入函數");
-                    if (!container) return;
-                    
-                    const contentArea = container.querySelector('.section-content');
-                    if (contentArea) {
-                        contentArea.innerHTML = `
-                            <div class="module-container">
-                                <h4>數據分析與報表</h4>
-                                <p>正在嘗試載入數據分析模組...</p>
-                                <button id="retry-load-analysis" class="btn btn-primary">重試載入</button>
-                            </div>`;
-                            
-                        const retryButton = contentArea.querySelector('#retry-load-analysis');
-                        if (retryButton) {
-                            retryButton.addEventListener('click', () => {
-                                // 動態載入數據分析模組
-                                const script = document.createElement('script');
-                                script.src = '/js/admin-analysis.js?v=' + (new Date().getTime());
-                                script.onload = () => {
-                                    if (typeof loadAnalysisSection === 'function') {
-                                        loadAnalysisSection(container, db, user);
-                                    } else {
-                                        contentArea.innerHTML = '<p class="error-message">數據分析模組載入失敗</p>';
-                                    }
-                                };
-                                script.onerror = () => {
-                                    contentArea.innerHTML = '<p class="error-message">數據分析模組載入失敗</p>';
-                                };
-                                document.head.appendChild(script);
-                            });
-                        }
-                    }
-                };
-                loadAnalysisSection(sectionContainer, db, user);
-            }
-            break;
-            
-        // 系統日誌功能區塊
-        case 'data-logs':
-            if (typeof loadDataLogsSection === 'function') {
-                loadDataLogsSection(sectionContainer, db, user);
-            } else {
-                console.error("loadDataLogsSection function not found. Ensure admin-logs.js is loaded.");
-                sectionContainer.querySelector('.section-content').innerHTML = `
-                    <div class="error-message">
-                        <p>無法載入系統日誌功能。請重新整理頁面或聯繫系統管理員。</p>
-                        <p><small>技術詳情：loadDataLogsSection function not found.</small></p>
-                    </div>`;
-            }
+            functionName = 'loadAnalysisSection';
+            functionToCall = typeof loadAnalysisSection === 'function' ? loadAnalysisSection : null;
             break;
             
         default:
-            console.warn(`Unknown section ID: ${sectionId}. No specific loader available.`);
-            sectionContainer.querySelector('.section-content').innerHTML = `
-                <div class="warning-message">
+            console.warn(`No known loader function for section: ${sectionId}`);
+            contentArea.innerHTML = `
+                <div class="message warning-message">
                     <p>此功能區塊 (${sectionId}) 尚未實現或無法識別。</p>
+                    <p>請確保已載入所有必要的 JavaScript 模組。</p>
                 </div>`;
+            return;
+    }
+    
+    // 執行載入函數或顯示錯誤
+    if (functionToCall) {
+        try {
+            console.log(`Calling ${functionName}() for section: ${sectionId}`);
+            
+            // 檢查所需參數數量並調用函數
+            const paramCount = functionToCall.length;
+            if (paramCount >= 3) {
+                functionToCall(sectionContainer, db, user);
+            } else if (paramCount === 2) {
+                functionToCall(sectionContainer, db);
+            } else if (paramCount === 1) {
+                functionToCall(sectionContainer);
+            } else {
+                functionToCall();
+            }
+            
+            console.log(`Successfully loaded content for section: ${sectionId}`);
+            
+        } catch (error) {
+            console.error(`Error executing ${functionName}() for section ${sectionId}:`, error);
+            contentArea.innerHTML = `
+                <div class="error-message">
+                    <p>載入 ${sectionId} 區塊時發生錯誤。</p>
+                    <p><small>錯誤詳情：${error.message}</small></p>
+                    <button class="btn btn-primary reload-section">重試載入</button>
+                </div>`;
+                
+            // 添加重試按鈕事件
+            const reloadButton = contentArea.querySelector('.reload-section');
+            if (reloadButton) {
+                reloadButton.addEventListener('click', () => {
+                    loadSectionContent(sectionId, sectionContainer, db, user);
+                });
+            }
+        }
+    } else if (scriptSrc) {
+        // 動態載入所需腳本
+        console.log(`Attempting to dynamically load script: ${scriptSrc} for section: ${sectionId}`);
+        
+        contentArea.innerHTML = `
+            <div class="message">
+                <p>正在載入 ${sectionId} 模組...</p>
+                <div class="spinner"></div>
+            </div>`;
+            
+        // 建立腳本元素
+        const script = document.createElement('script');
+        script.src = `/js/${scriptSrc}?v=${new Date().getTime()}`; // 加入時間戳避免快取
+        script.onload = () => {
+            console.log(`Script ${scriptSrc} loaded successfully, retrying section load...`);
+            // 腳本載入後重新嘗試載入區塊
+            setTimeout(() => {
+                loadSectionContent(sectionId, sectionContainer, db, user);
+            }, 100);
+        };
+        script.onerror = (err) => {
+            console.error(`Failed to load script: ${scriptSrc}`, err);
+            contentArea.innerHTML = `
+                <div class="error-message">
+                    <p>無法載入 ${sectionId} 功能模組。</p>
+                    <p><small>無法載入必要的腳本檔案: ${scriptSrc}</small></p>
+                    <button class="btn btn-primary reload-module">重試載入</button>
+                </div>`;
+                
+            // 添加重試按鈕事件
+            const reloadButton = contentArea.querySelector('.reload-module');
+            if (reloadButton) {
+                reloadButton.addEventListener('click', () => {
+                    document.head.removeChild(script); // 移除舊腳本
+                    loadSectionContent(sectionId, sectionContainer, db, user);
+                });
+            }
+        };
+        document.head.appendChild(script);
+    } else {
+        // 無法找到相應的載入函數或腳本
+        console.error(`No loader function (${functionName}) or script available for section: ${sectionId}`);
+        contentArea.innerHTML = `
+            <div class="error-message">
+                <p>無法載入 ${sectionId} 區塊。</p>
+                <p><small>找不到載入函數: ${functionName}</small></p>
+                <p>請確認所有必要的管理模組已正確載入，或聯絡系統管理員。</p>
+            </div>`;
     }
 }
 
