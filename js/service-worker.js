@@ -19,8 +19,8 @@ const CACHE_URLS = [
     '/js/module-config.js',
     '/js/modules/core/index.js',
     '/js/modules/auth/index.js',
+    '/css/style.css',
     '/css/styles.css',
-    '/version-info.json',
     '/manifest.json'
 ];
 
@@ -77,7 +77,7 @@ self.addEventListener('fetch', event => {
         return handleVersionInfoRequest(event);
     }
     
-    // 跳過 POST 請求的緩存處理
+    // 跳過非 GET 請求的緩存處理
     if (event.request.method !== 'GET') {
         console.log(`[Service Worker] 跳過非 GET 請求的緩存: ${event.request.method} ${event.request.url}`);
         return;
@@ -103,10 +103,13 @@ self.addEventListener('fetch', event => {
                         // 複製響應以同時存入緩存和返回
                         const responseToCache = netResponse.clone();
                         
-                        caches.open(CACHE_NAME)
-                            .then(cache => {
-                                cache.put(event.request, responseToCache);
-                            });
+                        // 只緩存 GET 請求
+                        if (event.request.method === 'GET') {
+                            caches.open(CACHE_NAME)
+                                .then(cache => {
+                                    cache.put(event.request, responseToCache);
+                                });
+                        }
                             
                         return netResponse;
                     })
@@ -172,12 +175,15 @@ function handleVersionInfoRequest(event) {
     event.respondWith(
         fetch(event.request)
             .then(netResponse => {
-                // 將新版本信息放入緩存
-                const responseToCache = netResponse.clone();
-                caches.open(CACHE_NAME)
-                    .then(cache => {
-                        cache.put(event.request, responseToCache);
-                    });
+                // 只有 GET 方法請求才緩存
+                if (event.request.method === 'GET') {
+                    // 將新版本信息放入緩存
+                    const responseToCache = netResponse.clone();
+                    caches.open(CACHE_NAME)
+                        .then(cache => {
+                            cache.put(event.request, responseToCache);
+                        });
+                }
                 
                 return netResponse;
             })

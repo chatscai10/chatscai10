@@ -43,7 +43,7 @@
           },
           {
             "key": "Content-Security-Policy",
-            "value": "default-src 'self' https://*.googleapis.com https://*.firebaseio.com https://*.gstatic.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.googleapis.com https://*.firebaseio.com https://*.gstatic.com https://cdn.jsdelivr.net https://static.line-scdn.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; font-src 'self' https://fonts.gstatic.com; img-src 'self' blob: data: https://*.googleapis.com https://*.line-scdn.net https://profile.line-scdn.net; connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://*.cloudfunctions.net https://*.gstatic.com https://api.line.me wss://*.firebaseio.com; frame-ancestors 'self'"
+            "value": "default-src 'self' https://*.googleapis.com https://*.firebaseio.com https://*.gstatic.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.googleapis.com https://*.firebaseio.com https://*.gstatic.com https://cdn.jsdelivr.net https://static.line-scdn.net https://cdnjs.cloudflare.com https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net https://unpkg.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net data:; img-src 'self' blob: data: https://*.googleapis.com https://*.line-scdn.net https://profile.line-scdn.net; connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://*.cloudfunctions.net https://*.gstatic.com https://api.line.me https://*.line-scdn.net wss://*.firebaseio.com; frame-ancestors 'self'"
           },
           {
             "key": "Referrer-Policy",
