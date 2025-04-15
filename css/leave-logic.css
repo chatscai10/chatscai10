@@ -1,0 +1,262 @@
+/* 請假系統專用樣式表 */
+
+.leave-form {
+    max-width: 600px;
+    margin: 20px auto;
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.leave-form h3 {
+    color: #333;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #f7e1a0;
+}
+
+.leave-form .form-group {
+    margin-bottom: 20px;
+}
+
+.leave-form label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: #555;
+}
+
+.leave-form input[type="date"],
+.leave-form input[type="time"],
+.leave-form select,
+.leave-form textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+    transition: border-color 0.3s;
+}
+
+.leave-form input[type="date"]:focus,
+.leave-form input[type="time"]:focus,
+.leave-form select:focus,
+.leave-form textarea:focus {
+    border-color: #f7e1a0;
+    outline: none;
+    box-shadow: 0 0 5px rgba(247, 225, 160, 0.3);
+}
+
+.leave-type-select {
+    background-color: #fff;
+}
+
+.leave-reason {
+    min-height: 100px;
+    resize: vertical;
+}
+
+.leave-attachments {
+    border: 2px dashed #ddd;
+    padding: 15px;
+    text-align: center;
+    border-radius: 4px;
+    margin-bottom: 20px;
+    transition: all 0.3s;
+    cursor: pointer;
+}
+
+.leave-attachments:hover {
+    border-color: #f7e1a0;
+    background-color: #fffdf0;
+}
+
+.leave-attachments input[type="file"] {
+    display: none;
+}
+
+.leave-attachments-label {
+    display: block;
+    cursor: pointer;
+    font-size: 14px;
+    color: #666;
+}
+
+.leave-attachments-preview {
+    display: flex;
+    flex-wrap: wrap;
+    margin-top: 10px;
+}
+
+.attachment-item {
+    display: inline-block;
+    margin: 5px;
+    padding: 5px;
+    border: 1px solid #eee;
+    border-radius: 4px;
+    position: relative;
+}
+
+.attachment-item img {
+    max-width: 80px;
+    max-height: 80px;
+    display: block;
+}
+
+.attachment-item .file-name {
+    font-size: 12px;
+    word-break: break-all;
+    max-width: 80px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.attachment-item .remove-btn {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: #ff6b6b;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    font-size: 12px;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.leave-submit-btn {
+    background-color: #f7e1a0;
+    color: #333;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    display: block;
+    width: 100%;
+    font-weight: bold;
+    transition: background-color 0.3s;
+}
+
+.leave-submit-btn:hover {
+    background-color: #f5d890;
+}
+
+.leave-submit-btn:disabled {
+    background-color: #f0f0f0;
+    color: #999;
+    cursor: not-allowed;
+}
+
+/* 請假記錄列表樣式 */
+.leave-history {
+    margin-top: 30px;
+}
+
+.leave-history h3 {
+    color: #333;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #f7e1a0;
+}
+
+.leave-history-list {
+    list-style: none;
+    padding: 0;
+}
+
+.leave-record {
+    background-color: #fff;
+    padding: 15px;
+    margin-bottom: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    border-left: 5px solid #ccc;
+}
+
+.leave-record.pending {
+    border-left-color: #f7e1a0;
+}
+
+.leave-record.approved {
+    border-left-color: #a0f7a0;
+}
+
+.leave-record.rejected {
+    border-left-color: #f7a0a0;
+}
+
+.leave-record-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid #eee;
+}
+
+.leave-record-title {
+    font-weight: bold;
+    color: #333;
+}
+
+.leave-record-status {
+    font-size: 14px;
+    padding: 3px 8px;
+    border-radius: 4px;
+}
+
+.leave-record-status.pending {
+    background-color: #fff8e1;
+    color: #856404;
+}
+
+.leave-record-status.approved {
+    background-color: #e8f5e9;
+    color: #155724;
+}
+
+.leave-record-status.rejected {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.leave-record-details {
+    font-size: 14px;
+    color: #666;
+}
+
+.leave-record-details p {
+    margin: 5px 0;
+}
+
+.leave-record-reason {
+    font-style: italic;
+    margin-top: 10px;
+    padding: 10px;
+    background-color: #f9f9f9;
+    border-radius: 4px;
+}
+
+/* 響應式調整 */
+@media (max-width: 768px) {
+    .leave-form {
+        padding: 15px;
+    }
+    
+    .leave-record-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .leave-record-status {
+        margin-top: 5px;
+    }
+} 

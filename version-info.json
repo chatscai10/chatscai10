@@ -1,36 +1,38 @@
 {
-  "version": "2.0.0",
-  "releaseDate": "2024-03-21",
-  "updateInfo": {
-    "title": "2.0.0 版本更新",
-    "description": "重大更新：統一版本控制系統",
-    "changes": [
-      "整合所有版本控制功能",
-      "改進更新檢查機制",
-      "優化模組版本管理",
-      "新增自動更新通知"
-    ]
-  },
+  "version": "1.5.0",
+  "releaseDate": "2025-04-17",
+  "requiredUpdate": false,
+  "updateNotes": "系統更新與改進",
   "modules": {
-    "core": "2.0.0",
-    "auth": "1.3.2",
-    "scheduling": "1.4.1",
-    "attendance": "1.4.0",
-    "leave": "1.3.1",
-    "salary": "1.5.0",
-    "prediction": "1.2.0",
-    "reporting": "1.3.0",
-    "admin": "1.4.1"
+    "CORE": "1.5.0",
+    "AUTH": "1.3.2",
+    "SCHEDULING": "1.4.1",
+    "ATTENDANCE": "1.4.0",
+    "LEAVE": "1.3.1",
+    "SALARY": "1.5.0",
+    "PREDICTION": "1.2.0",
+    "REPORTING": "1.3.0",
+    "ADMIN": "1.4.1"
   },
-  "compatibility": {
-    "minVersion": "1.0.0",
-    "recommendedVersion": "2.0.0"
-  },
-  "api": {
-    "version": "v2",
-    "endpoints": {
-      "base": "/api/v2",
-      "version": "/api/v2/version"
+  "changelog": [
+    {
+      "version": "1.5.0",
+      "date": "2025-04-17",
+      "changes": [
+        "系統架構優化",
+        "改進打卡功能",
+        "修正登出相關問題",
+        "提升安全性表現"
+      ]
+    },
+    {
+      "version": "1.4.0",
+      "date": "2025-03-20",
+      "changes": [
+        "新增薪資預測功能",
+        "更新排班算法",
+        "優化使用者介面"
+      ]
     }
-  }
+  ]
 } 
