@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>公告系統</title> <link rel="stylesheet" href="css/style.css">
+        <script src="js/init-compat.js?v=20250422" defer></script>
+        </head>
+<body>
+    <div id="shared-menu-placeholder"></div>
+    <div id="site-menu"></div>
+    <div class="container">
+    </div>
+    <div class="container">
+        <h2>最新公告</h2>
+
+        <div id="announcements-list" class="announcements-list">
+            <div class="loading-placeholder">正在載入公告...</div>
+            </div>
+
+        <p id="announce-message" class="message"></p>
+
+        </div>
+        <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+        <script src="js/firebase-config.js?v=20250417v2"></script>
+        <script src="js/init.js?v=20250417v2"></script>
+        <script src="js/main.js?v=20250417v2"></script>
+        <script src="js/auth.js?v=20250417v2"></script>
+        <script src="js/announce-logic.js?v=20250417v2"></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', async () => {
+                try {
+                    console.log("Waiting for central initialization via init.js (announce.html)...");
+                    // 1. 等待並獲取實例
+                    const { db, fbAuth } = await initializeFirebaseAndAuth();
+    
+                    console.log("Firebase initialized. Proceeding with announce.html logic.");
+                    // 2. 設定 Auth 監聽器
+                    if (typeof setupAuthStateListener === 'function') { setupAuthStateListener(fbAuth); }
+    
+                    console.log("Proceeding with announce.html logic immediately after listener setup.");
+                    // 3. 執行權限檢查
+                    const currentUser = await requireLogin(0, fbAuth, db); // 公告頁權限設為 0
+    
+                    // 4. 調用頁面初始化函數
+                    if (currentUser && typeof initAnnouncePage === 'function') {
+                        initAnnouncePage(currentUser, db); // 傳遞 currentUser 和 db
+                    } else if (!currentUser && window.location.pathname.endsWith('announce.html')) {
+                        console.log("requireLogin failed for announce.html.");
+                        const msgElement = document.getElementById('announce-message');
+                        if(msgElement) msgElement.textContent = '無法載入公告，請確認登入狀態或權限。';
+                    } else if (typeof initAnnouncePage !== 'function'){
+                        console.error("initAnnouncePage function not found.");
+                        const msgElement = document.getElementById('announce-message');
+                        if(msgElement) msgElement.textContent = '頁面初始化錯誤。';
+                    }
+                } catch (error) {
+                     console.error("Error waiting for Firebase or executing page logic (announce.html):", error);
+                     if (!document.body.innerHTML.includes('系統核心初始化失敗')) {
+                          document.body.innerHTML = `<p style="color:red; text-align:center; padding-top: 50px;">頁面載入失敗: ${error.message}</p>`;
+                     }
+                }
+            });
+        </script>
+        <div class="page-header">
+            <h1>公告系統</h1>
+        </div>
+        <footer class="page-footer">
+            <div class="footer-content">
+                <p class="version-info">版本 <span id="version-display">載入中...</span></p>
+            </div>
+        </footer>
+    </body>
+</html>

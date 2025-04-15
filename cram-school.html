@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>知識+ | Chicken補習班</title>
+    
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/cram-school.css">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <img src="images/logo.png" alt="Chicken補習班" height="40">
+                Chicken補習班
+            </a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ml-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">首頁</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="courses.html">課程資訊</a>
+                    </li>
+                    <li class="nav-item active">
+                        <a class="nav-link" href="cram-school.html">知識+</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="about.html">關於我們</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="contact.html">聯絡我們</a>
+                    </li>
+                    <li class="nav-item dropdown d-none" id="user-nav-item">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
+                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            使用者
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="userDropdown">
+                            <a class="dropdown-item" href="#" id="logout-btn">登出</a>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container my-5">
+        <div class="row">
+            <div class="col-12">
+                <h1 class="content-title text-center mb-4">知識+</h1>
+                <p class="text-center lead mb-5">分享知識，共同成長。在這裡可以發佈文章、提問、分享心得。</p>
+            </div>
+        </div>
+
+        <!-- 登录部分 -->
+        <div class="row" id="login-section">
+            <div class="col-md-6 mx-auto text-center">
+                <div class="card shadow">
+                    <div class="card-body py-5">
+                        <h3 class="card-title mb-4">登入以使用完整功能</h3>
+                        <p class="card-text mb-4">使用Google帳號登入，即可發佈文章、點讚和評論。</p>
+                        <button class="btn btn-primary btn-lg" id="login-btn">
+                            <i class="fab fa-google mr-2"></i> 使用Google登入
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 内容部分 -->
+        <div class="row d-none" id="content-section">
+            <div class="col-md-12">
+                <!-- 添加新文章按钮 -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h3 class="m-0">文章列表</h3>
+                    <button class="btn btn-primary d-none" id="new-post-btn">
+                        <i class="fas fa-plus-circle mr-1"></i> 發布新文章
+                    </button>
+                </div>
+                
+                <!-- 类别过滤器 - 水平滚动 -->
+                <div class="category-filters-container mb-4">
+                    <div class="category-filters-scroll">
+                        <div class="category-filter active" data-category="all">全部</div>
+                        <div class="category-filter" data-category="general">一般討論</div>
+                        <div class="category-filter" data-category="question">問題求助</div>
+                        <div class="category-filter" data-category="resource">資源分享</div>
+                        <div class="category-filter" data-category="announcement">官方公告</div>
+                        <div class="category-filter" data-category="experience">學習經驗</div>
+                    </div>
+                </div>
+                
+                <!-- 文章列表 -->
+                <div id="posts-list" class="posts-container">
+                    <!-- 文章将在JS中动态添加 -->
+                    <div id="loading-spinner" class="text-center py-5">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="sr-only">Loading...</span>
+                        </div>
+                        <p class="mt-3">正在載入文章...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 新帖子模态框 -->
+    <div class="modal fade" id="newPostModal" tabindex="-1" aria-labelledby="newPostModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="newPostModalLabel">發布新文章</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="new-post-form">
+                        <div class="form-group">
+                            <label for="post-title">標題</label>
+                            <input type="text" class="form-control" id="post-title" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="post-category">分類</label>
+                            <select class="form-control" id="post-category" required>
+                                <option value="general">一般討論</option>
+                                <option value="question">問題求助</option>
+                                <option value="resource">資源分享</option>
+                                <option value="experience">學習經驗</option>
+                                <option value="announcement">官方公告</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="post-content">內容</label>
+                            <textarea class="form-control" id="post-content" rows="5" required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="post-image">圖片（可選）</label>
+                            <input type="file" class="form-control-file" id="post-image" accept="image/*">
+                            <small class="form-text text-muted">支援JPG、PNG格式圖片，大小不超過5MB</small>
+                        </div>
+                        <div class="text-right">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+                            <button type="submit" class="btn btn-primary">發布</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-dark text-white py-4 mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4">
+                    <h5>Chicken補習班</h5>
+                    <p>提供優質教育，幫助學生實現夢想。</p>
+                </div>
+                <div class="col-md-4">
+                    <h5>聯絡資訊</h5>
+                    <p><i class="fas fa-map-marker-alt mr-2"></i>台北市信義區松高路1號</p>
+                    <p><i class="fas fa-phone mr-2"></i>(02) 1234-5678</p>
+                    <p><i class="fas fa-envelope mr-2"></i>info@chicken.edu.tw</p>
+                </div>
+                <div class="col-md-4">
+                    <h5>關注我們</h5>
+                    <div class="social-links">
+                        <a href="#" class="text-white mr-3"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="text-white mr-3"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="text-white mr-3"><i class="fab fa-youtube"></i></a>
+                        <a href="#" class="text-white"><i class="fab fa-line"></i></a>
+                    </div>
+                </div>
+            </div>
+            <hr>
+            <div class="text-center">
+                <p class="mb-0">© 2023 Chicken補習班. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Toast容器 -->
+    <div class="toast-container"></div>
+
+    <!-- Bootstrap & jQuery -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
+    
+    <!-- DOMPurify for XSS prevention -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/2.3.0/purify.min.js"></script>
+    
+    <!-- Custom JS -->
+    <script src="js/cram-school.js"></script>
+</body>
+</html> 

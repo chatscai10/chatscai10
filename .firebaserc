@@ -1,0 +1,16 @@
+{
+  "projects": {
+    "chicken-tw": "chicken-tw",
+    "tw-prod": "chicken-tw"
+  },
+  "targets": {
+    "chicken-tw": {
+      "hosting": {
+        "my-site": [
+          "your-firebase-site-name"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}

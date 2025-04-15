@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>不早管理系統</title> 
+        <link rel="stylesheet" href="css/style.css?v=20250417v2">
+        <link rel="stylesheet" href="css/version-check.css?v=20250417v2">
+        <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+        <script src="js/init-compat.js?v=20250422" defer></script>
+    </head>
+<body class="front-layout"> 
+    <!-- 菜單容器 -->
+    <div id="site-menu"></div>
+    <div id="shared-menu-placeholder"></div>
+
+    <div class="container">
+        <h1>不早管理系統</h1>
+        <div id="liff-login-area">
+             <p id="login-message" class="message info-message">正在初始化系統...</p> <div id="login-button-container" style="text-align: center; margin-top: 20px;">
+                 </div>
+         </div>
+        </div>
+        
+        <!-- 使用舊版 Firebase API (相容模式) -->
+        <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+        
+        <!-- 相容性初始化腳本 -->
+        <script src="js/init-compat.js"></script>
+        
+        <!-- 模組腳本 -->
+        <script type="module" src="js/main.js?v=20250417v2"></script>
+        
+        <!-- 現有功能腳本 -->
+        <script src="js/auth.js?v=20250417v2"></script>
+        
+        <!-- 頁面初始化 -->
+        <script>
+            document.addEventListener('DOMContentLoaded', async () => {
+                try {
+                    console.log("等待 Firebase 初始化完成...");
+                    const { fbAuth, db } = await initializeFirebaseAndAuth();
+                    console.log("Firebase 初始化完成，執行頁面邏輯");
+    
+                    // 設定 Auth 狀態監聽器
+                    if (typeof setupAuthStateListener === 'function') {
+                        setupAuthStateListener(fbAuth);
+                    } else { 
+                        console.error("setupAuthStateListener 函數未找到"); 
+                    }
+    
+                    // 初始化 LIFF
+                    if (typeof initializeLiff === 'function') {
+                        initializeLiff(fbAuth, db);
+                    } else {
+                        console.error("initializeLiff 函數未在 auth.js 中找到");
+                        const msgElement = document.getElementById('login-message');
+                        if (msgElement) msgElement.textContent = 'LIFF 初始化函數載入失敗。';
+                    }
+                } catch (error) {
+                    console.error("初始化或頁面邏輯執行期間出錯:", error);
+                    const msgElement = document.getElementById('login-message');
+                    if (msgElement) {
+                        msgElement.textContent = `系統載入錯誤: ${error.message}`;
+                        msgElement.className = 'message error-message';
+                    }
+                }
+            });
+        </script>
+        
+        <!-- 服務工作線程註冊 -->
+        <script>
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', () => {
+                    navigator.serviceWorker.register('/service-worker.js')
+                        .then(registration => {
+                            console.log('Service Worker 註冊成功:', registration.scope);
+                        })
+                        .catch(error => {
+                            console.error('Service Worker 註冊失敗:', error);
+                        });
+                });
+            }
+        </script>
+    </body>
+</html>

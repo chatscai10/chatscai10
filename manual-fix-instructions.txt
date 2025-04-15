@@ -1,0 +1,143 @@
+============= 手動修復步驟 ==============
+
+如果自動腳本無法運行，請按照以下步驟手動修復：
+
+==== 1. 添加修復腳本到HTML文件 ====
+
+對於每個HTML文件，請在</body>標籤前添加以下腳本：
+
+--- 管理頁面 (admin.html) ---
+<!-- 修復腳本 -->
+<script src="js/fixes.js"></script>
+<script src="js/admin-fix.js"></script>
+<script src="js/styles-fix.js"></script>
+<script src="js/headers-fix.js"></script>
+
+--- 請假頁面 (leave.html) ---
+<!-- 修復腳本 -->
+<script src="js/fixes.js"></script>
+<script src="js/leave-logic-fix.js"></script>
+<script src="js/styles-fix.js"></script>
+<script src="js/headers-fix.js"></script>
+
+--- 排班頁面 (schedule-view.html) ---
+<!-- 修復腳本 -->
+<script src="js/fixes.js"></script>
+<script src="js/schedule-fix.js"></script>
+<script src="js/styles-fix.js"></script>
+<script src="js/headers-fix.js"></script>
+
+--- 其他所有頁面 ---
+<!-- 修復腳本 -->
+<script src="js/fixes.js"></script>
+<script src="js/styles-fix.js"></script>
+<script src="js/headers-fix.js"></script>
+
+==== 2. 為資源添加版本號 ====
+
+修改所有HTML文件中的資源引用:
+- 將 .js" 改為 .js?v=20250418"
+- 將 .css" 改為 .css?v=20250418"
+
+例如:
+<script src="js/main.js"></script>
+改為:
+<script src="js/main.js?v=20250418"></script>
+
+<link rel="stylesheet" href="css/styles.css">
+改為:
+<link rel="stylesheet" href="css/styles.css?v=20250418">
+
+==== 3. 服務器配置修改 ====
+
+--- Nginx 配置 ---
+在nginx.conf文件中添加:
+
+# 正確設置MIME類型
+types {
+    image/x-icon ico;
+}
+
+# 移除不推薦的標頭
+proxy_hide_header Expires;
+proxy_hide_header Pragma;
+
+# 為靜態資源設置適當的快取控制
+location ~* \.(js|css|png|jpg|jpeg|gif|svg)$ {
+    expires 30d;
+    add_header Cache-Control "public, max-age=2592000";
+    add_header Strict-Transport-Security "max-age=31536000" always;
+    access_log off;
+}
+
+# favicon特別處理
+location = /favicon.ico {
+    expires 1y;
+    add_header Cache-Control "public, max-age=31536000";
+    access_log off;
+}
+
+# HTML文件不快取或短期快取
+location ~* \.html$ {
+    expires 1h;
+    add_header Cache-Control "public, max-age=3600";
+}
+
+--- Apache 配置 ---
+在.htaccess文件中添加:
+
+# 移除不推薦的標頭
+<IfModule mod_headers.c>
+    Header unset Expires
+    Header unset Pragma
+</IfModule>
+
+# 啟用MIME類型和字符集
+AddDefaultCharset UTF-8
+AddType image/x-icon .ico
+
+# 設置適當的快取控制
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType text/html "access plus 1 hour"
+    ExpiresByType text/css "access plus 1 month"
+    ExpiresByType text/javascript "access plus 1 month"
+    ExpiresByType application/javascript "access plus 1 month"
+    ExpiresByType image/jpg "access plus 1 month"
+    ExpiresByType image/jpeg "access plus 1 month"
+    ExpiresByType image/gif "access plus 1 month"
+    ExpiresByType image/png "access plus 1 month"
+    ExpiresByType image/svg+xml "access plus 1 month"
+    ExpiresByType image/x-icon "access plus 1 year"
+</IfModule>
+
+<IfModule mod_headers.c>
+    # JavaScript和CSS文件
+    <FilesMatch "\.(js|css)$">
+        Header set Cache-Control "public, max-age=2592000"
+    </FilesMatch>
+    
+    # 圖像文件
+    <FilesMatch "\.(ico|gif|jpg|jpeg|png|svg)$">
+        Header set Cache-Control "public, max-age=2592000"
+    </FilesMatch>
+    
+    # HTML文件 - 較短的快取時間
+    <FilesMatch "\.(html|htm)$">
+        Header set Cache-Control "public, max-age=3600"
+    </FilesMatch>
+    
+    # favicon特別處理
+    <FilesMatch "favicon\.ico$">
+        Header set Content-Type "image/x-icon"
+        Header set Cache-Control "max-age=31536000, public"
+    </FilesMatch>
+</IfModule>
+
+==== 4. 測試步驟 ====
+
+1. 清除瀏覽器快取
+2. 檢查所有頁面功能是否正常
+3. 檢查瀏覽器控制台是否還有警告
+
+如有問題，請參考 deployment-instructions.md 文檔。 

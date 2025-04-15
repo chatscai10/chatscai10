@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>補習班 - 不早管理系統</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* Add specific styles if needed */
+        .cram-post {
+            border: 1px solid #eee;
+            padding: 15px;
+            margin-bottom: 20px;
+            background-color: #fff;
+            border-radius: 5px;
+        }
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            margin-top: 10px;
+            border-radius: 3px;
+        }
+        .post-meta {
+            font-size: 0.85em;
+            color: #6c757d;
+        }
+        .comments-list {
+            margin-top: 15px;
+            padding-left: 10px;
+            border-left: 3px solid #f0f0f0;
+        }
+        .comment-item {
+            margin-bottom: 10px;
+            font-size: 0.9em;
+        }
+        .comment-item strong {
+            color: #333;
+        }
+        .comment-item small {
+            font-size: 0.8em;
+            color: #888;
+            margin-left: 5px;
+        }
+        .new-comment-form textarea {
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body class="page-layout">
+    <div id="shared-menu-placeholder"></div>
+
+    <div class="container">
+        <header class="page-header">
+            <h1>補習班</h1>
+            <p>學習新知，共同成長。</p>
+        </header>
+
+        <main id="page-cram-school-view" class="page-section">
+            <div id="cram-posts-list">
+                <p>正在載入日誌內容...</p>
+            </div>
+             <div id="message-area" class="message"></div> <!-- For status messages -->
+        </main>
+
+    </div><!-- /.container -->
+
+    <footer>
+        <p>&copy; 不早管理系統</p>
+    </footer>
+
+    <!-- DOMPurify - HTML Sanitizer to protect against XSS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js" integrity="sha512-H+vQMoNNZp/p8YYwkHX7oNBXS2kVPO/+cPOe/lC6OpZN83VXjN9bJcvXI7WYFuJtCJJ/QTJwAsNDo49rFA/7EA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    <!-- Firebase and App Initialization Scripts (using compat version) -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-functions-compat.js"></script> <!-- Add functions for comment API -->
+    <!-- Add storage if needed for displaying images, though URLs are in Firestore -->
+
+    <!-- Import App Modules -->
+     <script src="js/firebase-config.js?v=20250416v2"></script>
+     <script src="js/init.js?v=20250416v2"></script> <!-- Central init -->
+     <script src="js/auth.js?v=20250416v2"></script> <!-- Auth logic -->
+     <script src="js/main.js?v=20250416v2"></script> <!-- Menu, common functions -->
+     <script src="js/cram-school-view-logic.js?v=20250416v2"></script> <!-- Specific logic -->
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                console.log("Initializing Firebase for cram-school-view.html...");
+                const { db, fbAuth } = await initializeFirebaseAndAuth();
+                console.log("Firebase initialized for cram-school-view.html.");
+
+                // Load menu
+                loadAndInjectMenu();
+
+                // Setup auth state listener - Redirects if not logged in
+                 setupAuthStateListener(fbAuth, (user) => {
+                     if (user) {
+                         console.log("User is logged in on cram-school-view page.");
+                         // Load the cram school content
+                         if (typeof initCramSchoolViewPage === 'function') {
+                             initCramSchoolViewPage(user, db);
+                         } else {
+                             console.error("initCramSchoolViewPage function not found!");
+                             document.getElementById('message-area').textContent = '頁面載入錯誤：缺少核心功能。';
+                         }
+                     } else {
+                         console.log("User is not logged in, redirection handled by listener.");
+                     }
+                 });
+
+            } catch (error) {
+                console.error("Error initializing cram-school-view.html:", error);
+                const messageArea = document.getElementById('message-area');
+                 if (messageArea && !document.body.innerHTML.includes('系統核心初始化失敗')) {
+                     messageArea.textContent = `系統載入錯誤: ${error.message}`;
+                     messageArea.className = 'message error-message';
+                 } else if (!document.body.innerHTML.includes('系統核心初始化失敗')) {
+                     document.body.insertAdjacentHTML('afterbegin', `<p class="message error-message" style="padding: 10px;">系統載入錯誤: ${error.message}</p>`);
+                 }
+            }
+        });
+    </script>
+
+</body>
+</html>

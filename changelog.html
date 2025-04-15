@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>系統更新日誌 - 炸雞店管理系統 v1.5.0</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .version-card {
+            border-left: 4px solid #007bff;
+            margin-bottom: 30px;
+        }
+        
+        .version-card.major {
+            border-left-color: #dc3545;
+        }
+        
+        .version-card.minor {
+            border-left-color: #28a745;
+        }
+        
+        .version-card.patch {
+            border-left-color: #6c757d;
+        }
+        
+        .version-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .version-date {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+        
+        .version-number {
+            font-weight: bold;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            color: white;
+        }
+        
+        .version-number.major {
+            background-color: #dc3545;
+        }
+        
+        .version-number.minor {
+            background-color: #28a745;
+        }
+        
+        .version-number.patch {
+            background-color: #6c757d;
+        }
+        
+        .changelog-list li {
+            margin-bottom: 10px;
+            position: relative;
+            padding-left: 20px;
+        }
+        
+        .changelog-list li:before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: #007bff;
+        }
+        
+        .version-title {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+        
+        .version-description {
+            color: #6c757d;
+            margin-bottom: 15px;
+        }
+        
+        .current-version {
+            position: relative;
+        }
+        
+        .current-version:after {
+            content: "當前版本";
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: #28a745;
+            color: white;
+            padding: 2px 10px;
+            border-radius: 10px;
+            font-size: 0.7rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="index.html">炸雞店管理系統</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="dashboard.html">儀表板</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="schedule.html">排班管理</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="leave.html">請假管理</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="salary-view.html">薪資查詢</a>
+                    </li>
+                </ul>
+                <div class="d-flex">
+                    <span class="navbar-text me-3" id="user-display"></span>
+                    <button class="btn btn-outline-light" id="logout-btn">登出</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <h1 class="mb-4">系統更新日誌</h1>
+        
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle-fill me-2"></i>
+            此頁面顯示系統的更新歷史記錄，包含新功能、改進和問題修復等信息。
+        </div>
+        
+        <div class="row mt-4">
+            <div class="col-lg-8 offset-lg-2">
+                <div id="changelog-container">
+                    <!-- 1.5.0 版本 -->
+                    <div class="card version-card major current-version">
+                        <div class="card-body">
+                            <div class="version-header">
+                                <span class="version-date">2025年4月15日</span>
+                                <span class="version-number major">v1.5.0</span>
+                            </div>
+                            <h2 class="version-title">整合與優化更新</h2>
+                            <p class="version-description">大幅加強系統模組整合程度，優化移動端體驗</p>
+                            <ul class="changelog-list">
+                                <li>打卡與排班系統深度整合，實現出勤數據智能分析</li>
+                                <li>薪資預測模型強化，支持多種預測算法和優化參數</li>
+                                <li>報表系統擴展，新增多種數據可視化和匯出選項</li>
+                                <li>權限管理細化，支持更細緻的功能控制和資源訪問</li>
+                                <li>整體UI/UX優化，提升移動端使用體驗和響應速度</li>
+                                <li>全系統文件版本管理，解決移動設備緩存問題</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <!-- 1.4.1 版本 -->
+                    <div class="card version-card patch">
+                        <div class="card-body">
+                            <div class="version-header">
+                                <span class="version-date">2025年4月14日</span>
+                                <span class="version-number patch">v1.4.1</span>
+                            </div>
+                            <h2 class="version-title">系統穩定性更新</h2>
+                            <p class="version-description">修復多個系統問題，提升穩定性</p>
+                            <ul class="changelog-list">
+                                <li>修復薪資計算中的函數閉合問題，確保計算準確性</li>
+                                <li>修復打卡系統中存在的緩存問題，提高記錄可靠性</li>
+                                <li>優化排班顯示邏輯，修正特殊情況下的異常顯示</li>
+                                <li>改進用戶權限驗證機制，解決某些功能的訪問問題</li>
+                                <li>修復 LINE 登入整合功能中的 token 驗證問題</li>
+                                <li>修正各處中文亂碼顯示問題，提升系統可讀性</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <!-- 1.4.0 版本 -->
+                    <div class="card version-card minor">
+                        <div class="card-body">
+                            <div class="version-header">
+                                <span class="version-date">2025年4月12日</span>
+                                <span class="version-number minor">v1.4.0</span>
+                            </div>
+                            <h2 class="version-title">薪資預測功能</h2>
+                            <p class="version-description">新增薪資預測和分析功能</p>
+                            <ul class="changelog-list">
+                                <li>新增薪資預測頁面，基於歷史數據預測未來薪資趨勢</li>
+                                <li>實現多場景對比分析，支持不同參數的預測方案比較</li>
+                                <li>提供CSV和PDF格式的數據匯出功能</li>
+                                <li>添加歷史數據分析工具，支持薪資構成和趨勢分析</li>
+                                <li>實現測試數據生成功能，方便系統測試和演示</li>
+                                <li>新增權重系統，支持不同因素的影響評估</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <!-- 1.3.0 版本 -->
+                    <div class="card version-card minor">
+                        <div class="card-body">
+                            <div class="version-header">
+                                <span class="version-date">2025年4月10日</span>
+                                <span class="version-number minor">v1.3.0</span>
+                            </div>
+                            <h2 class="version-title">報表系統更新</h2>
+                            <p class="version-description">強化報表和數據分析功能</p>
+                            <ul class="changelog-list">
+                                <li>新增多種報表類型，包括薪資統計、出勤分析和銷售業績</li>
+                                <li>支持多種格式的報表數據匯出，包括Excel、PDF和CSV</li>
+                                <li>改進數據可視化效果，使用Chart.js實現互動式圖表</li>
+                                <li>添加自定義報表功能，支持用戶自訂報表內容和格式</li>
+                                <li>新增報表訂閱功能，支持定期自動發送報表</li>
+                                <li>改進數據篩選和排序功能，提升數據分析靈活度</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white mt-5 py-3">
+        <div class="container text-center">
+            <p class="mb-0">炸雞店管理系統 v1.5.0 | &copy; 2025 All Rights Reserved</p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- 版本控制相關腳本 -->
+    <script src="js/version.js"></script>
+    <script src="js/version-checker.js"></script>
+    
+    <!-- Firebase Config & Auth -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="js/firebase-config.js"></script>
+    <script src="js/auth.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化Firebase驗證
+            initFirebase();
+            
+            // 獲取版本信息
+            fetch('version-info.json')
+                .then(response => response.json())
+                .then(data => {
+                    // 動態填充更多歷史版本
+                    const changelogContainer = document.getElementById('changelog-container');
+                    
+                    // 獲取已顯示的版本
+                    const existingVersions = Array.from(changelogContainer.querySelectorAll('.version-card'))
+                        .map(card => {
+                            const versionNumber = card.querySelector('.version-number').textContent.replace('v', '');
+                            return versionNumber;
+                        });
+                    
+                    // 添加尚未顯示的版本
+                    Object.keys(data.changelog).forEach(version => {
+                        if (!existingVersions.includes(version)) {
+                            const versionInfo = data.changelog[version];
+                            
+                            // 判斷版本類型
+                            const versionParts = version.split('.');
+                            let versionType = 'patch';
+                            if (versionParts[2] === '0') {
+                                if (versionParts[1] === '0') {
+                                    versionType = 'major';
+                                } else {
+                                    versionType = 'minor';
+                                }
+                            }
+                            
+                            // 創建版本卡片
+                            const versionCard = document.createElement('div');
+                            versionCard.className = `card version-card ${versionType}`;
+                            versionCard.innerHTML = `
+                                <div class="card-body">
+                                    <div class="version-header">
+                                        <span class="version-date">${versionInfo.date.replace(/-/g, '年').replace(/-/g, '月')}日</span>
+                                        <span class="version-number ${versionType}">v${version}</span>
+                                    </div>
+                                    <h2 class="version-title">${versionInfo.title}</h2>
+                                    <p class="version-description">${versionInfo.description}</p>
+                                    <ul class="changelog-list">
+                                        ${versionInfo.changes.map(change => `<li>${change}</li>`).join('')}
+                                    </ul>
+                                </div>
+                            `;
+                            
+                            // 添加到容器
+                            changelogContainer.appendChild(versionCard);
+                        }
+                    });
+                })
+                .catch(error => {
+                    console.error('載入版本信息失敗:', error);
+                });
+        });
+    </script>
+</body>
+</html> 

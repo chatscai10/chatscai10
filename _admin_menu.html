@@ -1,0 +1,48 @@
+<!-- _admin_menu.html -->
+<!-- Use DIFFERENT IDs for admin menu elements -->
+<button class="menu-toggle-button" id="admin-menu-toggle-btn" aria-label="Toggle Admin Menu">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="3" y1="12" x2="21" y2="12"></line>
+        <line x1="3" y1="6" x2="21" y2="6"></line>
+        <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+</button>
+
+<!-- Optional: Separate overlay ID if needed, or reuse if styling is global -->
+<div id="admin-sliding-menu-overlay"></div>
+
+<!-- Use a specific ID for the admin panel for distinct styling -->
+<div class="floating-menu" id="admin-floating-menu-panel">
+    <!-- User info section with proper IDs matching those in main.js -->
+    <div class="user-info requires-login">
+        <img id="menu-user-image" class="user-avatar" src="" alt="User" style="display: none; width: 30px; height: 30px; border-radius: 50%; margin-right: 8px;">
+        <div>
+            <strong id="menu-user-name">管理員</strong>
+            <span id="menu-user-store"></span>
+        </div>
+    </div>
+
+    <nav id="admin-menu-links-container">
+        <ul>
+            <!-- Update links based on admin sections in admin.html and desired order -->
+            <li><a href="/admin.html#section-employees">員工名單</a></li>
+            <li><a href="/admin.html#section-announcements">公告管理</a></li>
+            <li><a href="/admin.html#section-orders">叫貨紀錄</a></li>
+            <li><a href="/admin.html#section-sales">營收紀錄</a></li>
+            <li><a href="/admin.html#section-leave-requests">排假紀錄</a></li>
+            <li><a href="/admin.html#section-clockin-view">打卡紀錄</a></li>
+            <li><a href="/admin.html#section-manual-schedule">手動排班</a></li>
+            <li><a href="/cram-school.html">知識+設定</a></li>
+            <li><a href="/admin.html#section-bonus-tasks">獎金任務設定</a></li>
+            <li><a href="/admin.html#section-score">綜合分數設定</a></li>
+            <li><a href="/admin.html#section-parameters">參數設定</a></li>
+            <li><a href="/admin.html#section-analysis">數據分析</a></li>
+            <li><a href="/admin.html#section-push-notifications">推播通知管理</a></li>
+        </ul>
+    </nav>
+
+    <!-- Logout button -->
+    <div class="menu-logout requires-login">
+        <button id="admin-menu-logout-btn" class="btn btn-danger">登出</button>
+    </div>
+</div> 

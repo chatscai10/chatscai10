@@ -1,0 +1,476 @@
+// js/version-check.js - 版本檢查與更新通知功能
+
+'use strict';
+
+// 當前客戶端版本
+// 格式：年月日+版本號，例如: 20250417v1
+const CLIENT_VERSION = '20250417v3';
+
+// 版本檢查相關變數
+let versionDb = null; // Firestore 實例
+let lastVersionCheck = null; // 上次檢查時間戳
+let versionCheckInterval = 10 * 60 * 1000; // 預設 10 分鐘檢查一次
+let isVersionCheckingEnabled = true; // 版本檢查開關
+let versionUpdateModal = null; // 版本更新提示框
+
+// 預設配置，在未找到服務器配置時使用
+const DEFAULT_SETTINGS = {
+    versionCheckIntervalMinutes: 10,
+    enableVersionCheck: true
+};
+
+/**
+ * 初始化版本檢查系統
+ * @param {firebase.firestore.Firestore} db - Firestore 實例
+ */
+async function initVersionCheck(db) {
+    console.log("初始化版本檢查功能...");
+    
+    try {
+        if (!db) {
+            console.error("無法初始化版本檢查: 未提供有效的Firestore實例");
+            return;
+        }
+        
+        versionDb = db;
+        
+        // 先取得設定參數
+        await loadVersionCheckSettings();
+        
+        // 創建更新提示對話框
+        createVersionUpdateModal();
+        
+        // 立即執行第一次檢查
+        await checkForUpdates();
+        
+        // 設置定期檢查
+        setInterval(checkForUpdates, versionCheckInterval);
+        
+        console.log(`版本檢查功能初始化完成。客戶端版本: ${CLIENT_VERSION}`);
+    } catch (error) {
+        console.error("初始化版本檢查時發生錯誤:", error);
+        // 使用預設配置，確保基本功能可用
+        versionCheckInterval = DEFAULT_SETTINGS.versionCheckIntervalMinutes * 60 * 1000;
+        isVersionCheckingEnabled = DEFAULT_SETTINGS.enableVersionCheck;
+    }
+}
+
+/**
+ * 從資料庫載入版本檢查相關設定
+ */
+async function loadVersionCheckSettings() {
+    try {
+        if (!versionDb) {
+            console.warn("無法載入版本檢查設定: Firestore 未初始化");
+            return;
+        }
+        
+        // 嘗試獲取應用配置
+        const settingsDoc = await versionDb.collection('settings').doc('app_config').get();
+        
+        if (settingsDoc.exists) {
+            const settings = settingsDoc.data();
+            
+            // 獲取檢查間隔 (毫秒)
+            if (settings.versionCheckIntervalMinutes) {
+                versionCheckInterval = settings.versionCheckIntervalMinutes * 60 * 1000;
+                console.log(`版本檢查間隔設為: ${settings.versionCheckIntervalMinutes} 分鐘`);
+            }
+            
+            // 是否啟用版本檢查
+            if (typeof settings.enableVersionCheck === 'boolean') {
+                isVersionCheckingEnabled = settings.enableVersionCheck;
+                console.log(`版本檢查功能狀態: ${isVersionCheckingEnabled ? '啟用' : '禁用'}`);
+            }
+        } else {
+            console.log("找不到應用設定，使用預設版本檢查參數，並嘗試創建默認設定");
+            // 使用預設值
+            versionCheckInterval = DEFAULT_SETTINGS.versionCheckIntervalMinutes * 60 * 1000;
+            isVersionCheckingEnabled = DEFAULT_SETTINGS.enableVersionCheck;
+            
+            // 嘗試創建默認的應用設定
+            try {
+                await versionDb.collection('settings').doc('app_config').set({
+                    versionCheckIntervalMinutes: DEFAULT_SETTINGS.versionCheckIntervalMinutes,
+                    enableVersionCheck: DEFAULT_SETTINGS.enableVersionCheck,
+                    systemVersion: "1.5.0", // 與 version-info.json 對應
+                    lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
+                console.log("已創建默認應用配置");
+            } catch (createError) {
+                console.warn("無法創建默認應用配置:", createError);
+            }
+        }
+    } catch (error) {
+        console.error("載入版本檢查設定時發生錯誤:", error);
+        // 出錯時使用預設值
+        versionCheckInterval = DEFAULT_SETTINGS.versionCheckIntervalMinutes * 60 * 1000;
+        isVersionCheckingEnabled = DEFAULT_SETTINGS.enableVersionCheck;
+    }
+}
+
+/**
+ * 檢查系統是否有可用更新
+ */
+async function checkForUpdates() {
+    // 如果禁用了檢查或者最近剛檢查過，則跳過
+    if (!isVersionCheckingEnabled || (lastVersionCheck && Date.now() - lastVersionCheck < versionCheckInterval)) {
+        return;
+    }
+    
+    console.log("執行版本檢查...");
+    lastVersionCheck = Date.now();
+    
+    try {
+        if (!versionDb) {
+            console.warn("無法檢查更新: Firestore 未初始化");
+            return;
+        }
+        
+        // 從 Firestore 獲取最新版本信息
+        const versionDoc = await versionDb.collection('settings').doc('version_info').get();
+        
+        if (!versionDoc.exists) {
+            console.log("找不到版本信息文檔，正在創建初始版本信息");
+            
+            // 從 version-info.json 讀取數據 (首先嘗試從配置中獲取)
+            let appConfigDoc;
+            try {
+                appConfigDoc = await versionDb.collection('settings').doc('app_config').get();
+            } catch (error) {
+                console.warn("讀取應用配置時發生錯誤:", error);
+            }
+            
+            // 嘗試從 app_config 獲取系統版本，或使用默認值
+            const systemVersion = appConfigDoc?.exists && appConfigDoc.data()?.systemVersion 
+                ? appConfigDoc.data().systemVersion 
+                : "1.5.0";
+            
+            // 創建默認的版本信息
+            try {
+                await versionDb.collection('settings').doc('version_info').set({
+                    currentVersion: CLIENT_VERSION,
+                    systemVersion: systemVersion,
+                    updateNotes: "初始版本",
+                    lastUpdated: firebase.firestore.FieldValue.serverTimestamp(),
+                    requiredUpdate: false,
+                    modules: {
+                        CORE: systemVersion,
+                        AUTH: "1.3.2",
+                        SCHEDULING: "1.4.1",
+                        ATTENDANCE: "1.4.0",
+                        SALARY: systemVersion
+                    },
+                    changelog: {
+                        [CLIENT_VERSION]: {
+                            date: new Date().toISOString().split('T')[0],
+                            title: "初始版本",
+                            description: "系統初始化",
+                            changes: ["系統初始設置"]
+                        }
+                    }
+                });
+                console.log("已創建初始版本信息");
+                return; // 創建後退出，不需要顯示更新通知
+            } catch (createError) {
+                console.warn("無法創建初始版本信息:", createError);
+                return;
+            }
+        }
+        
+        const versionInfo = versionDoc.data();
+        const latestVersion = versionInfo.currentVersion;
+        
+        if (!latestVersion) {
+            console.warn("版本信息不完整");
+            return;
+        }
+        
+        console.log(`當前客戶端版本: ${CLIENT_VERSION}, 最新版本: ${latestVersion}`);
+        
+        // 比較版本
+        if (isNewerVersion(latestVersion, CLIENT_VERSION)) {
+            console.log(`檢測到新版本! 當前: ${CLIENT_VERSION}, 可用: ${latestVersion}`);
+            
+            // 顯示更新提示
+            showUpdateNotification(versionInfo);
+        }
+    } catch (error) {
+        console.error("檢查更新時發生錯誤:", error);
+    }
+}
+
+/**
+ * 判斷服務器版本是否比客戶端版本更新
+ * @param {string} serverVersion - 服務器版本
+ * @param {string} clientVersion - 客戶端版本
+ * @returns {boolean} 如果服務器版本較新則返回 true
+ */
+function isNewerVersion(serverVersion, clientVersion) {
+    if (!serverVersion || !clientVersion) return false;
+    
+    // 先檢查版本格式是否正確
+    const serverMatch = serverVersion.match(/^(\d{8})v(\d+)$/);
+    const clientMatch = clientVersion.match(/^(\d{8})v(\d+)$/);
+    
+    if (!serverMatch || !clientMatch) {
+        // 嘗試替代格式 (1.5.0 vs 1.4.0)
+        try {
+            const serverParts = serverVersion.split('.');
+            const clientParts = clientVersion.split('.');
+            
+            if (serverParts.length === 3 && clientParts.length === 3) {
+                for (let i = 0; i < 3; i++) {
+                    const sv = parseInt(serverParts[i], 10);
+                    const cv = parseInt(clientParts[i], 10);
+                    if (sv > cv) return true;
+                    if (sv < cv) return false;
+                }
+                return false; // 版本完全相同
+            }
+        } catch (e) {
+            console.warn("版本格式不正確，無法比較:", serverVersion, clientVersion);
+            return false;
+        }
+        
+        // 如果無法解析，默認返回 false
+        console.warn("版本格式不正確，無法比較:", serverVersion, clientVersion);
+        return false;
+    }
+    
+    const serverDate = parseInt(serverMatch[1], 10);
+    const serverSubVersion = parseInt(serverMatch[2], 10);
+    const clientDate = parseInt(clientMatch[1], 10);
+    const clientSubVersion = parseInt(clientMatch[2], 10);
+    
+    // 比較日期部分
+    if (serverDate > clientDate) return true;
+    if (serverDate < clientDate) return false;
+    
+    // 日期相同，比較子版本號
+    return serverSubVersion > clientSubVersion;
+}
+
+/**
+ * 創建版本更新提示對話框
+ */
+function createVersionUpdateModal() {
+    // 檢查是否已存在
+    if (document.getElementById('version-update-modal')) {
+        return;
+    }
+    
+    // 創建更新提示對話框
+    const modal = document.createElement('div');
+    modal.id = 'version-update-modal';
+    modal.className = 'modal';
+    modal.style.display = 'none';
+    
+    modal.innerHTML = `
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeVersionUpdateModal()">&times;</span>
+            <h3>發現新版本</h3>
+            <div id="version-update-details"></div>
+            <div style="margin-top: 20px;">
+                <button id="update-now-btn" class="btn btn-primary">立即更新</button>
+                <button id="update-later-btn" class="btn btn-secondary" style="margin-left: 10px;">稍後再說</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    versionUpdateModal = modal;
+    
+    // 添加按鈕事件
+    const updateNowBtn = document.getElementById('update-now-btn');
+    const updateLaterBtn = document.getElementById('update-later-btn');
+    
+    if (updateNowBtn) {
+        updateNowBtn.addEventListener('click', function() {
+            refreshPage();
+        });
+    }
+    
+    if (updateLaterBtn) {
+        updateLaterBtn.addEventListener('click', function() {
+            closeVersionUpdateModal();
+        });
+    }
+    
+    // 添加全局關閉方法
+    window.closeVersionUpdateModal = function() {
+        if (versionUpdateModal) {
+            versionUpdateModal.style.display = 'none';
+        }
+    };
+}
+
+/**
+ * 顯示版本更新提示
+ * @param {Object} versionInfo - 版本信息
+ */
+function showUpdateNotification(versionInfo) {
+    try {
+        if (!versionUpdateModal) {
+            console.log("嘗試創建版本更新對話框...");
+            createVersionUpdateModal();
+            
+            // 檢查是否成功創建對話框
+            if (!versionUpdateModal) {
+                console.warn("無法創建版本更新對話框，使用傳統 alert 代替");
+                const updateMsg = `系統已發布新版本 ${versionInfo.currentVersion}\n您的當前版本: ${CLIENT_VERSION}\n\n${versionInfo.updateNotes || '建議更新以獲取最新功能。'}\n\n立即更新?`;
+                
+                if (window.confirm(updateMsg)) {
+                    refreshPage();
+                }
+                return;
+            }
+        }
+        
+        let detailsContainer = document.getElementById('version-update-details');
+        if (!detailsContainer) {
+            console.warn("找不到更新詳情容器，嘗試重新創建對話框");
+            
+            // 嘗試移除並重新創建
+            if (versionUpdateModal && versionUpdateModal.parentNode) {
+                versionUpdateModal.parentNode.removeChild(versionUpdateModal);
+                versionUpdateModal = null;
+                createVersionUpdateModal();
+                
+                // 再次嘗試獲取容器
+                const recreatedContainer = document.getElementById('version-update-details');
+                if (!recreatedContainer) {
+                    console.error("重新創建對話框後仍找不到詳情容器，使用傳統 alert");
+                    if (window.confirm(`系統已發布新版本 ${versionInfo.currentVersion}\n立即更新?`)) {
+                        refreshPage();
+                    }
+                    return;
+                }
+                detailsContainer = recreatedContainer;
+            } else {
+                console.error("無法獲取或重新創建對話框，使用傳統 alert");
+                if (window.confirm(`系統已發布新版本 ${versionInfo.currentVersion}\n立即更新?`)) {
+                    refreshPage();
+                }
+                return;
+            }
+        }
+        
+        // 組織版本更新信息
+        let detailsHTML = `
+            <p>系統已發布新版本 <strong>${versionInfo.currentVersion}</strong></p>
+            <p>您的當前版本: ${CLIENT_VERSION}</p>
+        `;
+        
+        // 添加更新內容
+        if (versionInfo.updateNotes) {
+            detailsHTML += `
+                <div class="update-notes">
+                    <h4>更新內容:</h4>
+                    <ul>
+            `;
+            
+            // 如果是字串，分行處理；如果是數組，直接遍歷
+            if (typeof versionInfo.updateNotes === 'string') {
+                const notes = versionInfo.updateNotes.split('\n');
+                notes.forEach(note => {
+                    if (note.trim()) {
+                        detailsHTML += `<li>${note.trim()}</li>`;
+                    }
+                });
+            } else if (Array.isArray(versionInfo.updateNotes)) {
+                versionInfo.updateNotes.forEach(note => {
+                    if (note && note.trim()) {
+                        detailsHTML += `<li>${note.trim()}</li>`;
+                    }
+                });
+            }
+            
+            detailsHTML += `
+                    </ul>
+                </div>
+            `;
+        }
+        
+        // 添加提示信息
+        detailsHTML += `
+            <p class="text-info">更新後系統將重新載入以套用新版本</p>
+        `;
+        
+        try {
+            detailsContainer.innerHTML = detailsHTML;
+            
+            // 設置強制更新按鈕顯示
+            const laterBtn = document.getElementById('update-later-btn');
+            if (laterBtn && versionInfo.requiredUpdate) {
+                laterBtn.style.display = 'none'; // 強制更新時隱藏「稍後」按鈕
+            } else if (laterBtn) {
+                laterBtn.style.display = 'inline-block';
+            }
+            
+            // 顯示對話框
+            versionUpdateModal.style.display = 'block';
+        } catch (innerError) {
+            console.error("設置更新內容時發生錯誤:", innerError);
+            // 使用備用方式顯示
+            if (window.confirm(`系統已發布新版本 ${versionInfo.currentVersion}\n立即更新?`)) {
+                refreshPage();
+            }
+        }
+    } catch (error) {
+        console.error("顯示版本更新提示時發生錯誤:", error);
+        // 出錯時使用最簡單的方法
+        try {
+            if (window.confirm("系統已發布新版本，立即更新?")) {
+                window.location.reload(true);
+            }
+        } catch (e) {
+            console.error("無法顯示任何形式的更新提示:", e);
+        }
+    }
+}
+
+/**
+ * 重新載入頁面以更新到最新版本
+ */
+function refreshPage() {
+    console.log("重新載入頁面以更新到最新版本...");
+    
+    try {
+        // 清除快取並重新載入
+        if ('caches' in window) {
+            caches.keys().then(function(cacheNames) {
+                return Promise.all(
+                    cacheNames.map(function(cacheName) {
+                        console.log('清除快取:', cacheName);
+                        return caches.delete(cacheName);
+                    })
+                );
+            }).then(function() {
+                // 強制重新載入
+                window.location.reload(true);
+            }).catch(function(error) {
+                console.error('清除快取失敗:', error);
+                // 仍然嘗試重新載入
+                window.location.reload(true);
+            });
+        } else {
+            // 如果 Cache API 不可用，直接重新載入
+            window.location.reload(true);
+        }
+    } catch (error) {
+        console.error("重新載入頁面時發生錯誤:", error);
+        // 最後嘗試直接重新載入
+        try {
+            window.location.href = window.location.href;
+        } catch (e) {
+            alert("無法自動更新，請手動重新整理頁面。");
+        }
+    }
+}
+
+// 導出方法供其他模組使用
+window.initVersionCheck = initVersionCheck;
+window.checkForUpdates = checkForUpdates;
+
+console.log("version-check.js 載入完成"); 

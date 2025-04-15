@@ -1,0 +1,319 @@
+rules_version = '2';
+
+// --- Helper Functions ---
+// Helper function to check admin level
+function isAdmin(request) {
+  return request.auth != null && request.auth.token.level >= 9;
+}
+
+// Helper function to check authenticated user
+function isAuthenticated(request) {
+  return request.auth != null;
+}
+
+// Helper function to check ownership (using authUid field)
+function isOwner(request, resource) {
+  return request.auth.uid == resource.data.authUid;
+}
+
+// Helper function to check if the requestor is the owner based on userId field
+// MOVED TO GLOBAL SCOPE
+function isOwnerByUserId(request, resource) {
+    // Check if the document data exists and has a userId field matching the requestor
+    return resource != null && resource.data != null && resource.data.userId == request.auth.uid;
+}
+// --- End Helper Functions ---
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Default: Deny all reads/writes unless explicitly allowed
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Notification Requests: Only admins can create and read
+    match /notification_requests/{requestId} {
+      // 只允許管理員讀取通知請求
+      allow read: if isAdmin(request);
+      // 只允許管理員創建通知請求
+      allow create: if isAdmin(request);
+      // 阻止直接從客戶端更新和刪除 (Cloud Functions 將處理這些操作)
+      allow update, delete: if false;
+    }
+
+    // Users Collection: Allow users to read their own data, admins to read/write all
+    match /users/{userId} {
+      allow read: if isAuthenticated(request) && (request.auth.uid == userId || isAdmin(request));
+      allow write: if isAdmin(request); // Only admins can modify user data directly? Adjust if needed
+      // Allow user creation ONLY if authenticated (e.g., during signup/first login)
+      allow create: if isAuthenticated(request); // MODIFIED: Was 'if true;'
+    }
+
+    // Leave Requests: Allow users to read/create/update their own, admins read/update all
+    match /leave_requests/{docId} {
+       // Users can create if authenticated
+       allow create: if isAuthenticated(request);
+       // Users can read/update own requests (check authUid), Admins can read/update all
+       allow read, update: if isAuthenticated(request) && (isOwner(request, resource) || isAdmin(request));
+       // Admins can delete? Or maybe just update status?
+       allow delete: if isAdmin(request);
+    }
+
+    // Order Items (Assuming admins manage these)
+    match /order_items/{itemId} {
+       allow read: if isAuthenticated(request); // Allow all authenticated users to read items? Or just admins?
+       // allow read: if isAdmin(request); // More restrictive: Only admins can read
+       allow write: if isAdmin(request); // Only admins can create/update/delete items
+    }
+
+    // Orders: Users create own, read own (if needed?), admins read all
+    match /orders/{orderId} {
+       allow create: if isAuthenticated(request);
+       // Allow read if owner or admin? Check if non-admins need to read past orders
+       allow read: if isAuthenticated(request) && (isOwner(request, resource) || isAdmin(request));
+       allow update, delete: if isAdmin(request); // Only admins can modify/delete orders?
+    }
+
+    // Sales Reports: Users create own, read own (if needed?), admins read all
+    match /sales_reports/{reportId} {
+       allow create: if isAuthenticated(request);
+       // Allow read if owner or admin?
+       allow read: if isAuthenticated(request) && (isOwner(request, resource) || isAdmin(request));
+       allow update, delete: if isAdmin(request); // Only admins can modify/delete?
+    }
+
+    // Clock Records (New): Users read own, Admins read/update/delete, NO client create
+    match /clock_records/{recordId} {
+      // Use existing helper to check if the requestor is the owner based on userId field
+      // Now using the globally defined helper
+      allow read: if isAuthenticated(request) && (isOwnerByUserId(request, resource) || isAdmin(request));
+
+      // Prevent client-side creation, must be done by Cloud Function
+      allow create: if false;
+
+      // Allow admins to update or delete records (e.g., for corrections)
+      allow update, delete: if isAdmin(request);
+    }
+
+    // Time Records (Clock-ins): Users create own, read own, admins read all
+    match /time_records/{recordId} {
+       allow create: if isAuthenticated(request);
+       // Allow read if owner or admin?
+       allow read: if isAuthenticated(request) && (isOwner(request, resource) || isAdmin(request));
+       allow update, delete: if isAdmin(request); // Admins can correct records?
+    }
+
+    // System Config & Settings: Admins read/write
+    match /system_config/{docId} {
+        allow read, write: if isAdmin(request);
+    }
+    match /settings/{docId} {
+      allow read, write: if isAdmin(request);
+       // Allow admin access to subcollections like sales fields
+       match /{subcollection}/{subDoc=**} {
+            allow read, write: if isAdmin(request);
+       }
+    }
+
+    // Locations (Assuming this is the collection for clock-in locations)
+    match /locations/{locationId} {
+        allow read: if isAuthenticated(request); // Allow all users to read locations? Or just admins?
+        // allow read: if isAdmin(request); // More restrictive
+        allow write: if isAdmin(request); // Admins manage locations
+    }
+
+     // Activity Logs: Admins read, functions write (usually no direct client write)
+     match /activity_logs/{logId} {
+         allow read: if isAdmin(request);
+         allow write: if false; // Prevent direct client writes
+         allow create: if false; // Prevent direct client writes (Functions handle creation)
+     }
+
+     // System Activity Logs: Admins read, functions write (for automated system tasks)
+     match /system_activity_logs/{logId} {
+         allow read: if isAdmin(request);
+         allow write: if false; // Prevent direct client writes
+         allow create: if false; // System logs are created only through Cloud Functions
+     }
+
+     // Push Notification History: Admins read, functions write
+     match /push_history/{logId} {
+         allow read: if isAdmin(request);
+         allow write: if false; // Prevent direct client writes
+         allow create: if false;
+     }
+
+     // Announcement Read Status: User reads/writes own, Admin reads all?
+     match /announcement_read_status/{docId} {
+         // Users can read/write their own status (docId is constructed as userId_announceId)
+         // Need a helper to extract userId from docId or check userId field
+         // function isOwnReadStatus(request, resource) { // REMOVE old function
+         //      // Option 1: Check userId field inside the document
+         //      // return request.auth.uid == resource.data.userId;
+         //      // Option 2: Extract userId from docId (less reliable if format changes)
+         //      return request.auth.uid == docId.split('_')[0];
+         // }
+         // allow read, write: if isAuthenticated(request) && isOwnReadStatus(request, resource); // REMOVE old rule
+         // allow read: if isAdmin(request); // REMOVE old rule (will be combined)
+
+         // Allow read if authenticated and owner OR if admin (Uses global helper)
+         allow read: if isAuthenticated(request) && (isOwnerByUserId(request, resource) || isAdmin(request));
+
+         // Allow write only if authenticated and owner (Uses global helper)
+         allow write: if isAuthenticated(request) && isOwnerByUserId(request, resource);
+
+         // Prevent deletion?
+         allow delete: if false;
+     }
+
+     // User Notification Preferences: User manages own, admins read?
+     match /user_notification_preferences/{userId} {
+         allow read, write: if isAuthenticated(request) && request.auth.uid == userId;
+         allow read: if isAdmin(request); // Allow admins to read prefs?
+     }
+
+     // Announcements: Authenticated read, Admin write
+      match /announcements/{announceId} {
+        allow read: if isAuthenticated(request);
+        allow write: if isAdmin(request);
+      }
+
+      // Schedules (Generated): Admins write, Authenticated read?
+       match /schedules/{scheduleId=**} { // Match subcollections too
+         allow read: if isAuthenticated(request);
+         allow write: if isAdmin(request);
+       }
+
+       // Announcement Comments: Authenticated users read/create, Admins update/delete
+       match /announcements/{announceId}/comments/{commentId} {
+         // Allow authenticated users to read all comments
+         allow read: if isAuthenticated(request);
+
+         // Allow authenticated users to create comments
+         allow create: if isAuthenticated(request)
+                       && request.resource.data.userId == request.auth.uid // Ensure creator is current user
+                       && request.resource.data.content is string // Ensure content is provided
+                       && request.resource.data.content.size() > 0
+                       && request.resource.data.content.size() < 500; // Example max length
+                       // && request.resource.data.timestamp == request.time; // Optional: Enforce server timestamp on create
+                       // Add validation for parentId if needed (e.g., check if parent exists)
+
+         // Allow only admins to update comments (e.g., edit content)
+         allow update: if isAdmin(request)
+                       && request.resource.data.userId == resource.data.userId // Cannot change original author
+                       && request.resource.data.parentId == resource.data.parentId; // Cannot change parent
+                       // Allow changes only to specific fields like content, isEdited, lastEditedAt
+                       // && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['content', 'isEdited', 'lastEditedAt']);
+
+         // Allow only admins to delete comments
+         allow delete: if isAdmin(request);
+       }
+
+      // --- CRAM SCHOOL POSTS AND COMMENTS --- //
+      match /cram_school_posts/{postId} {
+        // Allow any authenticated user to read posts
+        allow read: if isAuthenticated(request);
+
+        // Allow only admins to create, update, or delete posts
+        allow create: if isAdmin(request)
+                      && request.resource.data.content is string
+                      && request.resource.data.content.size() > 0
+                      && request.resource.data.timestamp == request.time; // Ensure server timestamp
+                      // Add validation for imageUrl format if needed
+        allow update: if isAdmin(request)
+                      && request.resource.data.content is string
+                      && request.resource.data.content.size() > 0;
+                      // Don't allow changing original timestamp? Or allow specific fields only?
+                      // && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['content', 'imageUrl', 'lastEdited']);
+        allow delete: if isAdmin(request);
+
+        // Comments Subcollection
+        match /comments/{commentId} {
+           // Allow authenticated users to read all comments
+           allow read: if isAuthenticated(request);
+
+           // Allow authenticated users to create comments
+           allow create: if isAuthenticated(request)
+                         && request.resource.data.userId == request.auth.uid // Ensure creator is current user
+                         && request.resource.data.content is string
+                         && request.resource.data.content.size() > 0
+                         && request.resource.data.content.size() < 1000; // Example max length
+                         // && request.resource.data.timestamp == request.time; // Ensure server timestamp
+                         // Validate parentId exists? (More complex)
+
+           // Allow comment owner or admin to update (e.g., edit content)
+           allow update: if isAuthenticated(request) && (isOwner(request, resource) || isAdmin(request))
+                         && request.resource.data.userId == resource.data.userId; // Cannot change original author
+                         // Allow changes only to specific fields like content, lastEdited?
+                         // && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['content', 'lastEdited']);
+
+           // Allow comment owner or admin to delete
+           allow delete: if isAuthenticated(request) && (isOwner(request, resource) || isAdmin(request));
+        }
+      }
+      // --- END CRAM SCHOOL RULES --- //
+    // Employees Collection: Admins can read/write
+    match /employees/{employeeId} {
+      allow read, write: if isAdmin(request);
+      // 如果普通員工也需要讀取自己的資料，可以加上這條：
+      // allow read: if isAuthenticated(request) && (request.auth.uid == employeeId || isAdmin(request));
+    }
+
+    // Bonus Tasks Collection: Admins can read/write
+    match /bonus_tasks/{taskId} {
+      allow read, write: if isAdmin(request);
+    }
+
+    // Bonus Groups Collection: Admins can read/write
+    match /bonus_groups/{groupId} {
+      allow read, write: if isAdmin(request);
+    }
+
+    // Employee Bonus Progress: Admins read/write, Users read own
+    match /employee_bonus_progress/{progressId} { // progressId is likely formatted as userId_YYYY-MM
+      // Admins can read/write all progress records
+      allow read, write: if isAdmin(request);
+      // Users can read their own progress record (assuming ID format)
+      allow read: if isAuthenticated(request) && request.auth.uid == progressId.split('_')[0];
+      // Prevent non-admins from writing
+      allow write: if isAdmin(request);
+    }
+
+    // 投票系統相關規則
+    // 允許任何認證用戶讀取投票，只允許管理員創建和修改投票
+    match /polls/{pollId} {
+      allow read: if isAuthenticated(request);
+      allow create, update, delete: if isAdmin(request);
+    }
+
+    // 允許用戶讀取和添加自己的投票記錄
+    match /user_votes/{voteId} {
+      allow read: if isAuthenticated(request) && (
+        isOwnerByUserId(request, resource) || isAdmin(request)
+      );
+      
+      // 允許創建自己的投票（需要驗證userId字段）
+      allow create: if isAuthenticated(request) && 
+                     request.resource.data.userId == request.auth.uid;
+      
+      // 只允許管理員更新或刪除
+      allow update, delete: if isAdmin(request);
+    }
+
+    // 投票申訴/挑戰系統
+    match /vote_challenges/{challengeId} {
+      // 允許用戶創建自己的申訴
+      allow create: if isAuthenticated(request) && 
+                    request.resource.data.userId == request.auth.uid;
+      
+      // 允許用戶查看自己的申訴，管理員可查看所有
+      allow read: if isAuthenticated(request) && (
+        isOwnerByUserId(request, resource) || isAdmin(request)
+      );
+      
+      // 只允許管理員更新或刪除
+      allow update, delete: if isAdmin(request);
+    }
+  }
+} 

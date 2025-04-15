@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>薪資預測分析</title>
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-functions.js"></script>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- jsPDF for PDF export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .prediction-card {
+            transition: all 0.3s ease;
+            border-radius: 10px;
+        }
+        
+        .prediction-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        
+        .prediction-chart-container {
+            height: 300px;
+            margin-bottom: 20px;
+        }
+        
+        .factor-badge {
+            margin-right: 5px;
+            margin-bottom: 5px;
+            font-size: 0.8rem;
+        }
+        
+        .accuracy-indicator {
+            width: 100%;
+            height: 8px;
+            background-color: #e9ecef;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+        
+        .accuracy-bar {
+            height: 100%;
+            border-radius: 4px;
+            background-color: #0d6efd;
+        }
+
+        .export-buttons {
+            margin-top: 20px;
+            margin-bottom: 10px;
+            text-align: right;
+        }
+        
+        .export-buttons .btn {
+            margin-left: 10px;
+        }
+        
+        .scenario-card {
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+        
+        .scenario-card.active {
+            border-color: #0d6efd;
+            background-color: rgba(13, 110, 253, 0.05);
+        }
+        
+        .scenario-badge {
+            position: absolute;
+            top: -10px;
+            right: 10px;
+            font-size: 0.75rem;
+            padding: 3px 8px;
+        }
+        
+        .comparison-table th, .comparison-table td {
+            text-align: center;
+        }
+        
+        .comparison-table .highlight {
+            background-color: rgba(13, 110, 253, 0.1);
+            font-weight: bold;
+        }
+        
+        .comparison-chart-container {
+            height: 400px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="index.html">炸雞店管理系統</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="dashboard.html">儀表板</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="schedule.html">排班管理</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="leave.html">請假管理</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="salary-view.html">薪資查詢</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle active" href="#" role="button" data-bs-toggle="dropdown">
+                            薪資分析
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="salary-stats.html">薪資統計</a></li>
+                            <li><a class="dropdown-item active" href="salary-prediction.html">薪資預測</a></li>
+                        </ul>
+                    </li>
+                </ul>
+                <div class="d-flex">
+                    <span class="navbar-text me-3" id="user-display"></span>
+                    <button class="btn btn-outline-light" id="logout-btn">登出</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <h1 class="mb-4">薪資預測分析</h1>
+        
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle-fill me-2"></i>
+            本功能基於歷史薪資數據進行預測分析，預測結果僅供參考。預測準確度取決於歷史數據的完整性和一致性。
+        </div>
+
+        <!-- Mode Selector Tabs -->
+        <ul class="nav nav-tabs mb-4" id="predictionModeTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="single-mode-tab" data-bs-toggle="tab" data-bs-target="#single-mode" type="button" role="tab">
+                    <i class="bi bi-graph-up"></i> 單一預測
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="comparison-mode-tab" data-bs-toggle="tab" data-bs-target="#comparison-mode" type="button" role="tab">
+                    <i class="bi bi-bar-chart-steps"></i> 多場景對比
+                </button>
+            </li>
+        </ul>
+        
+        <div class="tab-content" id="predictionModeContent">
+            <!-- Single Prediction Mode -->
+            <div class="tab-pane fade show active" id="single-mode" role="tabpanel">
+                <!-- Filters Section -->
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">預測設定</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="prediction-form">
+                            <div class="row g-3">
+                                <div class="col-md-3">
+                                    <label for="employee-select" class="form-label">選擇員工</label>
+                                    <select class="form-select" id="employee-select">
+                                        <option value="all">所有員工</option>
+                                        <!-- 動態載入員工選項 -->
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="store-select" class="form-label">選擇門市</label>
+                                    <select class="form-select" id="store-select">
+                                        <option value="all">所有門市</option>
+                                        <!-- 動態載入門市選項 -->
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="prediction-months" class="form-label">預測月數</label>
+                                    <select class="form-select" id="prediction-months">
+                                        <option value="3">3個月</option>
+                                        <option value="6" selected>6個月</option>
+                                        <option value="12">12個月</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="factor-weight" class="form-label">影響因子權重</label>
+                                    <select class="form-select" id="factor-weight">
+                                        <option value="balanced" selected>平衡</option>
+                                        <option value="attendance">出勤為主</option>
+                                        <option value="performance">績效為主</option>
+                                        <option value="tenure">年資為主</option>
+                                    </select>
+                                </div>
+                                <div class="col-12">
+                                    <button type="submit" class="btn btn-primary" id="generate-prediction-btn">
+                                        <i class="bi bi-graph-up"></i> 生成預測
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Loading Indicator -->
+                <div id="loading-prediction" class="text-center my-5 d-none">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">載入中...</span>
+                    </div>
+                    <p class="mt-2">正在分析歷史數據並生成預測，請稍候...</p>
+                </div>
+                
+                <!-- Prediction Results -->
+                <div id="prediction-results" class="d-none">
+                    <!-- Export Buttons -->
+                    <div class="export-buttons">
+                        <button id="export-csv-btn" class="btn btn-outline-success">
+                            <i class="bi bi-file-earmark-spreadsheet"></i> 匯出CSV
+                        </button>
+                        <button id="export-pdf-btn" class="btn btn-outline-danger">
+                            <i class="bi bi-file-earmark-pdf"></i> 匯出PDF
+                        </button>
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-md-8">
+                            <div class="card prediction-card">
+                                <div class="card-header bg-primary text-white">
+                                    <h5 class="mb-0">薪資趨勢預測</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="prediction-chart-container">
+                                        <canvas id="salary-trend-chart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card prediction-card h-100">
+                                <div class="card-header bg-primary text-white">
+                                    <h5 class="mb-0">預測摘要</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div id="prediction-summary">
+                                        <h6>預測準確度</h6>
+                                        <div class="accuracy-indicator">
+                                            <div class="accuracy-bar" id="accuracy-bar" style="width: 85%;"></div>
+                                        </div>
+                                        <p class="text-end small mt-1"><span id="accuracy-value">85%</span> 信心水準</p>
+                                        
+                                        <h6 class="mt-4">關鍵影響因子</h6>
+                                        <div id="key-factors">
+                                            <!-- 動態載入影響因子 -->
+                                        </div>
+                                        
+                                        <h6 class="mt-4">未來6個月預計變動</h6>
+                                        <h4 class="text-center mt-3">
+                                            <span id="prediction-change"></span>
+                                        </h4>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card prediction-card">
+                                <div class="card-header bg-primary text-white">
+                                    <h5 class="mb-0">獎金預測分析</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="prediction-chart-container">
+                                        <canvas id="bonus-prediction-chart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card prediction-card">
+                                <div class="card-header bg-primary text-white">
+                                    <h5 class="mb-0">出勤與績效關聯</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="prediction-chart-container">
+                                        <canvas id="performance-correlation-chart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card mt-4 prediction-card">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">預測數據詳情</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-striped table-hover" id="prediction-details-table">
+                                    <thead>
+                                        <tr>
+                                            <th>預測月份</th>
+                                            <th>基本薪資</th>
+                                            <th>預計加班費</th>
+                                            <th>預計獎金</th>
+                                            <th>總計</th>
+                                            <th>變動比例</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="prediction-details-body">
+                                        <!-- 動態載入預測詳情 -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- No Data Message -->
+                <div id="no-data-message" class="text-center my-5 d-none">
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        無法生成預測：歷史數據不足。需要至少6個月的薪資紀錄才能進行準確預測。
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Multi-Scenario Comparison Mode -->
+            <div class="tab-pane fade" id="comparison-mode" role="tabpanel">
+                <!-- Comparison Settings -->
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">多場景對比設定</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle-fill me-2"></i>
+                            多場景對比功能允許您同時生成不同設定的預測結果並進行比較，幫助您找出最佳的薪資發展路徑。
+                        </div>
+                        
+                        <form id="comparison-form">
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-3">
+                                    <label for="comparison-employee" class="form-label">選擇員工</label>
+                                    <select class="form-select" id="comparison-employee">
+                                        <option value="all">所有員工</option>
+                                        <!-- 動態載入員工選項 -->
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="comparison-store" class="form-label">選擇門市</label>
+                                    <select class="form-select" id="comparison-store">
+                                        <option value="all">所有門市</option>
+                                        <!-- 動態載入門市選項 -->
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="comparison-months" class="form-label">預測月數</label>
+                                    <select class="form-select" id="comparison-months">
+                                        <option value="3">3個月</option>
+                                        <option value="6" selected>6個月</option>
+                                        <option value="12">12個月</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3 d-flex align-items-end">
+                                    <button type="button" class="btn btn-outline-primary w-100" id="add-scenario-btn">
+                                        <i class="bi bi-plus-circle"></i> 新增場景
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Scenario Cards -->
+                            <div id="scenario-container">
+                                <p class="text-muted text-center" id="no-scenarios-message">
+                                    <i class="bi bi-info-circle"></i> 請點擊「新增場景」按鈕添加預測場景
+                                </p>
+                                
+                                <!-- Scenarios will be added here dynamically -->
+                            </div>
+                            
+                            <div class="mt-4 text-center d-none" id="compare-actions">
+                                <button type="submit" class="btn btn-primary px-4" id="run-comparison-btn">
+                                    <i class="bi bi-bar-chart-steps"></i> 執行對比分析
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary ms-2" id="clear-scenarios-btn">
+                                    <i class="bi bi-trash"></i> 清除所有場景
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Comparison Loading Indicator -->
+                <div id="loading-comparison" class="text-center my-5 d-none">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">載入中...</span>
+                    </div>
+                    <p class="mt-2">正在生成多場景預測並執行對比分析，請稍候...</p>
+                </div>
+                
+                <!-- Comparison Results -->
+                <div id="comparison-results" class="d-none">
+                    <!-- Export Comparison Buttons -->
+                    <div class="export-buttons">
+                        <button id="export-comparison-csv-btn" class="btn btn-outline-success">
+                            <i class="bi bi-file-earmark-spreadsheet"></i> 匯出對比CSV
+                        </button>
+                        <button id="export-comparison-pdf-btn" class="btn btn-outline-danger">
+                            <i class="bi bi-file-earmark-pdf"></i> 匯出對比PDF
+                        </button>
+                    </div>
+
+                    <!-- Comparison Charts -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">薪資趨勢對比</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="comparison-chart-container">
+                                <canvas id="comparison-trend-chart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header bg-primary text-white">
+                                    <h5 class="mb-0">獎金對比分析</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="prediction-chart-container">
+                                        <canvas id="comparison-bonus-chart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header bg-primary text-white">
+                                    <h5 class="mb-0">累計總收入對比</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="prediction-chart-container">
+                                        <canvas id="comparison-total-chart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Comparison Table -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">預測結果對比表</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-bordered comparison-table" id="comparison-table">
+                                    <thead>
+                                        <tr>
+                                            <th rowspan="2">場景名稱</th>
+                                            <th rowspan="2">影響因子</th>
+                                            <th rowspan="2">平均月薪</th>
+                                            <th colspan="3">預測期間薪資總計</th>
+                                            <th rowspan="2">預測準確度</th>
+                                            <th rowspan="2">推薦指數</th>
+                                        </tr>
+                                        <tr>
+                                            <th>基本薪資</th>
+                                            <th>加班與獎金</th>
+                                            <th>總收入</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="comparison-table-body">
+                                        <!-- 動態填充對比結果 -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Scenario Details Accordion -->
+                    <div class="accordion mb-4" id="scenario-details-accordion">
+                        <!-- Dynamically added scenario details -->
+                    </div>
+                    
+                    <!-- Recommendation Card -->
+                    <div class="card">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0"><i class="bi bi-award"></i> 系統推薦</h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="recommendation-content">
+                                <!-- 動態填充推薦內容 -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Test Data Generation Section (Admin Only) -->
+        <div id="test-data-container" class="mt-5 d-none">
+            <h2 class="mb-3">測試資料管理 <span class="badge bg-danger">管理員專用</span></h2>
+            
+            <div class="alert alert-warning">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                此功能僅供系統管理員使用，用於生成測試資料以測試薪資預測功能。生成的資料將被標記為測試數據，不會影響實際薪資報表。
+            </div>
+            
+            <div class="row" id="test-data-section">
+                <div class="col-md-6">
+                    <div class="card mb-4">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">生成測試資料</h5>
+                        </div>
+                        <div class="card-body">
+                            <form id="generate-test-data-form">
+                                <div class="mb-3">
+                                    <label for="test-employee-select" class="form-label">選擇員工</label>
+                                    <select class="form-select" id="test-employee-select" required>
+                                        <option value="">請選擇員工</option>
+                                        <!-- 動態載入員工選項 -->
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="test-store-select" class="form-label">選擇門市</label>
+                                    <select class="form-select" id="test-store-select" required>
+                                        <option value="">請選擇門市</option>
+                                        <!-- 動態載入門市選項 -->
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="test-months-input" class="form-label">生成月數 (1-24)</label>
+                                    <input type="number" class="form-control" id="test-months-input" min="1" max="24" value="12" required>
+                                    <div class="form-text">指定要生成多少個月的測試薪資資料</div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="test-trend-select" class="form-label">薪資趨勢</label>
+                                    <select class="form-select" id="test-trend-select">
+                                        <option value="-0.05">下降趨勢 (-5%/月)</option>
+                                        <option value="-0.02">輕微下降 (-2%/月)</option>
+                                        <option value="0" selected>平穩 (無變化)</option>
+                                        <option value="0.02">輕微上升 (+2%/月)</option>
+                                        <option value="0.05">上升趨勢 (+5%/月)</option>
+                                        <option value="0.1">顯著增長 (+10%/月)</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="test-variance-input" class="form-label">波動程度 (0.01-0.5)</label>
+                                    <input type="number" class="form-control" id="test-variance-input" min="0.01" max="0.5" step="0.01" value="0.1" required>
+                                    <div class="form-text">數值越大，薪資波動越大</div>
+                                </div>
+                                <button type="button" id="generate-test-data-btn" class="btn btn-primary">
+                                    <i class="bi bi-database-add"></i> 生成測試資料
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="card mb-4">
+                        <div class="card-header bg-danger text-white">
+                            <h5 class="mb-0">清除測試資料</h5>
+                        </div>
+                        <div class="card-body">
+                            <form id="clear-test-data-form">
+                                <div class="mb-3">
+                                    <label for="clear-test-employee-select" class="form-label">員工篩選</label>
+                                    <select class="form-select" id="clear-test-employee-select">
+                                        <option value="all" selected>所有員工</option>
+                                        <!-- 動態載入員工選項 -->
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="clear-test-store-select" class="form-label">門市篩選</label>
+                                    <select class="form-select" id="clear-test-store-select">
+                                        <option value="all" selected>所有門市</option>
+                                        <!-- 動態載入門市選項 -->
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="clear-test-year-select" class="form-label">年份篩選</label>
+                                    <select class="form-select" id="clear-test-year-select">
+                                        <option value="all" selected>所有年份</option>
+                                        <!-- 動態載入年份選項 -->
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="clear-test-month-select" class="form-label">月份篩選</label>
+                                    <select class="form-select" id="clear-test-month-select">
+                                        <option value="all" selected>所有月份</option>
+                                        <!-- 動態載入月份選項 -->
+                                    </select>
+                                </div>
+                                <button type="button" id="clear-test-data-btn" class="btn btn-danger">
+                                    <i class="bi bi-trash"></i> 清除測試資料
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-12">
+                    <div id="test-data-result" class="mt-3">
+                        <!-- 結果將在這裡顯示 -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scenario Template (hidden) -->
+    <template id="scenario-template">
+        <div class="card mb-3 scenario-card" data-scenario-id="">
+            <span class="badge scenario-badge"></span>
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="card-title mb-0">
+                        <input type="text" class="form-control form-control-sm scenario-name" value="預測場景" style="width: 200px;">
+                    </h5>
+                    <button type="button" class="btn btn-sm btn-outline-danger remove-scenario-btn">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label">影響因子權重</label>
+                            <select class="form-select form-select-sm scenario-weight">
+                                <option value="balanced">平衡</option>
+                                <option value="attendance">出勤為主</option>
+                                <option value="performance">績效為主</option>
+                                <option value="tenure">年資為主</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label">附加假設</label>
+                            <select class="form-select form-select-sm scenario-assumption">
+                                <option value="normal">無特殊假設</option>
+                                <option value="improved_attendance">出勤改善</option>
+                                <option value="improved_performance">績效提升</option>
+                                <option value="promotion">職位晉升</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Firebase Config & Auth -->
+    <script src="js/firebase-config.js"></script>
+    <script src="js/auth.js"></script>
+    
+    <!-- Custom JS -->
+    <script src="js/common.js"></script>
+    <script src="js/salary-prediction.js"></script>
+</body>
+</html> 

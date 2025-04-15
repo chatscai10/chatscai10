@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>知識庫</title>
+    <link rel="stylesheet" href="css/style.css?v=20250417v3">
+    <style>
+        .knowledge-container {
+            padding: 15px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .knowledge-filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+            align-items: center;
+        }
+        
+        .knowledge-search {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .knowledge-search input {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        .knowledge-category-filter {
+            min-width: 150px;
+        }
+        
+        .knowledge-category-filter select {
+            padding: 8px 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: white;
+            width: 100%;
+        }
+        
+        .knowledge-item {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            padding: 15px;
+            margin-bottom: 20px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .knowledge-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+        
+        .knowledge-item h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        
+        .knowledge-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        
+        .knowledge-category {
+            background-color: #f0f0f0;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+        }
+        
+        .knowledge-content {
+            color: #555;
+            line-height: 1.5;
+            max-height: 100px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            position: relative;
+        }
+        
+        .knowledge-content::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 30px;
+            background: linear-gradient(transparent, white);
+        }
+        
+        .loading-indicator {
+            text-align: center;
+            padding: 20px;
+            font-size: 1.2rem;
+            color: #666;
+        }
+        
+        .loading-indicator .spinner {
+            width: 40px;
+            height: 40px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3498db;
+            border-radius: 50%;
+            margin: 0 auto 10px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .no-content-message {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        .error-message {
+            background-color: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        /* 知識詳情模態框 */
+        .knowledge-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .knowledge-modal-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            max-width: 800px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+        }
+        
+        .knowledge-modal-close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+        }
+        
+        .knowledge-modal-close:hover {
+            color: #333;
+        }
+        
+        .knowledge-content-full {
+            margin-top: 15px;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div id="sliding-menu-overlay" class="sliding-menu-overlay"></div>
+    <div id="floating-menu-panel" class="floating-menu">
+        <!-- Menu will be injected here by main.js -->
+    </div>
+
+    <button id="menu-toggle-btn" class="menu-toggle" aria-label="切換選單">
+        <div></div>
+        <div></div>
+        <div></div>
+    </button>
+
+    <div class="container">
+        <h1>知識庫</h1>
+        
+        <div class="knowledge-container">
+            <div class="knowledge-filters">
+                <div class="knowledge-search">
+                    <input type="text" id="knowledgeSearch" placeholder="搜尋知識庫內容...">
+                </div>
+                
+                <div class="knowledge-category-filter">
+                    <select id="categoriesFilter">
+                        <option value="all">所有分類</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div id="loadingIndicator" class="loading-indicator">
+                <div class="spinner"></div>
+                <p>載入中...</p>
+            </div>
+            
+            <div id="noContentMessage" class="no-content-message" style="display:none;">
+                目前沒有知識庫內容
+            </div>
+            
+            <div id="knowledgeContainer"></div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <script src="js/firebase-config.js?v=20250417v3"></script>
+    <script src="js/init.js?v=20250417v3"></script>
+    <script src="js/auth.js?v=20250417v3"></script>
+    <script src="js/main.js?v=20250417v3"></script>
+    <script src="js/knowledge-view-logic.js?v=20250417v3"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            console.log("Waiting for central initialization via init.js (/knowledge.html)...");
+            
+            try {
+                // 初始化Firebase
+                if (typeof initializeFirebaseAndAuth !== 'function') {
+                    console.error("initializeFirebaseAndAuth function not available. Ensure init.js is loaded.");
+                    throw new Error("系統初始化模組未載入，請刷新頁面");
+                }
+                
+                // 使用全域Promise以防止多次初始化
+                window.firebaseInitPromise = window.firebaseInitPromise || initializeFirebaseAndAuth();
+                const { db, fbAuth } = await window.firebaseInitPromise;
+                console.log("Firebase initialized. Proceeding with /knowledge.html logic.");
+                
+                if (!db || !fbAuth) {
+                    throw new Error("無法初始化資料庫，請刷新頁面重試");
+                }
+                
+                // 設置認證監聽器
+                if (typeof setupAuthStateListener === 'function') {
+                    const setupListener = await setupAuthStateListener(fbAuth, '/knowledge.html');
+                    console.log("Proceeding with /knowledge.html logic after listener setup.");
+                } else {
+                    console.warn("setupAuthStateListener function not available. Authentication state will not be monitored.");
+                }
+                
+                // 檢查用戶是否已登入
+                if (typeof requireLogin === 'function') {
+                    const checkLogin = await requireLogin('/knowledge.html');
+                } else {
+                    console.warn("requireLogin function not available. Login check will be skipped.");
+                }
+                
+                // 確保DOM元素已經初始化
+                const knowledgeContainer = document.getElementById('knowledgeContainer');
+                if (!knowledgeContainer) {
+                    console.warn("Knowledge container not found in DOM before initialization");
+                }
+                
+                // 初始化知識庫視圖，傳入已初始化的數據庫實例
+                if (typeof initKnowledgeView === 'function') {
+                    console.log("Calling initKnowledgeView function...");
+                    initKnowledgeView();
+                } else {
+                    throw new Error("知識庫視圖模組未載入，請刷新頁面");
+                }
+                
+            } catch (error) {
+                console.error("Error initializing knowledge page:", error);
+                document.body.innerHTML = `
+                    <div class="error-container">
+                        <h1>發生錯誤</h1>
+                        <p>${error.message || '未知錯誤'}</p>
+                        <button onclick="window.location.reload()" class="btn">重試</button>
+                        <a href="index.html" class="btn">返回首頁</a>
+                    </div>`;
+            }
+        });
+    </script>
+</body>
+</html> 

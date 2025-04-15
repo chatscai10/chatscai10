@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>班表查詢 - 不早系統</title>
+        <link rel="stylesheet" href="css/style.css">
+        <style>
+            .schedule-calendar {
+                display: grid;
+                grid-template-columns: repeat(7, 1fr);
+                gap: 2px;
+                margin-top: 20px;
+            }
+            .calendar-header {
+                font-weight: bold;
+                text-align: center;
+                padding: 5px;
+                background-color: #f0f0f0;
+            }
+            .calendar-day {
+                min-height: 70px;
+                border: 1px solid #ddd;
+                padding: 5px;
+                position: relative;
+            }
+            .day-number {
+                position: absolute;
+                top: 3px;
+                right: 5px;
+                font-size: 0.8em;
+                color: #777;
+            }
+            .other-month {
+                background-color: #f9f9f9;
+                color: #ccc;
+            }
+            .holiday {
+                background-color: #ffeeee;
+            }
+            .staff-entry {
+                margin: 2px 0;
+                padding: 2px 4px;
+                font-size: 0.85em;
+                border-radius: 3px;
+            }
+            .store-1 { background-color: #e3f2fd; }
+            .store-2 { background-color: #e8f5e9; }
+            .store-3 { background-color: #fff3e0; }
+            .store-4 { background-color: #f3e5f5; }
+            
+            .summary-table {
+                width: 100%;
+                margin-top: 20px;
+                border-collapse: collapse;
+            }
+            .summary-table th, .summary-table td {
+                border: 1px solid #ddd;
+                padding: 8px;
+                text-align: left;
+            }
+            .summary-table th {
+                background-color: #f2f2f2;
+            }
+            .form-group {
+                margin-bottom: 15px;
+            }
+            .form-group label {
+                display: block;
+                margin-bottom: 5px;
+            }
+            .form-control {
+                width: 100%;
+                padding: 8px;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+            }
+            .btn-primary {
+                background-color: #4CAF50;
+                color: white;
+                padding: 10px 15px;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+            }
+            .btn-primary:hover {
+                background-color: #45a049;
+            }
+            .filters-container {
+                display: flex;
+                gap: 15px;
+                flex-wrap: wrap;
+            }
+            .filter-item {
+                flex: 1;
+                min-width: 200px;
+            }
+            .today { 
+                border: 2px solid #007bff; /* Highlight today's date */
+            }
+            /* --- NEW: Scheduling Access Button Styles --- */
+            .scheduling-access-button {
+                padding: 12px 25px;
+                font-size: 1.1em;
+                border-radius: 8px;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                border: none;
+                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            }
+            .scheduling-access-button.open {
+                background: linear-gradient(45deg, #66bb6a, #4caf50);
+                color: white;
+                animation: pulse-green 1.5s infinite;
+            }
+            .scheduling-access-button.closed {
+                background-color: #bdbdbd;
+                color: #616161;
+                cursor: not-allowed;
+                box-shadow: none;
+            }
+            .scheduling-access-button.closed:hover {
+                 background-color: #bdbdbd; /* No hover effect when closed */
+            }
+            @keyframes pulse-green {
+                0% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7); }
+                70% { box-shadow: 0 0 0 10px rgba(76, 175, 80, 0); }
+                100% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0); }
+            }
+            /* --- END NEW --- */
+        </style>
+    </head>
+    <body>
+        <div id="shared-menu-placeholder"></div>
+        
+        <div class="container">
+            <h1>班表查詢</h1>
+            
+            <div class="filters-container">
+                <div class="filter-item">
+                    <div class="form-group">
+                        <label for="year-month-select">選擇年月：</label>
+                        <select id="year-month-select" class="form-control">
+                            <!-- 將由JS動態填充 -->
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="filter-item">
+                    <div class="form-group">
+                        <label for="filter-select">選擇查詢方式：</label>
+                        <select id="filter-select" class="form-control">
+                            <option value="store">依分店查詢</option>
+                            <option value="employee">依員工查詢</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="filter-item">
+                    <div class="form-group">
+                        <label for="target-select">選擇目標：</label>
+                        <select id="target-select" class="form-control">
+                            <!-- 將由JS動態填充，依據上方選擇 -->
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="filter-item" style="align-self: flex-end;">
+                    <button id="view-schedule-btn" class="btn-primary">顯示班表</button>
+                </div>
+            </div>
+            
+            <div id="store-color-legend" style="margin-top: 15px; margin-bottom: 10px;">
+                <!-- 分店顏色圖例將由 JS 動態生成 -->
+            </div>
+            
+            <div id="calendar-container">
+                <div id="schedule-message" class="message info-message">請選擇查詢條件並按下顯示按鈕</div>
+                
+                <div class="schedule-calendar" id="schedule-calendar" style="display:none;">
+                    <div class="calendar-header">日</div>
+                    <div class="calendar-header">一</div>
+                    <div class="calendar-header">二</div>
+                    <div class="calendar-header">三</div>
+                    <div class="calendar-header">四</div>
+                    <div class="calendar-header">五</div>
+                    <div class="calendar-header">六</div>
+                    <!-- 日曆格子將由JS動態生成 -->
+                </div>
+                
+                <div id="summary-container" style="margin-top: 20px; display:none;">
+                    <h3 id="summary-title">班表統計</h3>
+                    <div id="summary-content"></div>
+                </div>
+            </div>
+
+            <!-- --- NEW: Scheduling Access Panel --- -->
+            <div id="scheduling-access-panel" style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; text-align: center;">
+                <h3>排班系統狀態</h3>
+                <p id="scheduling-system-status-text" style="font-size: 1.1em; margin-bottom: 10px;">檢查中...</p>
+                <button id="enter-scheduling-button" class="scheduling-access-button closed" style="background-color: #6c757d; color: #fff;" disabled>檢查狀態中...</button>
+                <p id="scheduling-timer-text" style="margin-top: 10px; font-size: 0.9em; color: #555;"></p>
+            </div>
+            <!-- --- END NEW --- -->
+
+        </div>
+        
+        <!-- --- NEW: Leave Request Modal --- -->
+        <div id="leave-request-modal" class="modal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5); align-items: flex-start; justify-content: center; padding-top: 5vh;">
+            <div class="modal-content" style="background-color: #fefefe; margin: auto; padding: 25px; border: 1px solid #888; width: 90%; max-width: 800px; border-radius: 8px; position: relative; min-height: 80vh; display: flex; flex-direction: column;">
+                <span id="close-leave-modal-btn" class="close-btn" style="position: absolute; top: 10px; right: 20px; font-size: 28px; cursor: pointer;">&times;</span>
+                <h2>員工排假申請</h2>
+                <div id="leave-modal-content-area" style="flex-grow: 1; overflow-y: auto; padding-right: 10px;">
+                    <!-- 排假介面 (日曆, 規則, 選擇等) 將載入此處 -->
+                    <p>正在載入排班介面...</p>
+                </div>
+                 <p id="leave-modal-message" class="message info-message" style="margin-top: 15px;"></p>
+            </div>
+        </div>
+        <!-- --- END NEW --- -->
+
+        <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+        <script src="js/firebase-config.js?v=20250417v2"></script>
+        <script src="js/init.js?v=20250417v2"></script>
+        <script src="js/main.js?v=20250417v2"></script>
+        <script src="js/auth.js?v=20250417v2"></script>
+        <script src="js/schedule-view-logic.js?v=20250417v2"></script>
+        <script src="js/leave-logic.js?v=20250417v2"></script>
+        
+        <script>
+            document.addEventListener('DOMContentLoaded', async () => {
+                try {
+                    console.log("Initializing schedule view page...");
+                    const { db, fbAuth } = await initializeFirebaseAndAuth();
+                    
+                    // 設定身份驗證監聽器
+                    if (typeof setupAuthStateListener === 'function') {
+                        setupAuthStateListener(fbAuth);
+                    }
+                    
+                    // 檢查登入並初始化頁面
+                    const currentUser = await requireLogin(1, fbAuth, db); // 最低權限為1
+                    if (currentUser && typeof initScheduleViewPage === 'function') {
+                        initScheduleViewPage(currentUser, db);
+                    } else if (!currentUser) {
+                        console.log("User not authorized for schedule view page");
+                    } else {
+                        console.error("initScheduleViewPage function not defined");
+                        document.getElementById('schedule-message').textContent = '頁面初始化錯誤';
+                        document.getElementById('schedule-message').className = 'message error-message';
+                    }
+                } catch (error) {
+                    console.error("Error initializing schedule view page:", error);
+                    document.getElementById('schedule-message').textContent = `頁面載入錯誤: ${error.message}`;
+                    document.getElementById('schedule-message').className = 'message error-message';
+                }
+            });
+        </script>
+    </body>
+</html> 

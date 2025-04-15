@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>不早脆皮雞排員工系統 - 等待審核</title>
+        <link rel="stylesheet" href="css/style.css">
+        </head>
+<body>
+    <div class="container" style="text-align: center; padding-top: 50px; padding-bottom: 50px;">
+        <h2>帳號審核中</h2>
+        <p style="margin-top: 20px;">感謝您提交基本資料！</p>
+        <p>您的帳號權限正在等待主管審核，審核通過後即可登入並開始使用系統功能。</p>
+        <p style="margin-top: 30px;">您可以先關閉此頁面，稍後再嘗試登入，或聯繫您的主管確認進度。</p>
+        <button id="logout-pending-btn" class="btn btn-secondary" style="margin-top: 30px; background-color: #6c757d;">登出</button>
+    </div>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <script src="js/firebase-config.js?v=20250417v2"></script>
+    <script src="js/init.js?v=20250417v2"></script>
+    <script src="js/auth.js?v=20250417v2"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                // 初始化 Firebase 以便登出功能可用
+                console.log("Waiting for central initialization via init.js (pending.html)...");
+                // 只需要 Auth 實例
+                const { fbAuth } = await initializeFirebaseAndAuth();
+                console.log("Firebase initialized on pending page.");
+
+                const logoutBtn = document.getElementById('logout-pending-btn');
+                if (logoutBtn && typeof handleLogout === 'function') {
+                    // 綁定登出事件，傳入 fbAuth
+                    logoutBtn.addEventListener('click', () => handleLogout(fbAuth));
+                } else {
+                     console.error("Logout button or handleLogout function not found.");
+                }
+                 // (可選) 如果需要顯示選單，可以調用 loadAndInjectMenu
+                  if(typeof loadAndInjectMenu === 'function') loadAndInjectMenu();
+            } catch (error) {
+                console.error("Error initializing pending page:", error);
+                 if (!document.body.innerHTML.includes('系統核心初始化失敗')) {
+                     document.body.innerHTML = `<p style="color:red; text-align:center; padding-top: 50px;">頁面載入失敗: ${error.message}</p>`;
+                 }
+            }
+        });
+    </script>
+    </body>
+</html>

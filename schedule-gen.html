@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>吃雞排找不早 - 排班模擬</title> <link rel="stylesheet" href="css/style.css">
+        </head>
+<body>
+    <div id="shared-menu-placeholder"></div> <div class="container">
+    </div>
+    <div class="container">
+        <h2>自動排班模擬</h2>
+
+        <div id="sim-controls">
+            <p>模擬月份: <strong id="sim-target-month">讀取設定中...</strong></p>
+            <div id="sim-params-display">讀取參數中...</div>
+            <button id="run-simulation-btn" class="btn btn-primary" disabled>讀取設定中</button>
+        </div>
+             <button id="save-draft-btn" class="btn btn-success" style="width: auto; padding: 10px 20px;" disabled>儲存班表草稿</button>
+            </div>
+
+        <p id="sim-status-message" class="message" style="margin-top: 15px;"></p>
+
+        <div id="sim-calendar-container">
+            <div class="sim-day-header">日</div>
+            <div class="sim-day-header">一</div>
+            <div class="sim-day-header">二</div>
+            <div class="sim-day-header">三</div>
+            <div class="sim-day-header">四</div>
+            <div class="sim-day-header">五</div>
+            <div class="sim-day-header">六</div>
+            <div class="sim-day-cell other-month"></div> <div class="sim-day-cell other-month"></div> <div class="sim-day-cell other-month"></div>
+            <div class="sim-day-cell other-month"></div> <div class="sim-day-cell other-month"></div> <div class="sim-day-cell other-month"></div> <div class="sim-day-cell other-month"></div>
+        </div>
+    
+
+    <div id="sim-analysis-container" style="margin-top: 30px;">
+        <h3>員工排班統計分析</h3>
+        <div id="sim-analysis-content">
+            <p>請先產生模擬班表以查看分析。</p>
+        </div>
+    </div>
+    <p style="margin-top: 20px;"><a href="/admin.html">返回後台管理</a></p>
+
+</div>
+</body>
+        <p style="margin-top: 20px;"><a href="/admin.html">返回後台管理</a></p>
+
+    </div>
+
+
+    
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-messaging-compat.js"></script>
+    <script src="js/firebase-config.js?v=20250417v2"></script>
+    <script src="js/init.js?v=20250417v2"></script>
+    <script src="js/main.js?v=20250417v2"></script>
+    <script src="js/auth.js?v=20250417v2"></script>
+     <script src="js/schedule-gen-logic.js?v=20250417v2"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => { // <-- async
+            // --- 等待 Firebase 初始化完成並獲取實例 ---
+            try {
+                console.log("Waiting for central initialization via init.js (schedule-gen.html)...");
+                const { db, fbAuth } = await initializeFirebaseAndAuth(); // <--- 獲取實例
+                console.log("Firebase initialized. Proceeding with schedule-gen.html logic.");
+
+                // --- 初始化成功後，執行頁面特定邏輯 ---
+                // 1. 設定 Auth 監聽器 (傳入 fbAuth)
+                if (typeof setupAuthStateListener === 'function') {
+                    setupAuthStateListener(fbAuth);
+                } else { console.error("setupAuthStateListener function not found."); }
+
+                // 2. 檢查登入並初始化頁面 (不再需要 await authStatePromise)
+                 console.log("Proceeding with schedule-gen.html logic immediately after listener setup.");
+                 const currentUser = requireLogin(9, fbAuth); // <--- 傳入 fbAuth
+                 if (currentUser && typeof initSimPage === 'function') {
+                     initSimPage(currentUser, db); // <--- 傳入 db
+                 } else if (!currentUser) {
+                     console.log("requireLogin failed for schedule-gen.html.");
+                 } else {
+                     console.error("initSimPage function not found.");
+                     document.getElementById('sim-status-message').textContent = '頁面初始化錯誤。';
+                 }
+                // --- 頁面邏輯結束 ---
+
+            } catch (error) {
+                 console.error("Error waiting for Firebase or executing page logic (schedule-gen.html):", error);
+                 if (!document.body.innerHTML.includes('系統核心初始化失敗')) {
+                      document.body.innerHTML = `<p style="color:red; text-align:center; padding-top: 50px;">頁面載入失敗: ${error.message}</p>`;
+                 }
+            }
+        });
+    </script>
+</body>
+</html>

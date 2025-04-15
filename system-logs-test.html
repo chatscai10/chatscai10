@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>系統活動日誌測試 | System Activity Logs Testing</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-functions.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    
+    <!-- Common JS -->
+    <script src="js/common.js"></script>
+    
+    <style>
+        .feature-badge {
+            font-size: 0.8rem;
+        }
+        .system-logs-container {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="index.html">
+                <img src="images/logo.png" alt="Logo" height="30" class="d-inline-block align-text-top me-2">
+                雞場員工系統
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">首頁</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="admin.html">管理介面</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="system-logs-test.html">系統日誌測試</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <button id="logoutBtn" class="btn btn-outline-light">登出</button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-12">
+                <h1 class="mb-4">系統活動日誌測試工具</h1>
+                <div class="alert alert-info">
+                    <h5>說明</h5>
+                    <p>本頁面用於測試系統活動日誌的寫入和查詢功能。管理員可以在此生成測試日誌和查看系統日誌記錄。</p>
+                    <p>注意：本功能僅供管理員使用，普通用戶無法訪問系統活動日誌。</p>
+                </div>
+                <div id="statusContainer"></div>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <div class="col-lg-4">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">生成測試日誌</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="testLogForm">
+                            <div class="mb-3">
+                                <label for="logFeature" class="form-label">功能模組</label>
+                                <select class="form-select" id="logFeature" required>
+                                    <option value="">選擇模組...</option>
+                                    <option value="auth">用戶認證</option>
+                                    <option value="salary">薪資管理</option>
+                                    <option value="bonus">獎金系統</option>
+                                    <option value="attendance">出勤管理</option>
+                                    <option value="admin">管理功能</option>
+                                    <option value="database">資料庫操作</option>
+                                    <option value="security">安全機制</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="logAction" class="form-label">操作類型</label>
+                                <select class="form-select" id="logAction" required>
+                                    <option value="">選擇操作...</option>
+                                    <option value="create">創建</option>
+                                    <option value="update">更新</option>
+                                    <option value="delete">刪除</option>
+                                    <option value="query">查詢</option>
+                                    <option value="calculate">計算</option>
+                                    <option value="export">匯出</option>
+                                    <option value="import">匯入</option>
+                                    <option value="auth">認證</option>
+                                    <option value="error">錯誤</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="logDetails" class="form-label">詳細信息</label>
+                                <textarea class="form-control" id="logDetails" rows="3" placeholder="輸入詳細信息..."></textarea>
+                            </div>
+                            <div class="d-grid gap-2">
+                                <button type="button" id="generateTestLog" class="btn btn-success">生成測試日誌</button>
+                                <button type="button" id="clearTestLogs" class="btn btn-outline-danger">清除測試日誌</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">系統活動日誌</h5>
+                        <button id="refreshLogs" class="btn btn-sm btn-light">
+                            <i class="bi bi-arrow-clockwise"></i> 刷新
+                        </button>
+                    </div>
+                    <div class="card-body system-logs-container">
+                        <div id="systemLogsContainer" class="mt-2">
+                            <div class="text-center my-4">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                <p>加載中...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- System Logs Test JS -->
+    <script src="js/system-logs-test.js"></script>
+    <script>
+        // Logout functionality
+        document.getElementById('logoutBtn').addEventListener('click', function() {
+            firebase.auth().signOut().then(() => {
+                window.location.href = 'login.html';
+            }).catch((error) => {
+                console.error('Logout error:', error);
+            });
+        });
+    </script>
+</body>
+</html> 

@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>人臉驗證演示 - 炸雞店管理系統</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .camera-container {
+            position: relative;
+            width: 100%;
+            max-width: 640px;
+            margin: 0 auto;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        #camera-feed {
+            width: 100%;
+            display: block;
+        }
+        
+        .controls {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        
+        .preview-container {
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+            justify-content: center;
+        }
+        
+        .preview-box {
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            width: 250px;
+        }
+        
+        .preview-box img {
+            max-width: 100%;
+            height: auto;
+            display: none;
+        }
+        
+        .verification-status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .face-outline {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 250px;
+            height: 340px;
+            border: 2px dashed rgba(255, 255, 255, 0.7);
+            border-radius: 50% 50% 45% 45%;
+            pointer-events: none;
+        }
+        
+        .face-guide-text {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="index.html">炸雞店管理系統</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="dashboard.html">儀表板</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="clockin.html">打卡</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="schedule.html">排班管理</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <h1 class="mb-4">人臉驗證演示</h1>
+        
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle-fill me-2"></i>
+            此頁面演示如何使用人臉驗證功能。在實際應用中，此功能將整合到打卡系統中，以增強安全性。
+        </div>
+        
+        <div class="row mt-4">
+            <div class="col-lg-8 offset-lg-2">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">人臉驗證測試</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="camera-container">
+                            <video id="camera-feed" autoplay playsinline></video>
+                            <div class="face-outline"></div>
+                            <div class="face-guide-text">請將臉部對準框內</div>
+                        </div>
+                        
+                        <div class="controls">
+                            <button id="capture-button" class="btn btn-primary">
+                                <i class="bi bi-camera-fill me-1"></i> 開始攝像頭
+                            </button>
+                            <button id="verify-button" class="btn btn-success" disabled>
+                                <i class="bi bi-check-circle-fill me-1"></i> 驗證
+                            </button>
+                            <button id="reset-button" class="btn btn-secondary">
+                                <i class="bi bi-arrow-repeat me-1"></i> 重置
+                            </button>
+                        </div>
+                        
+                        <div class="preview-container">
+                            <div class="preview-box">
+                                <h6>捕獲的人臉</h6>
+                                <img id="captured-image" src="" alt="Captured face">
+                            </div>
+                            <div class="preview-box">
+                                <h6>參考人臉</h6>
+                                <img id="reference-image" src="" alt="Reference face">
+                                <p class="mt-2 text-muted small">
+                                    <i class="bi bi-info-circle me-1"></i> 
+                                    在正式環境中，參考人臉不會顯示
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <div id="verification-status" class="verification-status text-info">
+                            請點擊"開始攝像頭"按鈕開始人臉驗證過程
+                        </div>
+                        
+                        <div class="mt-4">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="mock-mode" checked>
+                                <label class="form-check-label" for="mock-mode">測試模式（無需實際人臉識別API）</label>
+                            </div>
+                            <p class="text-muted small mt-2">
+                                在測試模式下，系統會隨機生成驗證結果，不會實際調用人臉識別API。
+                                這對於測試UI和流程非常有用。
+                            </p>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <h6>測試結果信息：</h6>
+                            <pre id="result-json" class="bg-light p-3 rounded" style="max-height: 150px; overflow-y: auto;"></pre>
+                        </div>
+                    </div>
+                    <div class="card-footer text-muted">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span>系統版本: v1.5.0</span>
+                            <button id="integrate-button" class="btn btn-outline-primary btn-sm">
+                                <i class="bi bi-link-45deg me-1"></i> 整合到打卡系統
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white mt-5 py-3">
+        <div class="container text-center">
+            <p class="mb-0">炸雞店管理系統 v1.5.0 | &copy; 2025 All Rights Reserved</p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- 如果在正式環境中使用 face-api.js，在此引入 -->
+    <!-- <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script> -->
+    
+    <!-- Firebase Config & Auth -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="js/firebase-config.js"></script>
+    
+    <!-- 人臉驗證模塊 -->
+    <script src="js/face-verification.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化Firebase
+            if (typeof initFirebase === 'function') {
+                initFirebase();
+            } else {
+                // 簡單初始化（演示用）
+                const firebaseConfig = {
+                    // 從firebase-config.js讀取，或在這裡提供測試配置
+                };
+                if (!firebase.apps.length) {
+                    firebase.initializeApp(firebaseConfig);
+                }
+            }
+            
+            // 獲取DOM元素
+            const resultJson = document.getElementById('result-json');
+            const mockModeToggle = document.getElementById('mock-mode');
+            const integrateButton = document.getElementById('integrate-button');
+            const referenceImage = document.getElementById('reference-image');
+            
+            // 測試用：顯示模擬參考圖像
+            referenceImage.src = 'https://i.pravatar.cc/300?img=' + Math.floor(Math.random() * 70);
+            referenceImage.style.display = 'block';
+            
+            // 初始化人臉驗證模塊
+            const faceVerification = new FaceVerification({
+                cameraSelector: '#camera-feed',
+                captureButtonSelector: '#capture-button',
+                verifyButtonSelector: '#verify-button',
+                resetButtonSelector: '#reset-button',
+                statusSelector: '#verification-status',
+                capturedImageSelector: '#captured-image',
+                referenceImageSelector: '#reference-image',
+                showReference: true, // 僅在演示中顯示
+                mockAPI: mockModeToggle.checked, // 使用測試模式
+                confidenceThreshold: 0.75,
+                maxRetries: 3,
+                verificationSuccess: function(data) {
+                    console.log('驗證成功:', data);
+                    resultJson.textContent = JSON.stringify(data, null, 2);
+                    
+                    // 簡單動畫效果
+                    resultJson.classList.add('bg-success', 'text-white');
+                    setTimeout(() => {
+                        resultJson.classList.remove('bg-success', 'text-white');
+                    }, 2000);
+                },
+                verificationFailure: function(data) {
+                    console.log('驗證失敗:', data);
+                    resultJson.textContent = JSON.stringify(data, null, 2);
+                    
+                    // 簡單動畫效果
+                    resultJson.classList.add('bg-danger', 'text-white');
+                    setTimeout(() => {
+                        resultJson.classList.remove('bg-danger', 'text-white');
+                    }, 2000);
+                }
+            });
+            
+            // 初始化模塊
+            faceVerification.init().then(success => {
+                if (!success) {
+                    console.warn('初始化人臉驗證模塊失敗');
+                }
+            });
+            
+            // 測試模式切換
+            mockModeToggle.addEventListener('change', function() {
+                faceVerification.options.mockAPI = this.checked;
+                faceVerification.reset();
+                
+                if (this.checked) {
+                    referenceImage.src = 'https://i.pravatar.cc/300?img=' + Math.floor(Math.random() * 70);
+                    referenceImage.style.display = 'block';
+                } else {
+                    alert('注意：非測試模式需要真實的人臉識別API和參考人臉圖像。此演示可能無法正常工作。');
+                }
+            });
+            
+            // 整合按鈕
+            integrateButton.addEventListener('click', function() {
+                alert('此功能將在完整版中實現。整合後，打卡系統將使用人臉驗證作為安全措施。');
+            });
+            
+            // 在驗證成功或失敗時捕獲事件
+            document.addEventListener('verificationSuccess', function(e) {
+                console.log('捕獲到驗證成功事件:', e.detail);
+            });
+            
+            document.addEventListener('verificationFailure', function(e) {
+                console.log('捕獲到驗證失敗事件:', e.detail);
+            });
+        });
+    </script>
+</body>
+</html> 

@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>盤點叫貨</title> 
+        <link rel="stylesheet" href="css/style.css?v=20250417v2">
+        <link rel="stylesheet" href="css/inventory-check.css?v=20250417v2">
+        <link rel="stylesheet" href="css/version-check.css?v=20250417v2">
+    </head>
+<body>
+    <div id="shared-menu-placeholder"></div>
+        <div class="container">
+            <div class="page-header">
+                <h1>盤點叫貨</h1>
+            </div>
+    
+            <div id="order-info" style="margin-bottom: 20px;">
+                <p><strong>填寫人:</strong> <span id="order-employee-name">載入中...</span></p>
+                <div class="form-group">
+                    <label for="order-store-name">分店: <span class="required-mark">*</span></label>
+                    <input type="text" id="order-store-name" name="storeName" class="form-control" required placeholder="請輸入分店名稱">
+                </div>                <div class="form-group">
+                    <label for="order-date">叫貨日期:</label>
+                    <input type="date" id="order-date" name="orderDate" class="form-control" style="width: auto;">
+                </div>
+            </div>
+        </fieldset> <div class="form-group">
+            <label for="order-remarks">備註:</label>
+            <textarea id="order-remarks" name="remarks" class="form-control" rows="3" placeholder="請輸入此訂單的備註事項 (非必填)"></textarea>
+        </div>
+
+            <form id="order-form">
+                <div id="order-items-container">
+                    <p>正在載入可叫貨品項...</p>
+                    </div>
+    
+                <button type="submit" id="submit-order" class="btn" style="margin-top: 30px;">提交叫貨單</button>
+                <p id="order-message" class="message"></p>
+            </form>
+    
+            </div>
+            <div style="margin-top: 20px;">
+                <button type="button" id="view-history-btn" class="btn btn-secondary" style="background-color: #6c757d; margin-bottom: 10px;">查看歷史叫貨</button>
+                <button type="button" id="report-error-btn" class="btn btn-warning" style="background-color: #ffc107; color: #212529;">回報錯誤商品</button>
+                <!-- 庫存盤點按鈕會在JS中動態添加在這裡 -->
+            </div>
+    
+            <div id="history-modal" class="modal" style="display: none;">
+                <div class="modal-content" style="max-width: 600px;">
+                    <span class="close-btn" onclick="closeModal('history-modal')">&times;</span>
+                    <h3>查看歷史叫貨紀錄</h3>
+                    <div class="form-inline" style="margin-bottom: 15px;">
+                        <div class="form-group" style="margin-right: 10px;">
+                            <label for="history-date" style="margin-right: 5px;">日期:</label>
+                            <input type="date" id="history-date" class="form-control form-control-sm">
+                        </div>
+                        <div class="form-group" style="margin-right: 10px;">
+                            <label for="history-store" style="margin-right: 5px;">分店:</label>
+                            <input type="text" id="history-store" class="form-control form-control-sm" placeholder="請輸入分店名稱">
+                        </div>
+                        <button type="button" id="query-history-btn" class="btn btn-sm btn-info">查詢</button>
+                    </div>
+                    <div id="history-display-area" style="min-height: 100px; border: 1px solid #eee; padding: 10px; background-color: #f9f9f9;">
+                        <p>請選擇日期和分店後查詢。</p>
+                    </div>
+                    <button type="button" class="btn btn-secondary" style="margin-top: 15px;" onclick="closeModal('history-modal')">關閉</button>
+                </div>
+            </div>
+    
+            <div id="error-report-modal" class="modal" style="display: none;">
+                <div class="modal-content" style="max-width: 800px;">
+                    <span class="close-btn" onclick="closeModal('error-report-modal')">&times;</span>
+                    <h3>回報錯誤商品</h3>
+                    <div class="form-inline" style="margin-bottom: 15px;">
+                        <div class="form-group" style="margin-right: 10px;">
+                            <label for="error-report-date" style="margin-right: 5px;">訂單日期:</label>
+                            <input type="date" id="error-report-date" class="form-control form-control-sm">
+                        </div>
+                        <div class="form-group" style="margin-right: 10px;">
+                            <label for="error-report-store" style="margin-right: 5px;">分店:</label>
+                            <input type="text" id="error-report-store" class="form-control form-control-sm" placeholder="請輸入分店名稱">
+                        </div>
+                        <button type="button" id="query-order-for-report-btn" class="btn btn-sm btn-info">載入訂單</button>
+                    </div>
+    
+                    <h4>當日叫貨清單 (請填寫差異)</h4>
+                    <div id="error-report-order-list" style="margin-bottom: 20px; max-height: 250px; overflow-y: auto; border: 1px solid #eee; padding: 10px;">
+                        <p>請先載入訂單。</p>
+                        </div>
+    
+                    <h4>回報誤送品項 (非訂單內品項)</h4>
+                    <div id="misdelivered-items-area" style="margin-bottom: 20px;">
+                        <div class="misdelivered-item-row" style="display: flex; align-items: center; margin-bottom: 5px;">
+                            <select class="form-control misdelivered-item-select" style="flex: 1; margin-right: 5px;">
+                                <option value="">選擇誤送品項</option>
+                                </select>
+                            <input type="number" class="form-control misdelivered-item-qty" placeholder="數量" min="1" style="width: 80px;">
+                            <button type="button" class="btn btn-sm btn-danger remove-misdelivered-btn" style="margin-left: 5px;" onclick="this.closest('.misdelivered-item-row').remove()">&times;</button>
+                        </div>
+                    </div>
+                    <button type="button" id="add-misdelivered-btn" class="btn btn-sm btn-outline-success" style="width: auto; margin-bottom: 20px;">+ 新增誤送品項</button>
+                    <div style="text-align: right;">
+                         <button type="button" id="submit-error-report-btn" class="btn btn-warning" style="background-color: #ffc107; color: #212529;">提交錯誤回報</button>
+                         <button type="button" class="btn btn-secondary" style="margin-left: 10px;" onclick="closeModal('error-report-modal')">取消</button>
+                    </div>
+                     <p id="error-report-message" class="message" style="margin-top: 15px;"></p>
+                </div>
+            </div>
+
+            <!-- 庫存盤點模態框會在JS中動態添加到頁面底部 -->
+
+            <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+            <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+            <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+            <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-functions-compat.js"></script>
+            <script src="js/firebase-config.js?v=20250417v2"></script>
+            <script src="js/init.js?v=20250417v2"></script>
+            <script src="js/auth.js?v=20250417v2"></script>
+            <script src="js/main.js?v=20250417v2"></script>
+            <script src="js/order-logic.js?v=20250417v2"></script>
+            <script src="js/inventory-check.js?v=20250417v2"></script>
+            <script>
+                document.addEventListener('DOMContentLoaded', async () => {
+                    try {
+                        console.log(`Waiting for central initialization via init.js (${window.location.pathname})...`);
+                        // 1. 等待並獲取實例
+                        const { db, fbAuth } = await initializeFirebaseAndAuth();
+        
+                        console.log(`Firebase initialized. Proceeding with ${window.location.pathname} logic.`);
+                        // 2. 設定 Auth 監聽器
+                        if (typeof setupAuthStateListener === 'function') { setupAuthStateListener(fbAuth); }
+        
+                        console.log(`Proceeding with ${window.location.pathname} logic after listener setup.`);
+                        // 3. 執行權限檢查 (假設 order 需要 Level 1)
+                        const currentUser = await requireLogin(1, fbAuth, db);
+        
+                        // 4. 如果權限檢查通過，調用頁面初始化函數
+                        if (currentUser && typeof initOrderPage === 'function') {
+                            initOrderPage(currentUser, db); // <-- 傳遞 currentUser 和 db
+                            
+                            // 5. 初始化庫存盤點功能
+                            if (typeof initInventoryCheck === 'function') {
+                                initInventoryCheck(currentUser, db);
+                            }
+                        } else if (!currentUser) {
+                            console.log(`requireLogin failed for ${window.location.pathname}.`);
+                        } else {
+                             console.error("initOrderPage function not found! Check order-logic.js");
+                             const msgElement = document.getElementById('order-message');
+                             if(msgElement) msgElement.textContent = '頁面初始化函數錯誤。';
+                        }
+                    } catch (error) {
+                         console.error(`Error during initialization or page logic (${window.location.pathname}):`, error);
+                         if (!document.body.innerHTML.includes('系統核心初始化失敗')) {
+                              document.body.innerHTML = `<p style="color:red; text-align:center; padding-top: 50px;">頁面載入失敗: ${error.message}</p>`;
+                         }
+                    }
+                });
+                
+                // 通用模態框關閉功能
+                function closeModal(modalId) {
+                    const modal = document.getElementById(modalId);
+                    if (modal) modal.style.display = 'none';
+                }
+            </script>
+            </body>
+        </html>

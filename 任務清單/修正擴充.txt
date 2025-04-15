@@ -1,0 +1,1336 @@
+這次的任務把這些錯誤完整的修復並優化
+這些都是在上一次任務內都有的錯誤
+修復優化後再次檢查問題是否還在
+才進行下一階段
+
+公告系統留言後 會從心整理 沒有出來我的留言
+知識+ 沒有內容 停在 載入日誌內容
+獎金考核無法顯示
+投票系統錯誤
+班表查詢打開不能顯示班表和進入排班
+排班參數要記得修改正確的格式
+從管理員頁面的參數管理找
+營業額無法送出
+叫貨填寫顯示完 就沒反應 不能按了 包含下方回報錯誤商品 也沒有看到大盤點表
+打卡簽到 會變成新的網頁?? 選單和整個網頁配色排版都不同
+標題也不同 重點也無法使用
+漢堡選單也不能點擊
+
+我完全不能進入後台管理員頁面
+
+firebase-config.js?v=20250417v2:13 firebase-config.js loaded (config constant only).
+init.js?v=20250417v2:9 init.js loaded. Ready for initialization call.
+main.js?v=20250417v2:351 main.js loaded (adjusted for passing fbAuth).
+auth.js?v=20250417v2:676 auth.js (LIFF version - functions accept params) loaded.
+main.js?v=20250417v2:9 DOM fully loaded and parsed. main.js executing.
+main.js?v=20250417v2:68 Attempting to load and inject menu...
+main.js?v=20250417v2:78 Detected page type: Frontend. Loading menu from: /_menu.html
+referendum.html:85 Waiting for central initialization via init.js (/referendum.html)...
+init.js?v=20250417v2:23 Attempting Firebase initialization (logic consolidated in init.js)...
+init.js?v=20250417v2:38 No Firebase apps initialized yet. Initializing now...
+init.js?v=20250417v2:40 Firebase App initialized.
+init.js?v=20250417v2:47 Getting Firestore and Auth instances...
+init.js?v=20250417v2:52 Firestore and Auth obtained successfully.
+init.js?v=20250417v2:89 Version check module not loaded yet. Loading dynamically...
+referendum.html:89 Firebase initialized. Proceeding with /referendum.html logic.
+auth.js?v=20250417v2:342 Setting up Auth state listener using passed fbAuth instance.
+referendum.html:93 Proceeding with /referendum.html logic after listener setup.
+auth.js?v=20250417v2:399 checkLoginStatus: Found valid data in sessionStorage for UID: Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2
+auth.js?v=20250417v2:449 Fetching page permissions from Firestore...
+version-check.js?v=20250417v2:476 version-check.js 載入完成
+init.js?v=20250417v2:95 Version check module loaded dynamically.
+version-check.js?v=20250417v2:27 初始化版本檢查功能...
+main.js?v=20250417v2:87 Menu HTML successfully loaded and injected.
+main.js?v=20250417v2:107 [Menu Debug] Running setupMenuInteractions for FRONTEND page...
+main.js?v=20250417v2:119 [Menu Debug] Found Elements: {toggleButton: true, menu: true, overlay: true}
+main.js?v=20250417v2:124 [Menu Debug] Using IDs: {toggleButtonId: 'menu-toggle-btn', menuPanelId: 'floating-menu-panel', overlayId: 'sliding-menu-overlay'}
+main.js?v=20250417v2:142 [Menu Debug] Event listener attached to menu-toggle-btn.
+main.js?v=20250417v2:146 [Menu Debug] Event listener attached to sliding-menu-overlay.
+main.js?v=20250417v2:165 Attempting to populate user info in menu...
+auth.js?v=20250417v2:399 checkLoginStatus: Found valid data in sessionStorage for UID: Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2
+main.js?v=20250417v2:205 populateUserInfoInMenu - currentUserInfo: {authUid: 'Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2', name: '蔡', lineUserId: 'Ub951e0cf789be32fcce44b586fd6ee51', pictureUrl: 'https://profile.line-scdn.net/0hEYCH-I8pGnZ-MQsBrU…JHxw-BlIBRAg0FxYHAl0pRABQQgw5FkIBCQopFl4GRF42EE5a', roles: {…}, …}
+main.js?v=20250417v2:271 populateUserInfoInMenu finished.
+main.js?v=20250417v2:158 [Menu Debug] Menu interactions setup complete.
+auth.js?v=20250417v2:346 [AUTH STATE CHANGE] User: Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2  Path: /referendum.html
+auth.js?v=20250417v2:352 Auth state changed: User is signed in. Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2
+main.js?v=20250417v2:165 Attempting to populate user info in menu...
+auth.js?v=20250417v2:399 checkLoginStatus: Found valid data in sessionStorage for UID: Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2
+main.js?v=20250417v2:205 populateUserInfoInMenu - currentUserInfo: {authUid: 'Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2', name: '蔡', lineUserId: 'Ub951e0cf789be32fcce44b586fd6ee51', pictureUrl: 'https://profile.line-scdn.net/0hEYCH-I8pGnZ-MQsBrU…JHxw-BlIBRAg0FxYHAl0pRABQQgw5FkIBCQopFl4GRF42EE5a', roles: {…}, …}
+main.js?v=20250417v2:271 populateUserInfoInMenu finished.
+auth.js?v=20250417v2:459 Page permissions fetched and cached: {order.html: 1, schedule-gen_html: 9, admin.html: 9, salary.html: 1, sales_html: 1, …}
+auth.js?v=20250417v2:556 Permission check for referendum.html: Required Level 1 (using default)
+auth.js?v=20250417v2:568 requireLogin: User 蔡 (Level 100) OK for referendum.html (Requires 1).
+referendum.html:104  initReferendumPage function not found! Check referendum-logic.js
+(匿名) @ referendum.html:104
+version-check.js?v=20250417v2:77 版本檢查間隔設為: 10 分鐘
+version-check.js?v=20250417v2:83 版本檢查功能狀態: 啟用
+version-check.js?v=20250417v2:121 執行版本檢查...
+version-check.js?v=20250417v2:189 當前客戶端版本: 20250417v3, 最新版本: 20250417v3
+version-check.js?v=20250417v2:49 版本檢查功能初始化完成。客戶端版本: 20250417v3
+main.js?v=20250417v2:133 [Menu Debug] toggleMenu function CALLED.
+main.js?v=20250417v2:135 [Menu Debug] body classList after toggle: DOMTokenList ['menu-open', value: 'menu-open']
+導覽至https://chicken-tw.web.app/salary.html
+firebase-config.js?v=20250417v2:13 firebase-config.js loaded (config constant only).
+init.js?v=20250417v2:9 init.js loaded. Ready for initialization call.
+main.js?v=20250417v2:351 main.js loaded (adjusted for passing fbAuth).
+auth.js?v=20250417v2:676 auth.js (LIFF version - functions accept params) loaded.
+version-check.js?v=20250417v2:476 version-check.js 載入完成
+main.js?v=20250417v2:9 DOM fully loaded and parsed. main.js executing.
+main.js?v=20250417v2:68 Attempting to load and inject menu...
+main.js?v=20250417v2:78 Detected page type: Frontend. Loading menu from: /_menu.html
+salary.html:137 Waiting for central initialization via init.js (/salary.html)...
+init.js?v=20250417v2:23 Attempting Firebase initialization (logic consolidated in init.js)...
+init.js?v=20250417v2:38 No Firebase apps initialized yet. Initializing now...
+init.js?v=20250417v2:40 Firebase App initialized.
+init.js?v=20250417v2:47 Getting Firestore and Auth instances...
+init.js?v=20250417v2:52 Firestore and Auth obtained successfully.
+init.js?v=20250417v2:86 Starting version check system...
+version-check.js?v=20250417v2:27 初始化版本檢查功能...
+salary.html:141 Firebase initialized. Proceeding with /salary.html logic.
+auth.js?v=20250417v2:342 Setting up Auth state listener using passed fbAuth instance.
+salary.html:145 Proceeding with /salary.html logic after listener setup.
+auth.js?v=20250417v2:399 checkLoginStatus: Found valid data in sessionStorage for UID: Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2
+auth.js?v=20250417v2:449 Fetching page permissions from Firestore...
+main.js?v=20250417v2:87 Menu HTML successfully loaded and injected.
+main.js?v=20250417v2:107 [Menu Debug] Running setupMenuInteractions for FRONTEND page...
+main.js?v=20250417v2:119 [Menu Debug] Found Elements: {toggleButton: true, menu: true, overlay: true}
+main.js?v=20250417v2:124 [Menu Debug] Using IDs: {toggleButtonId: 'menu-toggle-btn', menuPanelId: 'floating-menu-panel', overlayId: 'sliding-menu-overlay'}
+main.js?v=20250417v2:142 [Menu Debug] Event listener attached to menu-toggle-btn.
+main.js?v=20250417v2:146 [Menu Debug] Event listener attached to sliding-menu-overlay.
+main.js?v=20250417v2:165 Attempting to populate user info in menu...
+auth.js?v=20250417v2:399 checkLoginStatus: Found valid data in sessionStorage for UID: Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2
+main.js?v=20250417v2:205 populateUserInfoInMenu - currentUserInfo: {authUid: 'Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2', name: '蔡', lineUserId: 'Ub951e0cf789be32fcce44b586fd6ee51', pictureUrl: 'https://profile.line-scdn.net/0hEYCH-I8pGnZ-MQsBrU…JHxw-BlIBRAg0FxYHAl0pRABQQgw5FkIBCQopFl4GRF42EE5a', roles: {…}, …}
+main.js?v=20250417v2:271 populateUserInfoInMenu finished.
+main.js?v=20250417v2:158 [Menu Debug] Menu interactions setup complete.
+auth.js?v=20250417v2:346 [AUTH STATE CHANGE] User: Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2  Path: /salary.html
+auth.js?v=20250417v2:352 Auth state changed: User is signed in. Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2
+main.js?v=20250417v2:165 Attempting to populate user info in menu...
+auth.js?v=20250417v2:399 checkLoginStatus: Found valid data in sessionStorage for UID: Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2
+main.js?v=20250417v2:205 populateUserInfoInMenu - currentUserInfo: {authUid: 'Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2', name: '蔡', lineUserId: 'Ub951e0cf789be32fcce44b586fd6ee51', pictureUrl: 'https://profile.line-scdn.net/0hEYCH-I8pGnZ-MQsBrU…JHxw-BlIBRAg0FxYHAl0pRABQQgw5FkIBCQopFl4GRF42EE5a', roles: {…}, …}
+main.js?v=20250417v2:271 populateUserInfoInMenu finished.
+version-check.js?v=20250417v2:77 版本檢查間隔設為: 10 分鐘
+version-check.js?v=20250417v2:83 版本檢查功能狀態: 啟用
+version-check.js?v=20250417v2:121 執行版本檢查...
+auth.js?v=20250417v2:459 Page permissions fetched and cached: {index_html: 0, leave_html: 1, register_html: 0, index.html: 0, schedule-gen.html: 9, …}
+auth.js?v=20250417v2:554 Permission check for salary.html: Required Level 1 (from settings)
+auth.js?v=20250417v2:568 requireLogin: User 蔡 (Level 100) OK for salary.html (Requires 1).
+salary-view-logic.js?v=20250417v2:48 Initializing salary view page...
+salary-view-logic.js?v=20250417v2:58 Current user from auth: {authUid: 'Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2', name: '蔡', lineUserId: 'Ub951e0cf789be32fcce44b586fd6ee51', pictureUrl: 'https://profile.line-scdn.net/0hEYCH-I8pGnZ-MQsBrU…JHxw-BlIBRAg0FxYHAl0pRABQQgw5FkIBCQopFl4GRF42EE5a', roles: {…}, …}
+salary-view-logic.js?v=20250417v2:60 User roles from session: {level: 100, store: '龍安'}
+salary-view-logic.js?v=20250417v2:66 Attempting to fetch user details from 'users' collection for UID: undefined
+version-check.js?v=20250417v2:189 當前客戶端版本: 20250417v3, 最新版本: 20250417v3
+version-check.js?v=20250417v2:49 版本檢查功能初始化完成。客戶端版本: 20250417v3
+salary-view-logic.js?v=20250417v2:73  User document not found in 'users' collection. Attempting to fetch from 'employees' collection...
+initSalaryViewPage @ salary-view-logic.js?v=20250417v2:73
+await in initSalaryViewPage
+initSalaryViewPage @ salary-view-logic.js?v=20250417v2:1513
+(匿名) @ salary.html:151
+salary-view-logic.js?v=20250417v2:112  Error fetching from employees collection: FirebaseError: Function Query.where() called with invalid data. Unsupported field value: undefined
+initSalaryViewPage @ salary-view-logic.js?v=20250417v2:112
+await in initSalaryViewPage
+initSalaryViewPage @ salary-view-logic.js?v=20250417v2:1513
+(匿名) @ salary.html:151
+salary-view-logic.js?v=20250417v2:114  使用 Auth 用戶資料作為備用
+initSalaryViewPage @ salary-view-logic.js?v=20250417v2:114
+await in initSalaryViewPage
+initSalaryViewPage @ salary-view-logic.js?v=20250417v2:1513
+(匿名) @ salary.html:151
+salary-view-logic.js?v=20250417v2:167  Hire date is missing from user details.
+initSalaryViewPage @ salary-view-logic.js?v=20250417v2:167
+await in initSalaryViewPage
+initSalaryViewPage @ salary-view-logic.js?v=20250417v2:1513
+(匿名) @ salary.html:151
+salary-view-logic.js?v=20250417v2:627 Basic modal close events setup for #bonus-list-modal
+salary-view-logic.js?v=20250417v2:280 Loading all sections initially for month: 2025-03
+salary-view-logic.js?v=20250417v2:287  Uncaught (in promise) ReferenceError: showLoading is not defined
+    at loadAllSectionsForMonth (salary-view-logic.js?v=20250417v2:287:5)
+    at initSalaryViewPage (salary-view-logic.js?v=20250417v2:191:11)
+    at async initSalaryViewPage (salary-view-logic.js?v=20250417v2:1513:5)
+loadAllSectionsForMonth @ salary-view-logic.js?v=20250417v2:287
+initSalaryViewPage @ salary-view-logic.js?v=20250417v2:191
+await in initSalaryViewPage
+initSalaryViewPage @ salary-view-logic.js?v=20250417v2:1513
+(匿名) @ salary.html:151
+main.js?v=20250417v2:133 [Menu Debug] toggleMenu function CALLED.
+main.js?v=20250417v2:135 [Menu Debug] body classList after toggle: DOMTokenList ['menu-open', value: 'menu-open']
+cram-school-view.html:1  Failed to find a valid digest in the 'integrity' attribute for resource 'https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js' with computed SHA-512 integrity 'H+rglffZ6f5gF7UJgvH4Naa+fGCgjrHKMgoFOGmcPTRwR6oILo5R+gtzNrpDp7iMV3udbymBVjkeZGNz1Em4rQ=='. The resource has been blocked.
+導覽至https://chicken-tw.web.app/cram-school-view.html
+firebase-config.js?v=20250416v2:13 firebase-config.js loaded (config constant only).
+init.js?v=20250416v2:9 init.js loaded. Ready for initialization call.
+auth.js?v=20250416v2:676 auth.js (LIFF version - functions accept params) loaded.
+main.js?v=20250416v2:351 main.js loaded (adjusted for passing fbAuth).
+main.js?v=20250416v2:9 DOM fully loaded and parsed. main.js executing.
+main.js?v=20250416v2:68 Attempting to load and inject menu...
+main.js?v=20250416v2:78 Detected page type: Frontend. Loading menu from: /_menu.html
+cram-school-view.html:91 Initializing Firebase for cram-school-view.html...
+init.js?v=20250416v2:23 Attempting Firebase initialization (logic consolidated in init.js)...
+init.js?v=20250416v2:38 No Firebase apps initialized yet. Initializing now...
+init.js?v=20250416v2:40 Firebase App initialized.
+init.js?v=20250416v2:47 Getting Firestore and Auth instances...
+init.js?v=20250416v2:52 Firestore and Auth obtained successfully.
+init.js?v=20250416v2:89 Version check module not loaded yet. Loading dynamically...
+cram-school-view.html:93 Firebase initialized for cram-school-view.html.
+main.js?v=20250416v2:68 Attempting to load and inject menu...
+main.js?v=20250416v2:78 Detected page type: Frontend. Loading menu from: /_menu.html
+auth.js?v=20250416v2:342 Setting up Auth state listener using passed fbAuth instance.
+version-check.js?v=20250417v2:476 version-check.js 載入完成
+init.js?v=20250416v2:95 Version check module loaded dynamically.
+version-check.js?v=20250417v2:27 初始化版本檢查功能...
+main.js?v=20250416v2:87 Menu HTML successfully loaded and injected.
+main.js?v=20250416v2:107 [Menu Debug] Running setupMenuInteractions for FRONTEND page...
+main.js?v=20250416v2:119 [Menu Debug] Found Elements: {toggleButton: true, menu: true, overlay: true}
+main.js?v=20250416v2:124 [Menu Debug] Using IDs: {toggleButtonId: 'menu-toggle-btn', menuPanelId: 'floating-menu-panel', overlayId: 'sliding-menu-overlay'}
+main.js?v=20250416v2:142 [Menu Debug] Event listener attached to menu-toggle-btn.
+main.js?v=20250416v2:146 [Menu Debug] Event listener attached to sliding-menu-overlay.
+main.js?v=20250416v2:165 Attempting to populate user info in menu...
+auth.js?v=20250416v2:399 checkLoginStatus: Found valid data in sessionStorage for UID: Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2
+main.js?v=20250416v2:205 populateUserInfoInMenu - currentUserInfo: {authUid: 'Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2', name: '蔡', lineUserId: 'Ub951e0cf789be32fcce44b586fd6ee51', pictureUrl: 'https://profile.line-scdn.net/0hEYCH-I8pGnZ-MQsBrU…JHxw-BlIBRAg0FxYHAl0pRABQQgw5FkIBCQopFl4GRF42EE5a', roles: {…}, …}
+main.js?v=20250416v2:271 populateUserInfoInMenu finished.
+main.js?v=20250416v2:158 [Menu Debug] Menu interactions setup complete.
+main.js?v=20250416v2:87 Menu HTML successfully loaded and injected.
+main.js?v=20250416v2:107 [Menu Debug] Running setupMenuInteractions for FRONTEND page...
+main.js?v=20250416v2:119 [Menu Debug] Found Elements: {toggleButton: true, menu: true, overlay: true}
+main.js?v=20250416v2:124 [Menu Debug] Using IDs: {toggleButtonId: 'menu-toggle-btn', menuPanelId: 'floating-menu-panel', overlayId: 'sliding-menu-overlay'}
+main.js?v=20250416v2:142 [Menu Debug] Event listener attached to menu-toggle-btn.
+main.js?v=20250416v2:146 [Menu Debug] Event listener attached to sliding-menu-overlay.
+main.js?v=20250416v2:165 Attempting to populate user info in menu...
+auth.js?v=20250416v2:399 checkLoginStatus: Found valid data in sessionStorage for UID: Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2
+main.js?v=20250416v2:205 populateUserInfoInMenu - currentUserInfo: {authUid: 'Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2', name: '蔡', lineUserId: 'Ub951e0cf789be32fcce44b586fd6ee51', pictureUrl: 'https://profile.line-scdn.net/0hEYCH-I8pGnZ-MQsBrU…JHxw-BlIBRAg0FxYHAl0pRABQQgw5FkIBCQopFl4GRF42EE5a', roles: {…}, …}
+main.js?v=20250416v2:271 populateUserInfoInMenu finished.
+main.js?v=20250416v2:158 [Menu Debug] Menu interactions setup complete.
+auth.js?v=20250416v2:346 [AUTH STATE CHANGE] User: Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2  Path: /cram-school-view.html
+auth.js?v=20250416v2:352 Auth state changed: User is signed in. Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2
+main.js?v=20250416v2:165 Attempting to populate user info in menu...
+auth.js?v=20250416v2:399 checkLoginStatus: Found valid data in sessionStorage for UID: Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2
+main.js?v=20250416v2:205 populateUserInfoInMenu - currentUserInfo: {authUid: 'Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2', name: '蔡', lineUserId: 'Ub951e0cf789be32fcce44b586fd6ee51', pictureUrl: 'https://profile.line-scdn.net/0hEYCH-I8pGnZ-MQsBrU…JHxw-BlIBRAg0FxYHAl0pRABQQgw5FkIBCQopFl4GRF42EE5a', roles: {…}, …}
+main.js?v=20250416v2:271 populateUserInfoInMenu finished.
+main.js?v=20250416v2:133 [Menu Debug] toggleMenu function CALLED.
+main.js?v=20250416v2:135 [Menu Debug] body classList after toggle: DOMTokenList(2) ['page-layout', 'menu-open', value: 'page-layout menu-open']
+version-check.js?v=20250417v2:77 版本檢查間隔設為: 10 分鐘
+version-check.js?v=20250417v2:83 版本檢查功能狀態: 啟用
+version-check.js?v=20250417v2:121 執行版本檢查...
+version-check.js?v=20250417v2:189 當前客戶端版本: 20250417v3, 最新版本: 20250417v3
+version-check.js?v=20250417v2:49 版本檢查功能初始化完成。客戶端版本: 20250417v3
+導覽至https://chicken-tw.web.app/referendum.html
+firebase-config.js?v=20250417v2:13 firebase-config.js loaded (config constant only).
+init.js?v=20250417v2:9 init.js loaded. Ready for initialization call.
+main.js?v=20250417v2:351 main.js loaded (adjusted for passing fbAuth).
+auth.js?v=20250417v2:676 auth.js (LIFF version - functions accept params) loaded.
+main.js?v=20250417v2:9 DOM fully loaded and parsed. main.js executing.
+main.js?v=20250417v2:68 Attempting to load and inject menu...
+main.js?v=20250417v2:78 Detected page type: Frontend. Loading menu from: /_menu.html
+referendum.html:85 Waiting for central initialization via init.js (/referendum.html)...
+init.js?v=20250417v2:23 Attempting Firebase initialization (logic consolidated in init.js)...
+init.js?v=20250417v2:38 No Firebase apps initialized yet. Initializing now...
+init.js?v=20250417v2:40 Firebase App initialized.
+init.js?v=20250417v2:47 Getting Firestore and Auth instances...
+init.js?v=20250417v2:52 Firestore and Auth obtained successfully.
+init.js?v=20250417v2:89 Version check module not loaded yet. Loading dynamically...
+referendum.html:89 Firebase initialized. Proceeding with /referendum.html logic.
+auth.js?v=20250417v2:342 Setting up Auth state listener using passed fbAuth instance.
+referendum.html:93 Proceeding with /referendum.html logic after listener setup.
+auth.js?v=20250417v2:399 checkLoginStatus: Found valid data in sessionStorage for UID: Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2
+auth.js?v=20250417v2:449 Fetching page permissions from Firestore...
+version-check.js?v=20250417v2:476 version-check.js 載入完成
+init.js?v=20250417v2:95 Version check module loaded dynamically.
+version-check.js?v=20250417v2:27 初始化版本檢查功能...
+main.js?v=20250417v2:87 Menu HTML successfully loaded and injected.
+main.js?v=20250417v2:107 [Menu Debug] Running setupMenuInteractions for FRONTEND page...
+main.js?v=20250417v2:119 [Menu Debug] Found Elements: {toggleButton: true, menu: true, overlay: true}
+main.js?v=20250417v2:124 [Menu Debug] Using IDs: {toggleButtonId: 'menu-toggle-btn', menuPanelId: 'floating-menu-panel', overlayId: 'sliding-menu-overlay'}
+main.js?v=20250417v2:142 [Menu Debug] Event listener attached to menu-toggle-btn.
+main.js?v=20250417v2:146 [Menu Debug] Event listener attached to sliding-menu-overlay.
+main.js?v=20250417v2:165 Attempting to populate user info in menu...
+auth.js?v=20250417v2:399 checkLoginStatus: Found valid data in sessionStorage for UID: Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2
+main.js?v=20250417v2:205 populateUserInfoInMenu - currentUserInfo: {authUid: 'Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2', name: '蔡', lineUserId: 'Ub951e0cf789be32fcce44b586fd6ee51', pictureUrl: 'https://profile.line-scdn.net/0hEYCH-I8pGnZ-MQsBrU…JHxw-BlIBRAg0FxYHAl0pRABQQgw5FkIBCQopFl4GRF42EE5a', roles: {…}, …}
+main.js?v=20250417v2:271 populateUserInfoInMenu finished.
+main.js?v=20250417v2:158 [Menu Debug] Menu interactions setup complete.
+auth.js?v=20250417v2:346 [AUTH STATE CHANGE] User: Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2  Path: /referendum.html
+auth.js?v=20250417v2:352 Auth state changed: User is signed in. Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2
+main.js?v=20250417v2:165 Attempting to populate user info in menu...
+auth.js?v=20250417v2:399 checkLoginStatus: Found valid data in sessionStorage for UID: Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2
+main.js?v=20250417v2:205 populateUserInfoInMenu - currentUserInfo: {authUid: 'Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2', name: '蔡', lineUserId: 'Ub951e0cf789be32fcce44b586fd6ee51', pictureUrl: 'https://profile.line-scdn.net/0hEYCH-I8pGnZ-MQsBrU…JHxw-BlIBRAg0FxYHAl0pRABQQgw5FkIBCQopFl4GRF42EE5a', roles: {…}, …}
+main.js?v=20250417v2:271 populateUserInfoInMenu finished.
+auth.js?v=20250417v2:459 Page permissions fetched and cached: {clockin.html: 1, announce_html: 1, leave.html: 1, index_html: 0, admin_html: 9, …}
+auth.js?v=20250417v2:556 Permission check for referendum.html: Required Level 1 (using default)
+auth.js?v=20250417v2:568 requireLogin: User 蔡 (Level 100) OK for referendum.html (Requires 1).
+referendum.html:104  initReferendumPage function not found! Check referendum-logic.js
+(匿名) @ referendum.html:104
+version-check.js?v=20250417v2:77 版本檢查間隔設為: 10 分鐘
+version-check.js?v=20250417v2:83 版本檢查功能狀態: 啟用
+version-check.js?v=20250417v2:121 執行版本檢查...
+version-check.js?v=20250417v2:189 當前客戶端版本: 20250417v3, 最新版本: 20250417v3
+version-check.js?v=20250417v2:49 版本檢查功能初始化完成。客戶端版本: 20250417v3
+main.js?v=20250417v2:133 [Menu Debug] toggleMenu function CALLED.
+main.js?v=20250417v2:135 [Menu Debug] body classList after toggle: DOMTokenList ['menu-open', value: 'menu-open']
+導覽至https://chicken-tw.web.app/schedule-view.html
+firebase-config.js?v=20250417v2:13 firebase-config.js loaded (config constant only).
+init.js?v=20250417v2:9 init.js loaded. Ready for initialization call.
+main.js?v=20250417v2:351 main.js loaded (adjusted for passing fbAuth).
+auth.js?v=20250417v2:676 auth.js (LIFF version - functions accept params) loaded.
+leave-logic.js?v=20250417v2:1  Uncaught SyntaxError: Identifier 'calendarContainer' has already been declared (at leave-logic.js?v=20250417v2:1:1)
+main.js?v=20250417v2:9 DOM fully loaded and parsed. main.js executing.
+main.js?v=20250417v2:68 Attempting to load and inject menu...
+main.js?v=20250417v2:78 Detected page type: Frontend. Loading menu from: /_menu.html
+schedule-view.html:235 Initializing schedule view page...
+init.js?v=20250417v2:23 Attempting Firebase initialization (logic consolidated in init.js)...
+init.js?v=20250417v2:38 No Firebase apps initialized yet. Initializing now...
+init.js?v=20250417v2:40 Firebase App initialized.
+init.js?v=20250417v2:47 Getting Firestore and Auth instances...
+init.js?v=20250417v2:52 Firestore and Auth obtained successfully.
+init.js?v=20250417v2:89 Version check module not loaded yet. Loading dynamically...
+auth.js?v=20250417v2:342 Setting up Auth state listener using passed fbAuth instance.
+auth.js?v=20250417v2:399 checkLoginStatus: Found valid data in sessionStorage for UID: Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2
+auth.js?v=20250417v2:449 Fetching page permissions from Firestore...
+version-check.js?v=20250417v2:476 version-check.js 載入完成
+init.js?v=20250417v2:95 Version check module loaded dynamically.
+version-check.js?v=20250417v2:27 初始化版本檢查功能...
+main.js?v=20250417v2:87 Menu HTML successfully loaded and injected.
+main.js?v=20250417v2:107 [Menu Debug] Running setupMenuInteractions for FRONTEND page...
+main.js?v=20250417v2:119 [Menu Debug] Found Elements: {toggleButton: true, menu: true, overlay: true}
+main.js?v=20250417v2:124 [Menu Debug] Using IDs: {toggleButtonId: 'menu-toggle-btn', menuPanelId: 'floating-menu-panel', overlayId: 'sliding-menu-overlay'}
+main.js?v=20250417v2:142 [Menu Debug] Event listener attached to menu-toggle-btn.
+main.js?v=20250417v2:146 [Menu Debug] Event listener attached to sliding-menu-overlay.
+main.js?v=20250417v2:165 Attempting to populate user info in menu...
+auth.js?v=20250417v2:399 checkLoginStatus: Found valid data in sessionStorage for UID: Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2
+main.js?v=20250417v2:205 populateUserInfoInMenu - currentUserInfo: {authUid: 'Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2', name: '蔡', lineUserId: 'Ub951e0cf789be32fcce44b586fd6ee51', pictureUrl: 'https://profile.line-scdn.net/0hEYCH-I8pGnZ-MQsBrU…JHxw-BlIBRAg0FxYHAl0pRABQQgw5FkIBCQopFl4GRF42EE5a', roles: {…}, …}
+main.js?v=20250417v2:271 populateUserInfoInMenu finished.
+main.js?v=20250417v2:158 [Menu Debug] Menu interactions setup complete.
+auth.js?v=20250417v2:346 [AUTH STATE CHANGE] User: Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2  Path: /schedule-view.html
+auth.js?v=20250417v2:352 Auth state changed: User is signed in. Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2
+main.js?v=20250417v2:165 Attempting to populate user info in menu...
+auth.js?v=20250417v2:399 checkLoginStatus: Found valid data in sessionStorage for UID: Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2
+main.js?v=20250417v2:205 populateUserInfoInMenu - currentUserInfo: {authUid: 'Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2', name: '蔡', lineUserId: 'Ub951e0cf789be32fcce44b586fd6ee51', pictureUrl: 'https://profile.line-scdn.net/0hEYCH-I8pGnZ-MQsBrU…JHxw-BlIBRAg0FxYHAl0pRABQQgw5FkIBCQopFl4GRF42EE5a', roles: {…}, …}
+main.js?v=20250417v2:271 populateUserInfoInMenu finished.
+auth.js?v=20250417v2:459 Page permissions fetched and cached: {cram-school_html: 1, index.html: 0, sales_html: 1, admin.html: 9, salary.html: 1, …}
+auth.js?v=20250417v2:556 Permission check for schedule-view.html: Required Level 1 (using default)
+auth.js?v=20250417v2:568 requireLogin: User 蔡 (Level 100) OK for schedule-view.html (Requires 1).
+schedule-view-logic.js?v=20250417v2:32 Initializing Schedule View Page for: 蔡
+version-check.js?v=20250417v2:77 版本檢查間隔設為: 10 分鐘
+version-check.js?v=20250417v2:83 版本檢查功能狀態: 啟用
+version-check.js?v=20250417v2:121 執行版本檢查...
+version-check.js?v=20250417v2:189 當前客戶端版本: 20250417v3, 最新版本: 20250417v3
+version-check.js?v=20250417v2:49 版本檢查功能初始化完成。客戶端版本: 20250417v3
+schedule-view-logic.js?v=20250417v2:232 Loaded 2 employees.
+schedule-view-logic.js?v=20250417v2:208 Loaded stores: []
+schedule-view-logic.js?v=20250417v2:621  Store legend container not found or no stores loaded.
+renderStoreLegend @ schedule-view-logic.js?v=20250417v2:621
+initScheduleViewPage @ schedule-view-logic.js?v=20250417v2:77
+await in initScheduleViewPage
+(匿名) @ schedule-view.html:246
+schedule-view-logic.js?v=20250417v2:104  Firebase Functions SDK not available for schedule view.
+initScheduleViewPage @ schedule-view-logic.js?v=20250417v2:104
+await in initScheduleViewPage
+(匿名) @ schedule-view.html:246
+main.js?v=20250417v2:133 [Menu Debug] toggleMenu function CALLED.
+main.js?v=20250417v2:135 [Menu Debug] body classList after toggle: DOMTokenList ['menu-open', value: 'menu-open']
+導覽至https://chicken-tw.web.app/sales.html
+firebase-config.js?v=20250417v2:13 firebase-config.js loaded (config constant only).
+init.js?v=20250417v2:9 init.js loaded. Ready for initialization call.
+main.js?v=20250417v2:351 main.js loaded (adjusted for passing fbAuth).
+auth.js?v=20250417v2:676 auth.js (LIFF version - functions accept params) loaded.
+sales-logic.js?v=20250417v2:507 sales-logic.js loaded
+main.js?v=20250417v2:9 DOM fully loaded and parsed. main.js executing.
+main.js?v=20250417v2:68 Attempting to load and inject menu...
+main.js?v=20250417v2:78 Detected page type: Frontend. Loading menu from: /_menu.html
+sales.html:94 Waiting for central initialization via init.js (/sales.html)...
+init.js?v=20250417v2:23 Attempting Firebase initialization (logic consolidated in init.js)...
+init.js?v=20250417v2:38 No Firebase apps initialized yet. Initializing now...
+init.js?v=20250417v2:40 Firebase App initialized.
+init.js?v=20250417v2:47 Getting Firestore and Auth instances...
+init.js?v=20250417v2:52 Firestore and Auth obtained successfully.
+init.js?v=20250417v2:89 Version check module not loaded yet. Loading dynamically...
+sales.html:98 Firebase initialized. Proceeding with /sales.html logic.
+auth.js?v=20250417v2:342 Setting up Auth state listener using passed fbAuth instance.
+sales.html:102 Proceeding with /sales.html logic after listener setup.
+auth.js?v=20250417v2:399 checkLoginStatus: Found valid data in sessionStorage for UID: Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2
+auth.js?v=20250417v2:449 Fetching page permissions from Firestore...
+version-check.js?v=20250417v2:476 version-check.js 載入完成
+init.js?v=20250417v2:95 Version check module loaded dynamically.
+version-check.js?v=20250417v2:27 初始化版本檢查功能...
+main.js?v=20250417v2:87 Menu HTML successfully loaded and injected.
+main.js?v=20250417v2:107 [Menu Debug] Running setupMenuInteractions for FRONTEND page...
+main.js?v=20250417v2:119 [Menu Debug] Found Elements: {toggleButton: true, menu: true, overlay: true}
+main.js?v=20250417v2:124 [Menu Debug] Using IDs: {toggleButtonId: 'menu-toggle-btn', menuPanelId: 'floating-menu-panel', overlayId: 'sliding-menu-overlay'}
+main.js?v=20250417v2:142 [Menu Debug] Event listener attached to menu-toggle-btn.
+main.js?v=20250417v2:146 [Menu Debug] Event listener attached to sliding-menu-overlay.
+main.js?v=20250417v2:165 Attempting to populate user info in menu...
+auth.js?v=20250417v2:399 checkLoginStatus: Found valid data in sessionStorage for UID: Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2
+main.js?v=20250417v2:205 populateUserInfoInMenu - currentUserInfo: {authUid: 'Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2', name: '蔡', lineUserId: 'Ub951e0cf789be32fcce44b586fd6ee51', pictureUrl: 'https://profile.line-scdn.net/0hEYCH-I8pGnZ-MQsBrU…JHxw-BlIBRAg0FxYHAl0pRABQQgw5FkIBCQopFl4GRF42EE5a', roles: {…}, …}
+main.js?v=20250417v2:271 populateUserInfoInMenu finished.
+main.js?v=20250417v2:158 [Menu Debug] Menu interactions setup complete.
+auth.js?v=20250417v2:346 [AUTH STATE CHANGE] User: Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2  Path: /sales.html
+auth.js?v=20250417v2:352 Auth state changed: User is signed in. Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2
+main.js?v=20250417v2:165 Attempting to populate user info in menu...
+auth.js?v=20250417v2:399 checkLoginStatus: Found valid data in sessionStorage for UID: Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2
+main.js?v=20250417v2:205 populateUserInfoInMenu - currentUserInfo: {authUid: 'Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2', name: '蔡', lineUserId: 'Ub951e0cf789be32fcce44b586fd6ee51', pictureUrl: 'https://profile.line-scdn.net/0hEYCH-I8pGnZ-MQsBrU…JHxw-BlIBRAg0FxYHAl0pRABQQgw5FkIBCQopFl4GRF42EE5a', roles: {…}, …}
+main.js?v=20250417v2:271 populateUserInfoInMenu finished.
+auth.js?v=20250417v2:459 Page permissions fetched and cached: {admin_html: 9, index_html: 0, clockin_html: 1, clockin.html: 1, schedule-gen_html: 9, …}
+auth.js?v=20250417v2:554 Permission check for sales.html: Required Level 1 (from settings)
+auth.js?v=20250417v2:568 requireLogin: User 蔡 (Level 100) OK for sales.html (Requires 1).
+sales-logic.js?v=20250417v2:24 Initializing Sales Entry Page for: 蔡
+version-check.js?v=20250417v2:77 版本檢查間隔設為: 10 分鐘
+version-check.js?v=20250417v2:83 版本檢查功能狀態: 啟用
+version-check.js?v=20250417v2:121 執行版本檢查...
+sales-logic.js?v=20250417v2:184 Fetching sales field definitions...
+version-check.js?v=20250417v2:189 當前客戶端版本: 20250417v3, 最新版本: 20250417v3
+version-check.js?v=20250417v2:49 版本檢查功能初始化完成。客戶端版本: 20250417v3
+sales-logic.js?v=20250417v2:207 Sales field definitions fetched: (2) [{…}, {…}]
+sales-logic.js?v=20250417v2:112 Sales entry page initialized successfully.
+sales-logic.js?v=20250417v2:469  Error submitting sales data: ReferenceError: renderDynamicSections is not defined
+    at HTMLFormElement.handleSubmitSales (sales-logic.js?v=20250417v2:462:14)
+handleSubmitSales @ sales-logic.js?v=20250417v2:469
+main.js?v=20250417v2:133 [Menu Debug] toggleMenu function CALLED.
+main.js?v=20250417v2:135 [Menu Debug] body classList after toggle: DOMTokenList ['menu-open', value: 'menu-open']
+導覽至https://chicken-tw.web.app/order.html
+firebase-config.js?v=20250417v2:13 firebase-config.js loaded (config constant only).
+init.js?v=20250417v2:9 init.js loaded. Ready for initialization call.
+auth.js?v=20250417v2:676 auth.js (LIFF version - functions accept params) loaded.
+main.js?v=20250417v2:351 main.js loaded (adjusted for passing fbAuth).
+order.js?v=20250417v2:1  Uncaught SyntaxError: Unexpected token '<' (at order.js?v=20250417v2:1:1)
+inventory-check.js?v=20250417v2:921 inventory-check.js 模組載入完成
+main.js?v=20250417v2:9 DOM fully loaded and parsed. main.js executing.
+main.js?v=20250417v2:68 Attempting to load and inject menu...
+main.js?v=20250417v2:78 Detected page type: Frontend. Loading menu from: /_menu.html
+order.html:124 Waiting for central initialization via init.js (/order.html)...
+init.js?v=20250417v2:23 Attempting Firebase initialization (logic consolidated in init.js)...
+init.js?v=20250417v2:38 No Firebase apps initialized yet. Initializing now...
+init.js?v=20250417v2:40 Firebase App initialized.
+init.js?v=20250417v2:47 Getting Firestore and Auth instances...
+init.js?v=20250417v2:52 Firestore and Auth obtained successfully.
+init.js?v=20250417v2:89 Version check module not loaded yet. Loading dynamically...
+order.html:128 Firebase initialized. Proceeding with /order.html logic.
+auth.js?v=20250417v2:342 Setting up Auth state listener using passed fbAuth instance.
+order.html:132 Proceeding with /order.html logic after listener setup.
+auth.js?v=20250417v2:399 checkLoginStatus: Found valid data in sessionStorage for UID: Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2
+auth.js?v=20250417v2:449 Fetching page permissions from Firestore...
+version-check.js?v=20250417v2:476 version-check.js 載入完成
+init.js?v=20250417v2:95 Version check module loaded dynamically.
+version-check.js?v=20250417v2:27 初始化版本檢查功能...
+auth.js?v=20250417v2:346 [AUTH STATE CHANGE] User: Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2  Path: /order.html
+auth.js?v=20250417v2:352 Auth state changed: User is signed in. Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2
+main.js?v=20250417v2:165 Attempting to populate user info in menu...
+main.js?v=20250417v2:199  Menu elements for user info not found in regular menu - Using available elements only
+populateUserInfoInMenu @ main.js?v=20250417v2:199
+(匿名) @ auth.js?v=20250417v2:365
+setTimeout
+(匿名) @ auth.js?v=20250417v2:365
+next @ auth.ts:358
+(匿名) @ auth_impl.ts:600
+Promise.then
+registerStateListener @ auth_impl.ts:600
+onAuthStateChanged @ auth_impl.ts:442
+onAuthStateChanged @ auth.ts:180
+setupAuthStateListener @ auth.js?v=20250417v2:345
+(匿名) @ order.html:130
+auth.js?v=20250417v2:399 checkLoginStatus: Found valid data in sessionStorage for UID: Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2
+main.js?v=20250417v2:205 populateUserInfoInMenu - currentUserInfo: {authUid: 'Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2', name: '蔡', lineUserId: 'Ub951e0cf789be32fcce44b586fd6ee51', pictureUrl: 'https://profile.line-scdn.net/0hEYCH-I8pGnZ-MQsBrU…JHxw-BlIBRAg0FxYHAl0pRABQQgw5FkIBCQopFl4GRF42EE5a', roles: {…}, …}
+main.js?v=20250417v2:271 populateUserInfoInMenu finished.
+main.js?v=20250417v2:87 Menu HTML successfully loaded and injected.
+main.js?v=20250417v2:107 [Menu Debug] Running setupMenuInteractions for FRONTEND page...
+main.js?v=20250417v2:119 [Menu Debug] Found Elements: {toggleButton: true, menu: true, overlay: true}
+main.js?v=20250417v2:124 [Menu Debug] Using IDs: {toggleButtonId: 'menu-toggle-btn', menuPanelId: 'floating-menu-panel', overlayId: 'sliding-menu-overlay'}
+main.js?v=20250417v2:142 [Menu Debug] Event listener attached to menu-toggle-btn.
+main.js?v=20250417v2:146 [Menu Debug] Event listener attached to sliding-menu-overlay.
+main.js?v=20250417v2:165 Attempting to populate user info in menu...
+auth.js?v=20250417v2:399 checkLoginStatus: Found valid data in sessionStorage for UID: Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2
+main.js?v=20250417v2:205 populateUserInfoInMenu - currentUserInfo: {authUid: 'Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2', name: '蔡', lineUserId: 'Ub951e0cf789be32fcce44b586fd6ee51', pictureUrl: 'https://profile.line-scdn.net/0hEYCH-I8pGnZ-MQsBrU…JHxw-BlIBRAg0FxYHAl0pRABQQgw5FkIBCQopFl4GRF42EE5a', roles: {…}, …}
+main.js?v=20250417v2:271 populateUserInfoInMenu finished.
+main.js?v=20250417v2:158 [Menu Debug] Menu interactions setup complete.
+auth.js?v=20250417v2:459 Page permissions fetched and cached: {salary-view_html: 9, cram-school_html: 1, admin.html: 9, schedule-gen.html: 9, referendum_html: 1, …}
+auth.js?v=20250417v2:554 Permission check for order.html: Required Level 1 (from settings)
+auth.js?v=20250417v2:568 requireLogin: User 蔡 (Level 100) OK for order.html (Requires 1).
+order.html:147  initOrderPage function not found! Check order-logic.js
+(匿名) @ order.html:147
+version-check.js?v=20250417v2:77 版本檢查間隔設為: 10 分鐘
+version-check.js?v=20250417v2:83 版本檢查功能狀態: 啟用
+version-check.js?v=20250417v2:121 執行版本檢查...
+version-check.js?v=20250417v2:189 當前客戶端版本: 20250417v3, 最新版本: 20250417v3
+version-check.js?v=20250417v2:49 版本檢查功能初始化完成。客戶端版本: 20250417v3
+Tracking Prevention blocked access to storage for <URL>.
+Tracking Prevention blocked access to storage for <URL>.
+Tracking Prevention blocked access to storage for <URL>.
+Tracking Prevention blocked access to storage for <URL>.
+Tracking Prevention blocked access to storage for <URL>.
+Tracking Prevention blocked access to storage for <URL>.
+Tracking Prevention blocked access to storage for <URL>.
+Tracking Prevention blocked access to storage for <URL>.
+Tracking Prevention blocked access to storage for <URL>.
+Tracking Prevention blocked access to storage for <URL>.
+Tracking Prevention blocked access to storage for <URL>.
+Tracking Prevention blocked access to storage for <URL>.
+Tracking Prevention blocked access to storage for <URL>.
+Tracking Prevention blocked access to storage for <URL>.
+Tracking Prevention blocked access to storage for <URL>.
+Tracking Prevention blocked access to storage for <URL>.
+導覽至https://chicken-tw.web.app/order.html
+firebase-config.js?v=20250417v2:13 firebase-config.js loaded (config constant only).
+init.js?v=20250417v2:9 init.js loaded. Ready for initialization call.
+auth.js?v=20250417v2:676 auth.js (LIFF version - functions accept params) loaded.
+main.js?v=20250417v2:351 main.js loaded (adjusted for passing fbAuth).
+order.js?v=20250417v2:1  Uncaught SyntaxError: Unexpected token '<' (at order.js?v=20250417v2:1:1)
+inventory-check.js?v=20250417v2:921 inventory-check.js 模組載入完成
+main.js?v=20250417v2:9 DOM fully loaded and parsed. main.js executing.
+main.js?v=20250417v2:68 Attempting to load and inject menu...
+main.js?v=20250417v2:78 Detected page type: Frontend. Loading menu from: /_menu.html
+order.html:124 Waiting for central initialization via init.js (/order.html)...
+init.js?v=20250417v2:23 Attempting Firebase initialization (logic consolidated in init.js)...
+init.js?v=20250417v2:38 No Firebase apps initialized yet. Initializing now...
+init.js?v=20250417v2:40 Firebase App initialized.
+init.js?v=20250417v2:47 Getting Firestore and Auth instances...
+init.js?v=20250417v2:52 Firestore and Auth obtained successfully.
+init.js?v=20250417v2:89 Version check module not loaded yet. Loading dynamically...
+order.html:128 Firebase initialized. Proceeding with /order.html logic.
+auth.js?v=20250417v2:342 Setting up Auth state listener using passed fbAuth instance.
+order.html:132 Proceeding with /order.html logic after listener setup.
+auth.js?v=20250417v2:399 checkLoginStatus: Found valid data in sessionStorage for UID: Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2
+auth.js?v=20250417v2:449 Fetching page permissions from Firestore...
+version-check.js?v=20250417v2:476 version-check.js 載入完成
+init.js?v=20250417v2:95 Version check module loaded dynamically.
+version-check.js?v=20250417v2:27 初始化版本檢查功能...
+main.js?v=20250417v2:87 Menu HTML successfully loaded and injected.
+main.js?v=20250417v2:107 [Menu Debug] Running setupMenuInteractions for FRONTEND page...
+main.js?v=20250417v2:119 [Menu Debug] Found Elements: {toggleButton: true, menu: true, overlay: true}
+main.js?v=20250417v2:124 [Menu Debug] Using IDs: {toggleButtonId: 'menu-toggle-btn', menuPanelId: 'floating-menu-panel', overlayId: 'sliding-menu-overlay'}
+main.js?v=20250417v2:142 [Menu Debug] Event listener attached to menu-toggle-btn.
+main.js?v=20250417v2:146 [Menu Debug] Event listener attached to sliding-menu-overlay.
+main.js?v=20250417v2:165 Attempting to populate user info in menu...
+auth.js?v=20250417v2:399 checkLoginStatus: Found valid data in sessionStorage for UID: Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2
+main.js?v=20250417v2:205 populateUserInfoInMenu - currentUserInfo: {authUid: 'Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2', name: '蔡', lineUserId: 'Ub951e0cf789be32fcce44b586fd6ee51', pictureUrl: 'https://profile.line-scdn.net/0hEYCH-I8pGnZ-MQsBrU…JHxw-BlIBRAg0FxYHAl0pRABQQgw5FkIBCQopFl4GRF42EE5a', roles: {…}, …}
+main.js?v=20250417v2:271 populateUserInfoInMenu finished.
+main.js?v=20250417v2:158 [Menu Debug] Menu interactions setup complete.
+auth.js?v=20250417v2:346 [AUTH STATE CHANGE] User: Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2  Path: /order.html
+auth.js?v=20250417v2:352 Auth state changed: User is signed in. Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2
+main.js?v=20250417v2:165 Attempting to populate user info in menu...
+auth.js?v=20250417v2:399 checkLoginStatus: Found valid data in sessionStorage for UID: Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2
+main.js?v=20250417v2:205 populateUserInfoInMenu - currentUserInfo: {authUid: 'Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2', name: '蔡', lineUserId: 'Ub951e0cf789be32fcce44b586fd6ee51', pictureUrl: 'https://profile.line-scdn.net/0hEYCH-I8pGnZ-MQsBrU…JHxw-BlIBRAg0FxYHAl0pRABQQgw5FkIBCQopFl4GRF42EE5a', roles: {…}, …}
+main.js?v=20250417v2:271 populateUserInfoInMenu finished.
+auth.js?v=20250417v2:459 Page permissions fetched and cached: {schedule-gen.html: 9, index_html: 0, salary_html: 1, clockin_html: 1, sales.html: 1, …}
+auth.js?v=20250417v2:554 Permission check for order.html: Required Level 1 (from settings)
+auth.js?v=20250417v2:568 requireLogin: User 蔡 (Level 100) OK for order.html (Requires 1).
+order.html:147  initOrderPage function not found! Check order-logic.js
+(匿名) @ order.html:147
+version-check.js?v=20250417v2:77 版本檢查間隔設為: 10 分鐘
+version-check.js?v=20250417v2:83 版本檢查功能狀態: 啟用
+version-check.js?v=20250417v2:121 執行版本檢查...
+version-check.js?v=20250417v2:189 當前客戶端版本: 20250417v3, 最新版本: 20250417v3
+version-check.js?v=20250417v2:49 版本檢查功能初始化完成。客戶端版本: 20250417v3
+main.js?v=20250417v2:133 [Menu Debug] toggleMenu function CALLED.
+main.js?v=20250417v2:135 [Menu Debug] body classList after toggle: DOMTokenList ['menu-open', value: 'menu-open']
+Tracking Prevention blocked access to storage for <URL>.
+Tracking Prevention blocked access to storage for <URL>.
+Tracking Prevention blocked access to storage for <URL>.
+Tracking Prevention blocked access to storage for <URL>.
+Tracking Prevention blocked access to storage for <URL>.
+Tracking Prevention blocked access to storage for <URL>.
+Tracking Prevention blocked access to storage for <URL>.
+Tracking Prevention blocked access to storage for <URL>.
+Tracking Prevention blocked access to storage for <URL>.
+Tracking Prevention blocked access to storage for <URL>.
+Tracking Prevention blocked access to storage for <URL>.
+Tracking Prevention blocked access to storage for <URL>.
+Tracking Prevention blocked access to storage for <URL>.
+Tracking Prevention blocked access to storage for <URL>.
+Tracking Prevention blocked access to storage for <URL>.
+Tracking Prevention blocked access to storage for <URL>.
+導覽至https://chicken-tw.web.app/clockin.html
+firebase-config.js:13 firebase-config.js loaded (config constant only).
+auth.js:676 auth.js (LIFF version - functions accept params) loaded.
+clockin-logic.js:1432 clockin-logic.js loaded
+clockin.html:408  Uncaught ReferenceError: initFirebase is not defined
+    at HTMLDocument.<anonymous> (clockin.html:408:13)
+(匿名) @ clockin.html:408
+offline-clockin.js:96 創建打卡記錄存儲
+offline-clockin.js:103 成功打開IndexedDB數據庫
+offline-clockin.js:197  獲取未同步記錄時發生錯誤: DataError: Failed to execute 'only' on 'IDBKeyRange': The parameter is not a valid key.
+    at offline-clockin.js:184:58
+    at new Promise (<anonymous>)
+    at OfflineClockSupport.getUnsyncedRecords (offline-clockin.js:179:16)
+    at OfflineClockSupport.init (offline-clockin.js:32:46)
+(匿名) @ offline-clockin.js:197
+getUnsyncedRecords @ offline-clockin.js:179
+init @ offline-clockin.js:32
+await in init
+(匿名) @ offline-clockin.js:570
+offline-clockin.js:43  初始化離線打卡支持模塊失敗: DataError: Failed to execute 'only' on 'IDBKeyRange': The parameter is not a valid key.
+    at offline-clockin.js:184:58
+    at new Promise (<anonymous>)
+    at OfflineClockSupport.getUnsyncedRecords (offline-clockin.js:179:16)
+    at OfflineClockSupport.init (offline-clockin.js:32:46)
+init @ offline-clockin.js:43
+await in init
+(匿名) @ offline-clockin.js:570
+offline-clockin.js:571 離線打卡支持初始化失敗
+導覽至https://chicken-tw.web.app/order.html
+firebase-config.js?v=20250417v2:13 firebase-config.js loaded (config constant only).
+init.js?v=20250417v2:9 init.js loaded. Ready for initialization call.
+auth.js?v=20250417v2:676 auth.js (LIFF version - functions accept params) loaded.
+main.js?v=20250417v2:351 main.js loaded (adjusted for passing fbAuth).
+order.js?v=20250417v2:1  Uncaught SyntaxError: Unexpected token '<' (at order.js?v=20250417v2:1:1)
+inventory-check.js?v=20250417v2:921 inventory-check.js 模組載入完成
+main.js?v=20250417v2:9 DOM fully loaded and parsed. main.js executing.
+main.js?v=20250417v2:68 Attempting to load and inject menu...
+main.js?v=20250417v2:78 Detected page type: Frontend. Loading menu from: /_menu.html
+order.html:124 Waiting for central initialization via init.js (/order.html)...
+init.js?v=20250417v2:23 Attempting Firebase initialization (logic consolidated in init.js)...
+init.js?v=20250417v2:38 No Firebase apps initialized yet. Initializing now...
+init.js?v=20250417v2:40 Firebase App initialized.
+init.js?v=20250417v2:47 Getting Firestore and Auth instances...
+init.js?v=20250417v2:52 Firestore and Auth obtained successfully.
+init.js?v=20250417v2:89 Version check module not loaded yet. Loading dynamically...
+order.html:128 Firebase initialized. Proceeding with /order.html logic.
+auth.js?v=20250417v2:342 Setting up Auth state listener using passed fbAuth instance.
+order.html:132 Proceeding with /order.html logic after listener setup.
+auth.js?v=20250417v2:399 checkLoginStatus: Found valid data in sessionStorage for UID: Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2
+auth.js?v=20250417v2:449 Fetching page permissions from Firestore...
+version-check.js?v=20250417v2:476 version-check.js 載入完成
+init.js?v=20250417v2:95 Version check module loaded dynamically.
+version-check.js?v=20250417v2:27 初始化版本檢查功能...
+main.js?v=20250417v2:87 Menu HTML successfully loaded and injected.
+main.js?v=20250417v2:107 [Menu Debug] Running setupMenuInteractions for FRONTEND page...
+main.js?v=20250417v2:119 [Menu Debug] Found Elements: {toggleButton: true, menu: true, overlay: true}
+main.js?v=20250417v2:124 [Menu Debug] Using IDs: {toggleButtonId: 'menu-toggle-btn', menuPanelId: 'floating-menu-panel', overlayId: 'sliding-menu-overlay'}
+main.js?v=20250417v2:142 [Menu Debug] Event listener attached to menu-toggle-btn.
+main.js?v=20250417v2:146 [Menu Debug] Event listener attached to sliding-menu-overlay.
+main.js?v=20250417v2:165 Attempting to populate user info in menu...
+auth.js?v=20250417v2:399 checkLoginStatus: Found valid data in sessionStorage for UID: Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2
+main.js?v=20250417v2:205 populateUserInfoInMenu - currentUserInfo: {authUid: 'Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2', name: '蔡', lineUserId: 'Ub951e0cf789be32fcce44b586fd6ee51', pictureUrl: 'https://profile.line-scdn.net/0hEYCH-I8pGnZ-MQsBrU…JHxw-BlIBRAg0FxYHAl0pRABQQgw5FkIBCQopFl4GRF42EE5a', roles: {…}, …}
+main.js?v=20250417v2:271 populateUserInfoInMenu finished.
+main.js?v=20250417v2:158 [Menu Debug] Menu interactions setup complete.
+auth.js?v=20250417v2:346 [AUTH STATE CHANGE] User: Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2  Path: /order.html
+auth.js?v=20250417v2:352 Auth state changed: User is signed in. Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2
+main.js?v=20250417v2:165 Attempting to populate user info in menu...
+auth.js?v=20250417v2:399 checkLoginStatus: Found valid data in sessionStorage for UID: Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2
+main.js?v=20250417v2:205 populateUserInfoInMenu - currentUserInfo: {authUid: 'Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2', name: '蔡', lineUserId: 'Ub951e0cf789be32fcce44b586fd6ee51', pictureUrl: 'https://profile.line-scdn.net/0hEYCH-I8pGnZ-MQsBrU…JHxw-BlIBRAg0FxYHAl0pRABQQgw5FkIBCQopFl4GRF42EE5a', roles: {…}, …}
+main.js?v=20250417v2:271 populateUserInfoInMenu finished.
+auth.js?v=20250417v2:459 Page permissions fetched and cached: {admin.html: 9, clockin.html: 1, pending_html: 0, order_html: 1, index.html: 0, …}
+auth.js?v=20250417v2:554 Permission check for order.html: Required Level 1 (from settings)
+auth.js?v=20250417v2:568 requireLogin: User 蔡 (Level 100) OK for order.html (Requires 1).
+order.html:147  initOrderPage function not found! Check order-logic.js
+(匿名) @ order.html:147
+version-check.js?v=20250417v2:77 版本檢查間隔設為: 10 分鐘
+version-check.js?v=20250417v2:83 版本檢查功能狀態: 啟用
+version-check.js?v=20250417v2:121 執行版本檢查...
+version-check.js?v=20250417v2:189 當前客戶端版本: 20250417v3, 最新版本: 20250417v3
+version-check.js?v=20250417v2:49 版本檢查功能初始化完成。客戶端版本: 20250417v3
+main.js?v=20250417v2:133 [Menu Debug] toggleMenu function CALLED.
+main.js?v=20250417v2:135 [Menu Debug] body classList after toggle: DOMTokenList ['menu-open', value: 'menu-open']
+導覽至https://chicken-tw.web.app/admin.html
+firebase-config.js?v=20250417v2:13 firebase-config.js loaded (config constant only).
+init.js?v=20250417v2:9 init.js loaded. Ready for initialization call.
+admin-menu.js?v=20250417v2:1  Uncaught SyntaxError: Unexpected token '<' (at admin-menu.js?v=20250417v2:1:1)
+admin-logic.js?v=20250417v2:687 admin-logic.js loaded
+admin-parameters.js?v=20250417v2:1704 admin-parameters.js (Scheduling Load Implemented) loaded
+admin-dashboard.js?v=20250417v2:1  Uncaught SyntaxError: Unexpected token '<' (at admin-dashboard.js?v=20250417v2:1:1)
+admin-schedule.js?v=20250417v2:1  Uncaught SyntaxError: Unexpected token '<' (at admin-schedule.js?v=20250417v2:1:1)
+admin-schedule-stats.js?v=20250417v2:1  Uncaught SyntaxError: Unexpected token '<' (at admin-schedule-stats.js?v=20250417v2:1:1)
+admin-sales-stats.js?v=20250417v2:1  Uncaught SyntaxError: Unexpected token '<' (at admin-sales-stats.js?v=20250417v2:1:1)
+admin-salary-stats.js?v=20250417v2:1  Uncaught SyntaxError: Unexpected token '<' (at admin-salary-stats.js?v=20250417v2:1:1)
+admin-announce.js?v=20250417v2:1  Uncaught SyntaxError: Unexpected token '<' (at admin-announce.js?v=20250417v2:1:1)
+admin-users.js?v=20250417v2:1  Uncaught SyntaxError: Unexpected token '<' (at admin-users.js?v=20250417v2:1:1)
+admin-analysis.js?v=20250417v2:938 admin-analysis.js loaded
+inventory-check.js?v=20250417v2:921 inventory-check.js 模組載入完成
+admin-inventory.js?v=20250417v2:857 admin-inventory.js 模組載入完成
+admin-user-management.js?v=20250417v2:1  Uncaught SyntaxError: Unexpected token '<' (at admin-user-management.js?v=20250417v2:1:1)
+admin-bonus-tasks.js?v=20250417v2:889 admin-bonus-tasks.js loaded (Phase 2 Update)
+admin-bonus-groups.js?v=20250417v2:1  Uncaught SyntaxError: Identifier 'db' has already been declared (at admin-bonus-groups.js?v=20250417v2:1:1)
+admin-leave-requests.js?v=20250417v2:344 admin-leave-requests.js loaded
+version-updater.js?v=20250417v2:204 version-updater.js 載入完成
+init.js?v=20250417v2:23 Attempting Firebase initialization (logic consolidated in init.js)...
+init.js?v=20250417v2:38 No Firebase apps initialized yet. Initializing now...
+init.js?v=20250417v2:40 Firebase App initialized.
+init.js?v=20250417v2:47 Getting Firestore and Auth instances...
+init.js?v=20250417v2:52 Firestore and Auth obtained successfully.
+init.js?v=20250417v2:89 Version check module not loaded yet. Loading dynamically...
+admin.html:391 Firebase initialized in admin.html
+version-check.js?v=20250417v2:476 version-check.js 載入完成
+init.js?v=20250417v2:95 Version check module loaded dynamically.
+version-check.js?v=20250417v2:27 初始化版本檢查功能...
+admin.html:400 User authenticated, fetching user data...
+version-check.js?v=20250417v2:77 版本檢查間隔設為: 10 分鐘
+version-check.js?v=20250417v2:83 版本檢查功能狀態: 啟用
+version-check.js?v=20250417v2:121 執行版本檢查...
+admin.html:453  User document does not exist
+(匿名) @ admin.html:453
+await in (匿名)
+next @ auth.ts:358
+(匿名) @ auth_impl.ts:600
+Promise.then
+registerStateListener @ auth_impl.ts:600
+onAuthStateChanged @ auth_impl.ts:442
+onAuthStateChanged @ auth.ts:180
+(匿名) @ admin.html:396
+admin.html:463 User not logged in, redirecting...
+導覽至https://chicken-tw.web.app/index.html
+firebase-config.js?v=20250417v2:13 firebase-config.js loaded (config constant only).
+init.js?v=20250417v2:9 init.js loaded. Ready for initialization call.
+main.js?v=20250417v2:351 main.js loaded (adjusted for passing fbAuth).
+auth.js?v=20250417v2:676 auth.js (LIFF version - functions accept params) loaded.
+main.js?v=20250417v2:9 DOM fully loaded and parsed. main.js executing.
+main.js?v=20250417v2:68 Attempting to load and inject menu...
+main.js?v=20250417v2:78 Detected page type: Frontend. Loading menu from: /_menu.html
+index.html:31 Waiting for central initialization via init.js (index.html)...
+init.js?v=20250417v2:23 Attempting Firebase initialization (logic consolidated in init.js)...
+init.js?v=20250417v2:38 No Firebase apps initialized yet. Initializing now...
+init.js?v=20250417v2:40 Firebase App initialized.
+init.js?v=20250417v2:47 Getting Firestore and Auth instances...
+init.js?v=20250417v2:52 Firestore and Auth obtained successfully.
+init.js?v=20250417v2:89 Version check module not loaded yet. Loading dynamically...
+index.html:33 Firebase initialized. Proceeding with index.html logic.
+auth.js?v=20250417v2:342 Setting up Auth state listener using passed fbAuth instance.
+auth.js?v=20250417v2:34 Initializing LIFF with ID (Firebase instance provided): 2007075778-rMp6WYox
+version-check.js?v=20250417v2:476 version-check.js 載入完成
+init.js?v=20250417v2:95 Version check module loaded dynamically.
+version-check.js?v=20250417v2:27 初始化版本檢查功能...
+auth.js?v=20250417v2:346 [AUTH STATE CHANGE] User: null  Path: /index.html
+auth.js?v=20250417v2:371 Auth state changed: User is signed out.
+auth.js?v=20250417v2:379 User signed out on index page. No redirect needed.
+main.js?v=20250417v2:165 Attempting to populate user info in menu...
+main.js?v=20250417v2:199  Menu elements for user info not found in regular menu - Using available elements only
+populateUserInfoInMenu @ main.js?v=20250417v2:199
+(匿名) @ auth.js?v=20250417v2:372
+setTimeout
+(匿名) @ auth.js?v=20250417v2:372
+next @ auth.ts:358
+(匿名) @ auth_impl.ts:600
+Promise.then
+registerStateListener @ auth_impl.ts:600
+onAuthStateChanged @ auth_impl.ts:442
+onAuthStateChanged @ auth.ts:180
+setupAuthStateListener @ auth.js?v=20250417v2:345
+(匿名) @ index.html:38
+main.js?v=20250417v2:205 populateUserInfoInMenu - currentUserInfo: null
+main.js?v=20250417v2:271 populateUserInfoInMenu finished.
+main.js?v=20250417v2:87 Menu HTML successfully loaded and injected.
+main.js?v=20250417v2:107 [Menu Debug] Running setupMenuInteractions for FRONTEND page...
+main.js?v=20250417v2:119 [Menu Debug] Found Elements: {toggleButton: true, menu: true, overlay: true}
+main.js?v=20250417v2:124 [Menu Debug] Using IDs: {toggleButtonId: 'menu-toggle-btn', menuPanelId: 'floating-menu-panel', overlayId: 'sliding-menu-overlay'}
+main.js?v=20250417v2:142 [Menu Debug] Event listener attached to menu-toggle-btn.
+main.js?v=20250417v2:146 [Menu Debug] Event listener attached to sliding-menu-overlay.
+main.js?v=20250417v2:165 Attempting to populate user info in menu...
+main.js?v=20250417v2:205 populateUserInfoInMenu - currentUserInfo: null
+main.js?v=20250417v2:271 populateUserInfoInMenu finished.
+main.js?v=20250417v2:158 [Menu Debug] Menu interactions setup complete.
+auth.js?v=20250417v2:36 LIFF initialized successfully.
+auth.js?v=20250417v2:52 User is logged in to LINE. Checking Firebase Auth status...
+auth.js?v=20250417v2:68 Firebase user not logged in. Proceeding with LIFF -> Custom Token flow...
+auth.js?v=20250417v2:161 Attempting to get ID Token at: 1744639679507
+auth.js?v=20250417v2:163 Got ID Token at: 1744639679507
+auth.js?v=20250417v2:165 前端取得的原始 ID Token 片段: eyJraWQiOiIxZjA2N2Vl...dnvXiItFaJXb--PHXqwA
+auth.js?v=20250417v2:176 Preparing to send request body: {
+  "idToken": "eyJraWQiOiIxZjA2N2VlYzU5OWI3NGJmNGUyOGMyNDNjN2ZiYTY0NjNhMDM1OTMzNTUzZTMxZjdhMzg4ZTE0ZDQ0ZmE0OGUzIiwidHlwIjoiSldUIiwiYWxnIjoiRVMyNTYifQ.eyJpc3MiOiJodHRwczovL2FjY2Vzcy5saW5lLm1lIiwic3ViIjoiVWI5NTFlMGNmNzg5YmUzMmZjY2U0NGI1ODZmZDZlZTUxIiwiYXVkIjoiMjAwNzA3NTc3OCIsImV4cCI6MTc0NDY0MjM3OCwiaWF0IjoxNzQ0NjM4Nzc4LCJhbXIiOlsicHdkIiwibWZhIl0sIm5hbWUiOiLolKEiLCJwaWN0dXJlIjoiaHR0cHM6Ly9wcm9maWxlLmxpbmUtc2Nkbi5uZXQvMGhFWUNILUk4cEduWi1NUXNCclVobElVSjBGQnNKSHh3LUJsSUJSQWcwRnhZSEFsMHBSQUJRUWd3NUZrSUJDUW9wRmw0R1JGNDJFRTVhIn0.vyyxHK4pbmPv6a_BKW0pSeLoBrdL66dACC5W75ncWn7UTtopcH77tMqgupon7p73qMdnvXiItFaJXb--PHXqwA",
+  "profile": {
+    "userId": "Ub951e0cf789be32fcce44b586fd6ee51",
+    "displayName": "蔡",
+    "statusMessage": "👨‍🍳 <(\") 脆皮粉、醃料 批發",
+    "pictureUrl": "https://profile.line-scdn.net/0hEYCHoCpwGnZuMQsBrUhkCR5hGRxNQENkRwMBQ15iFBJQAVQmFVIHR1NjQBRbVlR0SwQBFVxlTE9iIm0QcGfmQmkBR0dSB1wmRlFTmQ"
+  }
+}
+auth.js?v=20250417v2:180 Sending fetch request at: 1744639679507
+version-check.js?v=20250417v2:105  載入版本檢查設定時發生錯誤: FirebaseError: Missing or insufficient permissions.
+loadVersionCheckSettings @ version-check.js?v=20250417v2:105
+await in loadVersionCheckSettings
+initVersionCheck @ version-check.js?v=20250417v2:38
+(匿名) @ init.js?v=20250417v2:97
+script
+initializeVersionCheck @ init.js?v=20250417v2:92
+(匿名) @ init.js?v=20250417v2:58
+initializeFirebaseAndAuth @ init.js?v=20250417v2:25
+(匿名) @ index.html:32
+version-check.js?v=20250417v2:121 執行版本檢查...
+version-check.js?v=20250417v2:199  檢查更新時發生錯誤: FirebaseError: Missing or insufficient permissions.
+checkForUpdates @ version-check.js?v=20250417v2:199
+await in checkForUpdates
+initVersionCheck @ version-check.js?v=20250417v2:44
+await in initVersionCheck
+(匿名) @ init.js?v=20250417v2:97
+script
+initializeVersionCheck @ init.js?v=20250417v2:92
+(匿名) @ init.js?v=20250417v2:58
+initializeFirebaseAndAuth @ init.js?v=20250417v2:25
+(匿名) @ index.html:32
+version-check.js?v=20250417v2:49 版本檢查功能初始化完成。客戶端版本: 20250417v3
+auth.js?v=20250417v2:197 Backend Response Result: {
+  "success": true,
+  "firebaseToken": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJodHRwczovL2lkZW50aXR5dG9vbGtpdC5nb29nbGVhcGlzLmNvbS9nb29nbGUuaWRlbnRpdHkuaWRlbnRpdHl0b29sa2l0LnYxLklkZW50aXR5VG9vbGtpdCIsImlhdCI6MTc0NDYzOTY4MSwiZXhwIjoxNzQ0NjQzMjgxLCJpc3MiOiIxMDAzNzA0MDg3NDMtY29tcHV0ZUBkZXZlbG9wZXIuZ3NlcnZpY2VhY2NvdW50LmNvbSIsInN1YiI6IjEwMDM3MDQwODc0My1jb21wdXRlQGRldmVsb3Blci5nc2VydmljZWFjY291bnQuY29tIiwidWlkIjoiWjVZVjRJdjhndGNnV1hDU0ZTbU9QdmNUR05RMiJ9.MLJhC0D3mxv4O3tyM1XBxFWWuqO-bz7qOeUJVb9Fm0jSZLjQiwPwwJEVGVmVJEA3MmfL1SqZCenzZozU1-Do0AT8rRmnmvp4Bqkvhb03s2XR0Zm_UPGLFvob_u4sbVC48eAmt2u38XELVvwlo8-wIf5H3cuKWZcv0OoxWA5LxKB6yPxNApklck1sTQyJjk6ybGMCebWf4BtoL-39TrkNZEKoE_FOJaCFzxjX2uxWZMXSAWB0EndBTh_MAqC_R4BcakZCvsiBMFJFOcw_trgJFtmUoVk_JrK1pa3tnb5U_LOwA0f5OO5nsNYgHkxD_1iI2bHuerui8UuZPNdQX4UiMQ",
+  "userInfo": {
+    "authUid": "Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2",
+    "employeeDocId": "LT6EbUtliEFx0ue49VYw",
+    "name": "蔡",
+    "pictureUrl": "https://profile.line-scdn.net/0hEYCH-I8pGnZ-MQsBrUhlIUJ0FBsJHxw-BlIBRAg0FxYHAl0pRABQQgw5FkIBCQopFl4GRF42EE5a",
+    "roles": {
+      "level": 100,
+      "store": "龍安"
+    },
+    "isNewUser": false,
+    "phone": "0936219719"
+  }
+}
+auth.js?v=20250417v2:210 Firebase Custom Token received. Roles: {level: 100, store: '龍安'} DocID: LT6EbUtliEFx0ue49VYw
+auth.js?v=20250417v2:346 [AUTH STATE CHANGE] User: Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2  Path: /index.html
+auth.js?v=20250417v2:352 Auth state changed: User is signed in. Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2
+auth.js?v=20250417v2:216 Forcing ID token refresh to get latest claims...
+main.js?v=20250417v2:165 Attempting to populate user info in menu...
+auth.js?v=20250417v2:425  checkLoginStatus: Using fbAuth.currentUser as fallback (session data missing/invalid).
+checkLoginStatus @ auth.js?v=20250417v2:425
+populateUserInfoInMenu @ main.js?v=20250417v2:204
+(匿名) @ auth.js?v=20250417v2:365
+setTimeout
+(匿名) @ auth.js?v=20250417v2:365
+next @ auth.ts:358
+(匿名) @ subscribe.ts:104
+(匿名) @ subscribe.ts:233
+Promise.then
+sendOne @ subscribe.ts:230
+forEachObserver @ subscribe.ts:220
+next @ subscribe.ts:103
+notifyAuthListeners @ auth_impl.ts:575
+(匿名) @ auth_impl.ts:375
+Promise.then
+queue @ auth_impl.ts:636
+_updateCurrentUser @ auth_impl.ts:373
+await in _updateCurrentUser
+Dt @ custom_token.ts:56
+await in Dt
+signInWithCustomToken @ auth.ts:260
+loginWithLiff @ auth.js?v=20250417v2:213
+await in loginWithLiff
+initializeLiff @ auth.js?v=20250417v2:71
+await in initializeLiff
+(匿名) @ index.html:43
+main.js?v=20250417v2:205 populateUserInfoInMenu - currentUserInfo: {authUid: 'Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2', name: '蔡'}
+main.js?v=20250417v2:271 populateUserInfoInMenu finished.
+auth.js?v=20250417v2:222 Refreshed ID Token Claims: {name: '蔡', picture: 'https://profile.line-scdn.net/0hEYCH-I8pGnZ-MQsBrU…JHxw-BlIBRAg0FxYHAl0pRABQQgw5FkIBCQopFl4GRF42EE5a', level: 100, iss: 'https://securetoken.google.com/chicken-tw', aud: 'chicken-tw', …}
+auth.js?v=20250417v2:234 Updating userRoles. Previous: null, New Level from claims: 100
+auth.js?v=20250417v2:243 Updated userRoles object: {level: 100, store: '龍安'}
+auth.js?v=20250417v2:247 Attempting to re-save session data after token refresh...
+auth.js?v=20250417v2:259 Re-saved user session data with potentially updated roles.
+auth.js?v=20250417v2:266 Received userInfo from server: {authUid: 'Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2', employeeDocId: 'LT6EbUtliEFx0ue49VYw', name: '蔡', pictureUrl: 'https://profile.line-scdn.net/0hEYCH-I8pGnZ-MQsBrU…JHxw-BlIBRAg0FxYHAl0pRABQQgw5FkIBCQopFl4GRF42EE5a', roles: {…}, …}
+auth.js?v=20250417v2:283 Existing user (Level > 0). Redirecting to announce.html...
+firebase-config.js?v=20250417v2:13 firebase-config.js loaded (config constant only).
+init.js?v=20250417v2:9 init.js loaded. Ready for initialization call.
+main.js?v=20250417v2:351 main.js loaded (adjusted for passing fbAuth).
+auth.js?v=20250417v2:676 auth.js (LIFF version - functions accept params) loaded.
+announce-logic.js?v=20250417v2:378 announce-logic.js loaded
+main.js?v=20250417v2:9 DOM fully loaded and parsed. main.js executing.
+main.js?v=20250417v2:68 Attempting to load and inject menu...
+main.js?v=20250417v2:78 Detected page type: Frontend. Loading menu from: /_menu.html
+announce.html:32 Waiting for central initialization via init.js (announce.html)...
+init.js?v=20250417v2:23 Attempting Firebase initialization (logic consolidated in init.js)...
+init.js?v=20250417v2:38 No Firebase apps initialized yet. Initializing now...
+init.js?v=20250417v2:40 Firebase App initialized.
+init.js?v=20250417v2:47 Getting Firestore and Auth instances...
+init.js?v=20250417v2:52 Firestore and Auth obtained successfully.
+init.js?v=20250417v2:89 Version check module not loaded yet. Loading dynamically...
+announce.html:36 Firebase initialized. Proceeding with announce.html logic.
+auth.js?v=20250417v2:342 Setting up Auth state listener using passed fbAuth instance.
+announce.html:40 Proceeding with announce.html logic immediately after listener setup.
+auth.js?v=20250417v2:399 checkLoginStatus: Found valid data in sessionStorage for UID: Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2
+auth.js?v=20250417v2:449 Fetching page permissions from Firestore...
+version-check.js?v=20250417v2:476 version-check.js 載入完成
+init.js?v=20250417v2:95 Version check module loaded dynamically.
+version-check.js?v=20250417v2:27 初始化版本檢查功能...
+導覽至https://chicken-tw.web.app/announce.html
+main.js?v=20250417v2:87 Menu HTML successfully loaded and injected.
+main.js?v=20250417v2:107 [Menu Debug] Running setupMenuInteractions for FRONTEND page...
+main.js?v=20250417v2:119 [Menu Debug] Found Elements: {toggleButton: true, menu: true, overlay: true}
+main.js?v=20250417v2:124 [Menu Debug] Using IDs: {toggleButtonId: 'menu-toggle-btn', menuPanelId: 'floating-menu-panel', overlayId: 'sliding-menu-overlay'}
+main.js?v=20250417v2:142 [Menu Debug] Event listener attached to menu-toggle-btn.
+main.js?v=20250417v2:146 [Menu Debug] Event listener attached to sliding-menu-overlay.
+main.js?v=20250417v2:165 Attempting to populate user info in menu...
+auth.js?v=20250417v2:399 checkLoginStatus: Found valid data in sessionStorage for UID: Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2
+main.js?v=20250417v2:205 populateUserInfoInMenu - currentUserInfo: {authUid: 'Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2', name: '蔡', lineUserId: 'Ub951e0cf789be32fcce44b586fd6ee51', pictureUrl: 'https://profile.line-scdn.net/0hEYCH-I8pGnZ-MQsBrU…JHxw-BlIBRAg0FxYHAl0pRABQQgw5FkIBCQopFl4GRF42EE5a', roles: {…}, …}
+main.js?v=20250417v2:271 populateUserInfoInMenu finished.
+main.js?v=20250417v2:158 [Menu Debug] Menu interactions setup complete.
+auth.js?v=20250417v2:346 [AUTH STATE CHANGE] User: Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2  Path: /announce.html
+auth.js?v=20250417v2:352 Auth state changed: User is signed in. Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2
+main.js?v=20250417v2:165 Attempting to populate user info in menu...
+auth.js?v=20250417v2:399 checkLoginStatus: Found valid data in sessionStorage for UID: Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2
+main.js?v=20250417v2:205 populateUserInfoInMenu - currentUserInfo: {authUid: 'Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2', name: '蔡', lineUserId: 'Ub951e0cf789be32fcce44b586fd6ee51', pictureUrl: 'https://profile.line-scdn.net/0hEYCH-I8pGnZ-MQsBrU…JHxw-BlIBRAg0FxYHAl0pRABQQgw5FkIBCQopFl4GRF42EE5a', roles: {…}, …}
+main.js?v=20250417v2:271 populateUserInfoInMenu finished.
+auth.js?v=20250417v2:459 Page permissions fetched and cached: {schedule-view_html: 9, schedule-gen.html: 9, schedule-gen_html: 9, announce_html: 1, order_html: 1, …}
+auth.js?v=20250417v2:554 Permission check for announce.html: Required Level 1 (from settings)
+auth.js?v=20250417v2:568 requireLogin: User 蔡 (Level 100) OK for announce.html (Requires 1).
+announce-logic.js?v=20250417v2:26 Initializing Announcements Page for: 蔡
+announce-logic.js?v=20250417v2:73 Fetching read statuses for user: Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2
+version-check.js?v=20250417v2:77 版本檢查間隔設為: 10 分鐘
+version-check.js?v=20250417v2:83 版本檢查功能狀態: 啟用
+version-check.js?v=20250417v2:121 執行版本檢查...
+announce-logic.js?v=20250417v2:81 Found 1 read announcements for the user.
+announce-logic.js?v=20250417v2:99 Fetching announcements...
+version-check.js?v=20250417v2:189 當前客戶端版本: 20250417v3, 最新版本: 20250417v3
+version-check.js?v=20250417v2:49 版本檢查功能初始化完成。客戶端版本: 20250417v3
+announce-logic.js?v=20250417v2:116 Workspaceed 1 announcements initially, 1 relevant after filtering.
+announce-logic.js?v=20250417v2:303 Loading comments for announcement: hQodUjtS5St94W9Rz0xR
+firebase-config.js?v=20250417v2:13 firebase-config.js loaded (config constant only).
+init.js?v=20250417v2:9 init.js loaded. Ready for initialization call.
+main.js?v=20250417v2:351 main.js loaded (adjusted for passing fbAuth).
+auth.js?v=20250417v2:676 auth.js (LIFF version - functions accept params) loaded.
+announce-logic.js?v=20250417v2:378 announce-logic.js loaded
+main.js?v=20250417v2:9 DOM fully loaded and parsed. main.js executing.
+main.js?v=20250417v2:68 Attempting to load and inject menu...
+main.js?v=20250417v2:78 Detected page type: Frontend. Loading menu from: /_menu.html
+announce.html:32 Waiting for central initialization via init.js (announce.html)...
+init.js?v=20250417v2:23 Attempting Firebase initialization (logic consolidated in init.js)...
+init.js?v=20250417v2:38 No Firebase apps initialized yet. Initializing now...
+init.js?v=20250417v2:40 Firebase App initialized.
+init.js?v=20250417v2:47 Getting Firestore and Auth instances...
+init.js?v=20250417v2:52 Firestore and Auth obtained successfully.
+init.js?v=20250417v2:89 Version check module not loaded yet. Loading dynamically...
+announce.html:36 Firebase initialized. Proceeding with announce.html logic.
+auth.js?v=20250417v2:342 Setting up Auth state listener using passed fbAuth instance.
+announce.html:40 Proceeding with announce.html logic immediately after listener setup.
+auth.js?v=20250417v2:399 checkLoginStatus: Found valid data in sessionStorage for UID: Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2
+auth.js?v=20250417v2:449 Fetching page permissions from Firestore...
+version-check.js?v=20250417v2:476 version-check.js 載入完成
+init.js?v=20250417v2:95 Version check module loaded dynamically.
+version-check.js?v=20250417v2:27 初始化版本檢查功能...
+導覽至https://chicken-tw.web.app/announce.html?
+main.js?v=20250417v2:87 Menu HTML successfully loaded and injected.
+main.js?v=20250417v2:107 [Menu Debug] Running setupMenuInteractions for FRONTEND page...
+main.js?v=20250417v2:119 [Menu Debug] Found Elements: {toggleButton: true, menu: true, overlay: true}
+main.js?v=20250417v2:124 [Menu Debug] Using IDs: {toggleButtonId: 'menu-toggle-btn', menuPanelId: 'floating-menu-panel', overlayId: 'sliding-menu-overlay'}
+main.js?v=20250417v2:142 [Menu Debug] Event listener attached to menu-toggle-btn.
+main.js?v=20250417v2:146 [Menu Debug] Event listener attached to sliding-menu-overlay.
+main.js?v=20250417v2:165 Attempting to populate user info in menu...
+auth.js?v=20250417v2:399 checkLoginStatus: Found valid data in sessionStorage for UID: Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2
+main.js?v=20250417v2:205 populateUserInfoInMenu - currentUserInfo: {authUid: 'Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2', name: '蔡', lineUserId: 'Ub951e0cf789be32fcce44b586fd6ee51', pictureUrl: 'https://profile.line-scdn.net/0hEYCH-I8pGnZ-MQsBrU…JHxw-BlIBRAg0FxYHAl0pRABQQgw5FkIBCQopFl4GRF42EE5a', roles: {…}, …}
+main.js?v=20250417v2:271 populateUserInfoInMenu finished.
+main.js?v=20250417v2:158 [Menu Debug] Menu interactions setup complete.
+auth.js?v=20250417v2:346 [AUTH STATE CHANGE] User: Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2  Path: /announce.html
+auth.js?v=20250417v2:352 Auth state changed: User is signed in. Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2
+main.js?v=20250417v2:165 Attempting to populate user info in menu...
+auth.js?v=20250417v2:399 checkLoginStatus: Found valid data in sessionStorage for UID: Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2
+main.js?v=20250417v2:205 populateUserInfoInMenu - currentUserInfo: {authUid: 'Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2', name: '蔡', lineUserId: 'Ub951e0cf789be32fcce44b586fd6ee51', pictureUrl: 'https://profile.line-scdn.net/0hEYCH-I8pGnZ-MQsBrU…JHxw-BlIBRAg0FxYHAl0pRABQQgw5FkIBCQopFl4GRF42EE5a', roles: {…}, …}
+main.js?v=20250417v2:271 populateUserInfoInMenu finished.
+auth.js?v=20250417v2:459 Page permissions fetched and cached: {register.html: 0, admin.html: 9, announce_html: 1, schedule-gen_html: 9, register_html: 0, …}
+auth.js?v=20250417v2:554 Permission check for announce.html: Required Level 1 (from settings)
+auth.js?v=20250417v2:568 requireLogin: User 蔡 (Level 100) OK for announce.html (Requires 1).
+announce-logic.js?v=20250417v2:26 Initializing Announcements Page for: 蔡
+announce-logic.js?v=20250417v2:73 Fetching read statuses for user: Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2
+version-check.js?v=20250417v2:77 版本檢查間隔設為: 10 分鐘
+version-check.js?v=20250417v2:83 版本檢查功能狀態: 啟用
+version-check.js?v=20250417v2:121 執行版本檢查...
+announce-logic.js?v=20250417v2:81 Found 1 read announcements for the user.
+announce-logic.js?v=20250417v2:99 Fetching announcements...
+version-check.js?v=20250417v2:189 當前客戶端版本: 20250417v3, 最新版本: 20250417v3
+version-check.js?v=20250417v2:49 版本檢查功能初始化完成。客戶端版本: 20250417v3
+announce-logic.js?v=20250417v2:116 Workspaceed 1 announcements initially, 1 relevant after filtering.
+
+
+
+
+根據檔案名稱和結構，這個專案大致包含以下幾個主要模組：
+
+使用者認證與權限 (Authentication & Authorization):
+
+register.html, js/auth.js, js/firebase-config.js
+admin.html, _admin_menu.html, _menu.html (區分管理員和一般使用者介面)
+功能: 使用者註冊、登入、登出，區分管理員權限。可能使用 Firebase Authentication。
+潛在瑕疵/可改進:
+安全性: 需要確保 Firebase 安全規則 (Firestore Rules & Function Authorization) 配置得當，防止未授權的資料存取。前端檢查是必要的，但不能取代後端強制執行的安全規則。
+密碼管理: 密碼重設流程是否完善？是否提示用戶設定強密碼？
+多因素認證 (MFA): 對於管理員或敏感操作，可以考慮增加 MFA 提高安全性。
+角色管理: 目前似乎只有「管理員」和「一般使用者」，未來可能需要更細緻的角色劃分 (例如：店長、正職、兼職)。
+員工管理 (Employee Management):
+
+admin.html (可能包含員工列表/編輯介面), js/admin-employees.js
+功能: 新增、檢視、編輯、可能還有刪除員工資料。
+潛在瑕疵/可改進:
+資料欄位: 目前員工資料包含哪些欄位？是否足夠（例如：入職日期、聯絡方式、緊急聯絡人、職位、薪資級別等）？
+狀態管理: 員工是否有「在職」、「離職」等狀態？離職員工的資料如何處理（軟刪除 vs 硬刪除）？
+匯入/匯出: 大量員工資料管理可能需要批次匯入/匯出功能。
+打卡與出勤 (Clock-in & Attendance):
+
+clockin.html, js/clockin-logic.js, offline.html, js/offline-clockin.js, face-verification-demo.html, js/face-verification.js, js/clockin-schedule-integration.js, js/admin-clockin-view.js
+功能: 員工上下班打卡、可能支援離線打卡、人臉辨識驗證、打卡記錄與班表整合、管理員查看打卡記錄。
+潛在瑕疵/可改進:
+離線同步: offline-clockin.js 的同步機制是否可靠？網路恢復時如何處理衝突或失敗？是否有提示使用者同步狀態？
+人臉辨識: face-verification.js 的準確度和安全性如何？是否容易被照片或影片欺騙？是否有備用打卡方式（例如：定位打卡、PIN 碼）？人臉資料的儲存和隱私是否符合法規？
+異常處理: 如何處理忘打卡、補打卡、遲到、早退等情況？是否需要管理員審核流程？
+地理圍欄 (Geofencing): 是否需要限制只能在特定地理範圍內打卡？
+加班計算: 是否能根據打卡記錄自動計算加班時數？
+排班管理 (Scheduling):
+
+schedule-gen.html, js/schedule-gen-logic.js, schedule-view.html, js/schedule-view-logic.js, js/admin-manual-schedule.js, js/admin-schedule-config.js
+功能: 自動產生班表、手動調整班表、查看班表、設定排班相關參數。
+潛在瑕疵/可改進:
+排班演算法: schedule-gen-logic.js 的演算法是否考慮了足夠的因素？（例如：員工偏好、技能要求、勞基法規定（工時上限、休息間隔）、公平性、連續排班限制等）。
+靈活性: 是否能處理複雜的班別（例如：跨夜班、空班）？是否容易調整特定日期的班表？
+發布與通知: 班表產生後，如何通知員工？員工是否可以確認班表？
+換班/調班: 是否提供員工申請換班或調班的功能，並由管理員審核？
+請假管理 (Leave Management):
+
+leave.html, js/leave-logic.js, js/admin-leave-requests.js
+功能: 員工申請請假、管理員審核請假申請。
+潛在瑕疵/可改進:
+假別管理: 是否支援多種假別（特休、病假、事假等）？假別的規則（例如：是否扣薪、是否需要證明）是否可配置？
+剩餘假期計算: 系統是否能自動計算和顯示員工的剩餘特休天數？
+與排班整合: 請假批准後，是否會自動更新對應日期的班表狀態？
+薪資管理 (Salary Management):
+
+salary.html, salary-view.html, js/salary-view-logic.js, salary-stats.html, js/salary-stats.js, salary-prediction.html, js/salary-prediction.js
+功能: 查看薪資（可能是明細或統計）、薪資統計分析、薪資預測（？）。
+潛在瑕疵/可改進:
+薪資計算: 目前似乎側重於「查看」和「統計」，是否有實際的薪資計算模組？計算是否考慮了底薪、全勤獎金、加班費、績效獎金、勞健保、所得稅等因素？
+薪資單產生: 是否能產生制式的電子或紙本薪資單？
+薪資預測: salary-prediction.js 的用途和準確性如何？是基於歷史數據預測未來薪資成本，還是預測員工的潛在薪資？其商業價值需明確。
+權限: 薪資是非常敏感的資料，權限控管必須非常嚴格。員工只能看自己的，管理員或特定 HR 角色才能看所有人的或進行計算。
+訂單管理 (Order Management):
+
+order.html, js/order-logic.js, js/admin-orders.js, js/admin-order-items.js
+功能: 建立訂單、管理訂單狀態、管理訂單品項。
+潛在瑕疵/可改進:
+POS 功能: 這是否作為一個簡單的 POS (Point of Sale) 系統使用？功能是否完整（例如：折扣、付款方式、發票、退貨）？
+客戶管理: 是否有記錄客戶資訊的功能？
+與庫存整合: 下訂單時是否會自動檢查庫存？訂單完成後是否會自動扣減庫存？
+銷售管理 (Sales Management):
+
+sales.html, js/sales-logic.js, js/admin-sales.js, js/admin-sales-config.js
+功能: 記錄銷售數據、查看銷售報表、設定銷售相關參數。
+潛在瑕疵/可改進:
+報表分析: 提供的銷售報表是否足夠深入？（例如：按時段、按產品、按員工、按客戶分析）是否支援圖表視覺化？
+目標設定: 是否有設定銷售目標並追蹤達成率的功能？
+庫存管理 (Inventory Management):
+
+js/inventory-check.js, css/inventory-check.css, js/admin-inventory.js (對應的 HTML 檔案可能缺失或在 admin.html 內)
+功能: 庫存盤點、管理庫存數量。
+潛在瑕疵/可改進:
+介面: 需要一個專用的庫存管理介面 (inventory.html?) 來進行新增品項、進貨、報廢、調整等操作。
+低庫存警示: 是否有低於安全庫存量的警示功能？
+成本計算: 是否支援不同的成本計算方法（例如：先進先出 FIFO、平均成本）？
+供應商管理: 是否需要管理供應商資訊？
+內部溝通/公告 (Internal Communication):
+
+announce.html, js/announce-logic.js, js/admin-announcements.js
+功能: 發布和查看內部公告。
+潛在瑕疵/可改進:
+已讀/未讀: 是否需要追蹤員工是否已閱讀公告？
+分類/標籤: 公告量大時，需要分類或標籤功能方便查找。
+推播通知: 發布新公告時，是否能透過 js/admin-push.js 推播通知給相關員工？
+補習班/教育訓練 (Cram School / Training):
+
+cram-school.html, cram-school-view.html, js/cram-school.js, js/cram-school-view-logic.js, js/admin-cram-school.js
+功能: 管理和查看補習班或內部訓練相關資訊。
+潛在瑕疵/可改進:
+用途不明: 這個模組的具體用途和目標使用者是誰？是內部員工訓練管理，還是對外招生？需要更明確的定位。
+功能完整性: 如果是員工訓練，是否需要記錄學習進度、測驗結果、課程安排等？
+系統管理與設定 (System Admin & Configuration):
+
+admin.html, js/admin-logic.js, js/admin-parameters.js, js/admin-performance-config.js, js/admin-referendum-settings.js, js/admin-push.js, js/admin-logs.js (可能對應 public/admin-logs.html), system-logs-test.html, js/system-logs-test.js
+功能: 管理系統參數、設定、推送通知、查看系統日誌、效能設定、公投設定（？）。
+潛在瑕疵/可改進:
+參數化: admin-parameters.js 涵蓋了哪些參數？系統的核心設定（如營業時間、分店資訊、稅率等）是否都可配置？
+日誌記錄: admin-logs 記錄了哪些操作？是否足夠詳細以便追蹤問題或進行稽核？日誌查詢是否方便？
+效能設定: admin-performance-config.js 是調整什麼效能？前端還是後端？
+公投設定: admin-referendum-settings.js 和 referendum.html 的用途是什麼？是內部意見調查或決策工具嗎？
+其他/工具:
+
+changelog.html: 版本更新日誌。
+manifest.json, service-worker.js, offline.html: PWA (Progressive Web App) 功能，支援離線存取和安裝到主畫面。
+firebase.json: Firebase 部署設定（Hosting, Functions, Firestore Rules 等）。
+version-info.json, version_updater.py, js/version-check.js, js/version-checker.js, js/version-updater.js, js/version.js: 版本控制與更新機制。
+fixed_index.js, index.fixed.js, test_auto_accept.js, test_auto_accept2.js, 回測紀錄.txt, functions/fix-*.js, functions/index.js.temp*.js: 這些看起來是開發過程中的測試、修復或暫存檔案，應在正式部署前清理。
+desktop.ini: Windows 資料夾設定檔，通常可以忽略或刪除。
+functions/: Firebase Cloud Functions 的後端邏輯。index.js 是主要進入點。
+2. 程式碼錯誤與優化建議
+這裡列出一些常見的潛在問題和優化方向，需要針對性地檢查每個檔案。
+
+HTML (*.html)
+
+錯誤:
+語意標籤: 是否正確使用 <header>, <footer>, <nav>, <main>, <article>, <section> 等語意標籤？這有助於 SEO 和無障礙訪問。
+W3C 驗證: 是否通過 W3C HTML 驗證器檢查？是否存在未閉合標籤、錯誤屬性等問題？
+重複 ID: 一個頁面中是否存在重複的 id 屬性？
+優化:
+元件化/模板化: _menu.html 和 _admin_menu.html 是好的開始。考慮將更多重複的 UI 部分（如頁首、頁尾、卡片元件）抽離成可重用的模板或透過 JavaScript 動態載入。
+延遲載入 (Lazy Loading): 對於圖片或非首屏內容，使用 loading="lazy" 屬性或 JavaScript 實現延遲載入，加快初始頁面渲染速度。
+無障礙性 (Accessibility): 確保圖片有 alt 屬性，表單元素有 label，使用 ARIA 屬性輔助螢幕閱讀器。
+<script> 標籤位置: 除非必要，將 <script> 標籤放在 </body> 前，避免阻塞頁面渲染。使用 defer 或 async 屬性。
+CSS (css/*.css)
+
+錯誤:
+選擇器錯誤: 是否有拼寫錯誤或無效的 CSS 選擇器？
+樣式衝突: 過於依賴 !important 可能表示 CSS 結構或特異性 (specificity) 管理混亂。
+優化:
+組織與命名:
+使用一致的命名慣例，例如 BEM (Block, Element, Modifier)，如 .card, .card__title, .card--highlighted。
+將 CSS 按模組或元件拆分成多個檔案，再進行合併與壓縮，提高可維護性。
+預處理器 (Preprocessor): 考慮使用 Sass 或 Less，它們提供變數、巢狀規則、混入 (Mixin) 等功能，能讓 CSS 更易於管理和重用。
+效能:
+移除未使用的 CSS 規則 (可以用工具輔助檢查)。
+簡化選擇器，避免過於複雜的選擇器鏈。
+使用 CSS 變數 (Custom Properties) 方便主題切換和樣式管理。
+壓縮 CSS 檔案以減少檔案大小。
+響應式設計 (Responsive Design): 確保在不同螢幕尺寸（手機、平板、桌面）下佈局和樣式都能正常顯示。使用媒體查詢 (@media)。
+JavaScript (Frontend - js/*.js)
+
+錯誤:
+變數範圍: 避免過度使用全域變數。優先使用 let 和 const 而不是 var，以利用塊級作用域。
+非同步處理: Firebase 操作大多是非同步的。確保使用了正確的 Promise (.then(), .catch(), .finally()) 或 async/await 語法來處理，避免回呼地獄 (callback hell) 和未處理的 Promise rejection。
+DOM 操作時機: 確保在 DOM 完全載入後才執行操作 DOM 的程式碼（例如放在 DOMContentLoaded 事件監聽器中）。
+Null/Undefined 檢查: 在存取物件屬性或呼叫方法前，檢查物件是否存在，避免 TypeError。例如，if (user && user.profile && user.profile.name)。
+事件監聽器洩漏: 如果動態添加事件監聽器，確保在元素被移除或不再需要時移除它們，避免記憶體洩漏。
+優化:
+模組化: 將程式碼按功能拆分成模組。可以使用 ES6 Modules (import/export)，配合 Webpack 或 Rollup 等打包工具。這能提高程式碼的組織性、可重用性和可維護性。例如，可以有 auth.js, firestoreService.js, uiHelpers.js 等。
+函數職責單一: 讓每個函數只做一件事情，並保持簡短。
+程式碼重複: 找出重複的程式碼片段，將其提取為共用函數。
+錯誤處理: 為 API 呼叫、Firebase 操作等添加更完善的錯誤處理和使用者提示。使用 try...catch 處理 async/await 中的錯誤。
+效能:
+減少直接的 DOM 操作頻率。如果需要多次修改，可以先在記憶體中操作（例如修改 DocumentFragment），然後一次性插入 DOM。
+對於頻繁觸發的事件（如 scroll, resize, input），使用節流 (throttling) 或防抖 (debouncing) 技術限制函數執行頻率。
+檢查是否有不必要的或過於頻繁的 Firebase 資料讀取。利用 Firebase 的即時監聽功能，但也要注意取消監聽 (unsubscribe) 以避免不必要的開銷。
+前端框架/函式庫: 對於複雜的 UI 互動和狀態管理，可以考慮引入輕量級的函式庫（如 Alpine.js）或更完整的框架（如 Vue.js, React），但這會增加學習曲線和專案複雜度。
+程式碼風格: 使用 ESLint 和 Prettier 等工具強制執行一致的程式碼風格和檢查潛在問題。
+JavaScript (Backend - functions/index.js)
+
+錯誤:
+未結束的函數: Cloud Functions (特別是 HTTP 觸發的) 必須明確結束，否則會超時。使用 res.send(), res.status().end(), return Promise 等方式。
+冷啟動 (Cold Starts): 如果函數不常被調用，下次調用時會有延遲。對於需要快速響應的場景，考慮優化策略（例如設定最小實例數，但會增加成本）。
+安全性:
+驗證: 確保 HTTP 觸發的函數驗證了呼叫者的身份（例如檢查 Firebase Auth token）。
+輸入驗證: 對來自客戶端的輸入進行嚴格驗證，防止惡意資料注入。
+權限檢查: 函數內部應再次檢查執行操作的使用者是否具有所需權限，不能完全信任客戶端的判斷。
+錯誤處理: 函數中的錯誤需要被捕捉和記錄，避免函數崩潰且無從追查。
+優化:
+區域性 (Region): 將 Cloud Functions 部署在離你的使用者和 Firestore 資料庫最近的區域，以減少延遲。
+依賴管理: package.json 中只保留必要的依賴。
+環境變數: 使用 firebase functions:config:set 來管理 API 金鑰、密碼等敏感資訊，而不是硬編碼在程式碼中。
+冪等性 (Idempotency): 對於可能被重試的函數（如背景觸發的），設計成冪等的，即執行一次和執行多次的效果相同。
+批量操作: 對於 Firestore 的大量讀寫，盡可能使用批量操作 (batch 或 transaction) 以提高效率和原子性。
+日誌: 使用 Firebase Functions 的日誌記錄功能 (functions.logger) 記錄關鍵信息和錯誤，方便調試。
+Firebase 設定 (firebase.json, Firestore Rules)
+
+錯誤:
+過於寬鬆的規則: Firestore 安全規則是保護數據的關鍵。避免使用 allow read, write: if true; 這種規則，必須根據使用者身份和角色限制存取權限。這是 極其重要 的安全環節。
+部署目標: firebase.json 中確認 Hosting, Functions, Firestore 等部署目標設定正確。
+優化:
+Hosting 快取: 在 firebase.json 的 hosting 設定中，為靜態資源（CSS, JS, 圖片）設定合適的快取標頭 (cache-control)，減少載入時間和 Firebase Hosting 的費用。
+Hosting 重寫 (Rewrites): 利用 rewrites 將所有路由指向 index.html（如果使用前端路由），或者將特定路徑代理到 Cloud Functions。
+Firestore 索引: 對於複雜的查詢，需要在 Firebase 控制台配置複合索引，否則查詢會失敗或效率低下。
+清理與維護
+
+刪除無用檔案: 清理 *.temp.js, fix-*.js, test_*.js, 回測紀錄*.txt 等開發過程中的臨時檔案。
+版本控制: 使用 Git 等版本控制系統管理程式碼，方便追蹤變更、協作和回滾。.gitignore 檔案應配置好，忽略 node_modules, 敏感設定檔, 臨時檔等。
+文件: 為複雜的邏輯、設定或 API 編寫文件或註解。
+3. 市場評估與商業考量 (整合於模組分析)
+這個系統整合了企業運營中常見的多個核心流程，特別是針對有人力排班、打卡、銷售需求的行業（如餐飲、零售、服務業）。
+
+優勢:
+
+整合性: 將多個管理功能整合在一個平台，避免使用多個零散的工具，提升效率。
+客製化潛力: 基於自家開發，未來可以根據特定業務需求進行深度客製化。
+雲端基礎: 使用 Firebase，具有良好的擴展性、可靠性和即時性。
+PWA 支持: 提供類似 App 的體驗，可離線操作部分功能。
+劣勢/挑戰:
+
+功能深度: 與市面上成熟的專業系統（如專業 POS、人資系統、ERP）相比，每個模組的功能深度可能不足。
+維護成本: 自行開發和維護需要持續投入技術資源。
+市場競爭: 中小型企業管理軟體市場競爭激烈，有許多成熟的 SaaS 產品可供選擇。
+使用者體驗 (UX): 需要持續打磨，確保介面直觀易用，符合使用者習慣。
+法規遵循: 人資相關功能（排班、薪資、請假）需密切注意並符合台灣勞基法等相關法規。
+市場需求與定價:
+
+對於中小型、特別是擁有多個門市或較多兼職員工的企業，對這類整合管理系統的需求是存在的。
+核心需求: 排班、打卡、基礎薪資計算、銷售記錄通常是剛需。
+加值功能: 進階報表分析、庫存管理、人臉辨識、CRM、更完善的 HR 功能（績效、訓練）可以作為加值項目或更高階版本的賣點。
+定價策略: 可以考慮按模組、按員工人數、按功能級別（基礎版、專業版、企業版）或按月/年訂閱收費 (SaaS 模式)。整合度越高、功能越完善、越能解決客戶痛點，可接受的價格就越高。
+4. 功能擴充規劃範例：進階報表與分析模組
+這個模組旨在提供更深入的業務洞察，幫助管理者做出更好的決策。
+
+目標:
+提供視覺化的儀表板 (Dashboard)，匯總關鍵績效指標 (KPI)。
+生成多維度的分析報表（銷售、人事成本、庫存、顧客行為等）。
+允許自訂報表和數據篩選。
+市場需求與商業價值:
+痛點: 許多中小型企業缺乏易於使用的數據分析工具，依賴人工整理 Excel，耗時且易錯。
+價值: 提供即時、準確的數據洞察，幫助優化排班、控制成本、提升銷售、改善庫存管理。
+競爭優勢: 相較於僅提供基礎記錄功能的系統，強大的報表分析能力是重要的差異化優勢，可以支撐更高的定價或作為 Premium 模組。
+市場接受度: 對數據驅動決策有認知的企業主，對此類功能需求較高。
+流程與邏輯規劃:
+UI 設計 (新增 reports.html 或擴充 admin.html):
+設計一個儀表板頁面，使用圖表元件 (例如 Chart.js, ApexCharts) 顯示關鍵指標：
+總銷售額 (日/週/月)
+熱銷商品排行
+勞動成本佔比 (%)
+出勤異常統計 (遲到/早退次數)
+庫存周轉率
+提供報表選擇介面，例如：
+銷售分析報表 (按時間、產品、員工、地點等多維度交叉分析)
+人事成本分析報表 (工時、加班費、薪資結構分析)
+出勤報表 (詳細出缺勤記錄、異常匯總)
+庫存分析報表 (進銷存報表、低庫存預警、過期品分析)
+提供日期範圍選擇器、篩選器（例如：選擇特定員工、商品、地點）。
+提供匯出報表 (CSV/Excel) 的按鈕。
+前端邏費輯 (js/reports-logic.js):
+初始化圖表庫。
+當使用者選擇報表類型、日期範圍或篩選條件時：
+收集使用者輸入。
+呼叫後端 Cloud Function 獲取報表數據。
+處理非同步響應，顯示載入狀態。
+收到數據後，根據報表類型格式化數據，並更新圖表或表格。
+處理錯誤情況，向使用者顯示錯誤訊息。
+實現匯出功能，將表格數據轉換成 CSV 格式供下載。
+後端邏輯 (新增 Cloud Functions in functions/index.js):
+建立新的 HTTP 觸發函數，例如 getSalesReport, getAttendanceReport 等。
+安全性: 函數入口處必須驗證使用者身份和權限（是否為管理員或有權查看報表）。
+接收參數: 接收前端傳來的報表類型、日期範圍、篩選條件等參數，並進行驗證。
+數據查詢與處理:
+根據參數，查詢 Firestore 中的相關集合（例如 orders, clockins, employees, inventory 等）。
+注意: 複雜的報表查詢可能涉及跨多個集合的數據聚合。這在 Firestore 中可能效率不高或難以實現。考慮策略：
+客戶端聚合: 對於簡單聚合，可以在前端完成。
+專用聚合集合: 建立一個新的集合（例如 dailySalesReport），使用 Cloud Functions (例如，由訂單建立觸發的背景函數) 將原始數據預先聚合計算好，報表函數只需查詢這個聚合集合，速度會快很多。
+數據倉庫/分析服務: 對於非常複雜的分析需求，考慮將數據導出到專門的數據分析平台（如 BigQuery）。
+執行計算（例如：計算總和、平均值、百分比、趨勢）。
+返回數據: 將處理好的數據以 JSON 格式返回給前端。
+數據庫變更 (Firestore):
+可能需要根據選擇的聚合策略，新增用於存放預聚合數據的集合（例如 dailySalesReport, monthlyAttendanceSummary）。
+確保現有數據集合有必要的索引以支持報表查詢。
+潛在挑戰:
+查詢效能: Firestore 對複雜聚合查詢的支援有限，需要精心設計數據結構和查詢策略，或引入預聚合。
+數據量增長: 隨著時間推移，數據量增大可能導致報表生成變慢，需要持續優化。
+報表需求多樣性: 不同客戶可能需要不同的報表格式和指標，如何平衡標準化和客製化需求。
+5. 系統推廣模式與商業機會 (10個模型)
+目標：獲取用戶、創造營收、發現商機。
+
+免費模式 (著重用戶獲取與口碑建立):
+
+Freemium (基礎免費版): 提供核心功能（例如：5個員工以下的打卡、排班、公告），但限制進階功能（報表、薪資計算、庫存）或用戶數量，吸引小型用戶試用，付費升級。
+限時免費試用 (Free Trial): 提供完整功能一段時間（例如 14 天或 30 天），讓用戶充分體驗價值後決定是否付費。
+內容行銷 (Content Marketing): 撰寫部落格文章、教學指南、案例分析，分享關於人事管理、門市營運、數位轉型的知識，吸引目標客戶，建立專業形象。例如：「如何用系統搞定排班難題」、「餐飲業數位化轉型指南」。
+社群媒體互動: 在 Facebook 社團、LINE 社群、或行業論壇中分享實用資訊、解答疑問， subtly 介紹自家產品如何解決問題。舉辦線上問答或小型教學。
+推薦計畫 (Referral Program): 現有用戶推薦新用戶成功付費後，給予雙方獎勵（例如：折扣、免費延長使用期）。
+付費模式 (著重營收與利潤):
+
+分級訂閱 (Tiered Subscription - SaaS): 最常見的模式。按功能多寡、用戶數、儲存空間等劃分不同價格的月/年付費方案（例如：基礎版、標準版、專業版）。這是創造穩定現金流的關鍵。
+模組化銷售 (Modular Sales): 將系統拆分成獨立模組（HR、排班、POS、庫存、報表），客戶可以按需購買組合，提供更大的彈性。基礎平台可能免費或低價，主要模組收費。
+付費廣告 (Paid Ads): 在 Google、Facebook、LINE 等平台投放關鍵字廣告或定向廣告，直接觸達有需求的潛在客戶。
+加值服務 (Value-Added Services):
+客製化開發: 為有特定需求的企業提供客製化功能開發服務。
+導入顧問服務: 協助企業順利導入系統，包含設定、資料轉移、人員訓練。
+數據分析諮詢: 基於系統產生的報表，提供更深入的經營分析與建議。
+通路夥伴/經銷商 (Channel Partners/Resellers): 與管理顧問公司、POS 系統商、會計師事務所等合作，讓他們代理銷售你的系統，擴大市場覆蓋範圍。
+其他商業機會:
+
+行業數據洞察: 在用戶同意且數據完全匿名的前提下，聚合分析行業數據（例如：不同區域的平均薪資水平、熱門銷售時段、常見的排班模式），產生有價值的行業報告，可以單獨銷售或作為吸引客戶的資源。
+生態系整合: 與其他企業服務（如會計軟體、外送平台、支付閘道）進行 API 對接整合，提供更完整的解決方案，增加用戶黏性。
+白牌 (White-labeling): 將系統授權給其他公司，讓他們貼上自己的品牌進行銷售。
+如何賺錢 & 看到別人看不到的:
+
+專注利基市場: 不要試圖滿足所有人。深入了解特定行業（例如：連鎖手搖飲、精品零售、小型診所）的獨特痛點，開發真正解決他們問題的殺手級功能。別人看到的是通用管理軟體，你看到的是「手搖飲專用智慧店務系統」。
+數據的價值: 系統的核心價值在於數據。思考如何利用收集到的數據（在合法合規前提下）為客戶創造更多價值，例如：提供更精準的銷售預測、庫存建議、員工績效評估模型。
+社群與生態: 建立一個用戶社群，讓用戶互相交流、分享最佳實踐。這不僅能降低客服成本，還能從中發現新的需求和商機。圍繞核心產品建立一個包含合作夥伴、加值服務的生態系。
+快速迭代與用戶回饋: 持續根據用戶回饋快速優化產品，保持競爭力。敏捷開發、小步快跑。
+總結建議:
+
+優先處理:
+安全性: 仔細檢查並加強 Firebase 安全規則和 Cloud Function 的權限驗證。
+清理: 移除所有測試、臨時、重複的檔案。
+核心 Bug 修復: 找出並修復影響核心功能的明顯錯誤。
+優化與重構:
+逐步進行 JS 模組化、CSS 預處理器引入、HTML 語意化等優化。
+重點優化效能瓶頸，特別是 Firestore 的查詢和 Cloud Function 的執行效率。
+功能完善與擴展:
+根據業務需求補全各模組的基礎功能（例如薪資計算、庫存管理介面）。
+選擇一兩個具有高價值的擴充方向（如進階報表）進行重點開發。
+商業模式:
+明確目標客戶和市場定位。
+設計清晰的定價策略（推薦 SaaS 訂閱制 + 模組化）。
+結合免費和付費模式進行推廣。
+這個專案非常有潛力，但需要系統性的整理、優化和持續開發。希望以上分析對您有幫助！如果您需要針對某個特定檔案或功能進行更深入的修改或討論，請隨時提出。
+
+依照D:\chicken-tw\員工管理各系統計畫書,裡面的所有規劃書修正目前專案內榮獲是擴增功能,
+從記錄檔"回測紀錄.txt"讀取上一次的紀錄然後 繼續下一階段的部分 依照你認為優先的選項執行,如果都正確就進行下一階段,並且結束後用中文跟我回報你這次修正的是甚麼系統,你做了甚麼,修改了甚麼,在過程中你不必詢問我任何意見,你依照你的優先順序決定即可,只需要顯示目前做到哪個檔案就好
+現在開始多一個步驟,把這次的錯誤訊息和這個階段你做了甚麼修改那些檔案 的甚麼部分,做一個紀錄到資料夾內的"回測紀錄.txt"接續上一段的紀錄寫開頭寫這次的操作時間然後檔案,下面簡略的紀錄內容即可,還有下一階段預計處理的部分,如果沒找到檔案直接創建一個即可
+
+
+[16:18:01] 正在準備登入...
+
+
+
+
+[16:18:09] 登入成功，瀏覽器已開啟
+[16:18:09] \n--- 檢查步驟 '自動監控' 時的瀏覽器 Console (SEVERE) 日誌 ---\n!!! 在此期間，發現了 SEVERE 級別的錯誤訊息：\n  等級: WARNING, 時間戳: 1744618684793\n  訊息: https://chicken-tw.web.app/ - Tracking Prevention blocked access to storage for https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js.\n----------\n  等級: WARNING, 時間戳: 1744618684793\n  訊息: https://chicken-tw.web.app/ - Tracking Prevention blocked access to storage for https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js.\n----------\n  等級: WARNING, 時間戳: 1744618684793\n  訊息: https://chicken-tw.web.app/ - Tracking Prevention blocked access to storage for https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js.\n----------\n  等級: WARNING, 時間戳: 1744618684793\n  訊息: https://chicken-tw.web.app/ - Tracking Prevention blocked access to storage for https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js.\n----------\n  等級: WARNING, 時間戳: 1744618684793\n  訊息: https://chicken-tw.web.app/ - Tracking Prevention blocked access to storage for https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js.\n----------\n  等級: WARNING, 時間戳: 1744618684793\n  訊息: https://chicken-tw.web.app/ - Tracking Prevention blocked access to storage for https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js.\n----------\n  等級: WARNING, 時間戳: 1744618684793\n  訊息: https://chicken-tw.web.app/ - Tracking Prevention blocked access to storage for https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js.\n----------\n  等級: WARNING, 時間戳: 1744618684793\n  訊息: https://chicken-tw.web.app/ - Tracking Prevention blocked access to storage for https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js.\n----------\n  等級: WARNING, 時間戳: 1744618684793\n  訊息: https://chicken-tw.web.app/ - Tracking Prevention blocked access to storage for https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js.\n----------\n  等級: WARNING, 時間戳: 1744618684793\n  訊息: https://chicken-tw.web.app/ - Tracking Prevention blocked access to storage for https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js.\n----------\n  等級: WARNING, 時間戳: 1744618684793\n  訊息: https://chicken-tw.web.app/ - Tracking Prevention blocked access to storage for https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js.\n----------\n  等級: WARNING, 時間戳: 1744618684793\n  訊息: https://chicken-tw.web.app/ - Tracking Prevention blocked access to storage for https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js.\n----------\n  等級: WARNING, 時間戳: 1744618685071\n  訊息: https://chicken-tw.web.app/js/main.js?v=20250417v2 183:16 "Core menu elements for user info not found in" "regular menu"\n----------
+
+
+
+
+
+
+firebase-config.js?v=20250411v3:13 firebase-config.js loaded (config constant only).
+init.js?v=20250411v3:9 init.js loaded. Ready for initialization call.
+main.js?v=20250411v3:340 main.js loaded (adjusted for passing fbAuth).
+auth.js?v=20250411v3:676 auth.js (LIFF version - functions accept params) loaded.
+main.js?v=20250411v3:9 DOM fully loaded and parsed. main.js executing.
+main.js?v=20250411v3:68 Attempting to load and inject menu...
+main.js?v=20250411v3:78 Detected page type: Frontend. Loading menu from: /_menu.html
+salary-view.html:287 Initializing salary view page...
+init.js?v=20250411v3:23 Attempting Firebase initialization (logic consolidated in init.js)...
+init.js?v=20250411v3:38 No Firebase apps initialized yet. Initializing now...
+init.js?v=20250411v3:40 Firebase App initialized.
+init.js?v=20250411v3:47 Getting Firestore and Auth instances...
+init.js?v=20250411v3:52 Firestore and Auth obtained successfully.
+init.js?v=20250411v3:89 Version check module not loaded yet. Loading dynamically...
+auth.js?v=20250411v3:342 Setting up Auth state listener using passed fbAuth instance.
+auth.js?v=20250411v3:399 checkLoginStatus: Found valid data in sessionStorage for UID: Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2
+auth.js?v=20250411v3:449 Fetching page permissions from Firestore...
+version-check.js?v=20250417v2:300 version-check.js 載入完成
+init.js?v=20250411v3:95 Version check module loaded dynamically.
+version-check.js?v=20250417v2:21 初始化版本檢查功能...
+main.js?v=20250411v3:87 Menu HTML successfully loaded and injected.
+main.js?v=20250411v3:107 [Menu Debug] Running setupMenuInteractions for FRONTEND page...
+main.js?v=20250411v3:119 [Menu Debug] Found Elements: {toggleButton: true, menu: true, overlay: true}
+main.js?v=20250411v3:124 [Menu Debug] Using IDs: {toggleButtonId: 'menu-toggle-btn', menuPanelId: 'floating-menu-panel', overlayId: 'sliding-menu-overlay'}
+main.js?v=20250411v3:142 [Menu Debug] Event listener attached to menu-toggle-btn.
+main.js?v=20250411v3:146 [Menu Debug] Event listener attached to sliding-menu-overlay.
+main.js?v=20250411v3:165 Attempting to populate user info in menu...
+auth.js?v=20250411v3:399 checkLoginStatus: Found valid data in sessionStorage for UID: Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2
+main.js?v=20250411v3:189 populateUserInfoInMenu - currentUserInfo: {authUid: 'Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2', name: '蔡', lineUserId: 'Ub951e0cf789be32fcce44b586fd6ee51', pictureUrl: 'https://profile.line-scdn.net/0hEYCH-I8pGnZ-MQsBrU…JHxw-BlIBRAg0FxYHAl0pRABQQgw5FkIBCQopFl4GRF42EE5a', roles: {…}, …}
+main.js?v=20250411v3:260 populateUserInfoInMenu finished.
+main.js?v=20250411v3:158 [Menu Debug] Menu interactions setup complete.
+auth.js?v=20250411v3:346 [AUTH STATE CHANGE] User: Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2  Path: /salary-view.html
+auth.js?v=20250411v3:352 Auth state changed: User is signed in. Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2
+main.js?v=20250411v3:165 Attempting to populate user info in menu...
+auth.js?v=20250411v3:399 checkLoginStatus: Found valid data in sessionStorage for UID: Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2
+main.js?v=20250411v3:189 populateUserInfoInMenu - currentUserInfo: {authUid: 'Z5YV4Iv8gtcgWXCSFSmOPvcTGNQ2', name: '蔡', lineUserId: 'Ub951e0cf789be32fcce44b586fd6ee51', pictureUrl: 'https://profile.line-scdn.net/0hEYCH-I8pGnZ-MQsBrU…JHxw-BlIBRAg0FxYHAl0pRABQQgw5FkIBCQopFl4GRF42EE5a', roles: {…}, …}
+main.js?v=20250411v3:260 populateUserInfoInMenu finished.
+auth.js?v=20250411v3:459 Page permissions fetched and cached: {index_html: 0, register.html: 0, pending.html: 0, announce_html: 1, schedule-gen.html: 9, …}
+auth.js?v=20250411v3:556 Permission check for salary-view.html: Required Level 2 (using default)
+auth.js?v=20250411v3:568 requireLogin: User 蔡 (Level 100) OK for salary-view.html (Requires 2).
+salary-view-logic.js?v=20250411v3:48 Initializing salary view page...
+version-check.js?v=20250417v2:73  找不到應用設定，使用預設版本檢查參數
+loadVersionCheckSettings @ version-check.js?v=20250417v2:73
+await in loadVersionCheckSettings
+initVersionCheck @ version-check.js?v=20250417v2:32
+(匿名) @ init.js?v=20250411v3:97
+script
+initializeVersionCheck @ init.js?v=20250411v3:92
+(匿名) @ init.js?v=20250411v3:58
+initializeFirebaseAndAuth @ init.js?v=20250411v3:25
+(匿名) @ salary-view.html:288
+version-check.js?v=20250417v2:89 執行版本檢查...
+salary-view-logic.js?v=20250411v3:93  Error fetching user details: Error: 用戶資料不存在 Firestore 中。
+    at initSalaryViewPage (salary-view-logic.js?v=20250411v3:90:19)
+    at async initSalaryViewPage (salary-view-logic.js?v=20250411v3:2299:5)
+initSalaryViewPage @ salary-view-logic.js?v=20250411v3:93
+await in initSalaryViewPage
+initSalaryViewPage @ salary-view-logic.js?v=20250411v3:2299
+(匿名) @ salary-view.html:313
+salary-view-logic.js?v=20250411v3:1688  薪資比較功能UI元素缺失，無法初始化比較功能
+setupSalaryComparisonFeature @ salary-view-logic.js?v=20250411v3:1688
+initSalaryViewPage @ salary-view-logic.js?v=20250411v3:2302
+await in initSalaryViewPage
+(匿名) @ salary-view.html:313
+salary-view-logic.js?v=20250411v3:2304 Salary comparison feature initialized.
+version-check.js?v=20250417v2:102  找不到版本信息文檔
+checkForUpdates @ version-check.js?v=20250417v2:102
+await in checkForUpdates
+initVersionCheck @ version-check.js?v=20250417v2:38
+await in initVersionCheck
+(匿名) @ init.js?v=20250411v3:97
+script
+initializeVersionCheck @ init.js?v=20250411v3:92
+(匿名) @ init.js?v=20250411v3:58
+initializeFirebaseAndAuth @ init.js?v=20250411v3:25
+(匿名) @ salary-view.html:288
+version-check.js?v=20250417v2:43 版本檢查功能初始化完成。客戶端版本: 20250417v2

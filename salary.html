@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>薪資獎金</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .info-section {
+            margin-bottom: 30px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+        }
+        .info-section h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #ced4da;
+            font-size: 1.2em;
+        }
+        #schedule-display, #attendance-log, #payroll-details {
+            min-height: 50px; /* Placeholder height */
+        }
+        .payroll-placeholder {
+            color: #6c757d;
+            font-style: italic;
+        }
+        /* 簡單的班表日曆樣式 (可從 leave-logic.css 借鑒) */
+        #schedule-calendar {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 2px;
+            margin-top: 10px;
+            font-size: 0.85em;
+        }
+        .schedule-day-header, .schedule-day-cell {
+            text-align: center;
+            padding: 5px 2px;
+            border: 1px solid #e0e0e0;
+            background-color: #fff;
+            min-height: 40px; /* Adjust as needed */
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+        }
+        .schedule-day-header { background-color: #f1f1f1; font-weight: bold; }
+        .schedule-day-number { font-weight: bold; margin-bottom: 3px; }
+        .schedule-assignment { color: #007bff; font-size: 0.9em; }
+        .schedule-off-day { background-color: #f8f8f8; color: #aaa; }
+        .schedule-leave-day { background-color: #fff0f0; color: #dc3545; } /* 休假日 */
+        .schedule-holiday { background-color: #e0ffe0; color: #28a745; } /* 公休日 */
+    </style>
+</head>
+<body>
+    <div id="shared-menu-placeholder"></div>
+    <div class="container">
+        <h2>個人薪資與獎金</h2>
+
+        <div class="user-info-display" style="text-align: center; margin-bottom: 20px;">
+            <p>員工: <strong id="salary-employee-name">讀取中...</strong></p>
+            <p>月份: <strong id="salary-month-display">讀取中...</strong></p>
+             <div style="margin-top: 5px;">
+                 <button id="prev-salary-month" class="btn btn-sm btn-secondary">&lt; 上月</button>
+                 <button id="next-salary-month" class="btn btn-sm btn-secondary">下月 &gt;</button>
+             </div>
+        </div>
+
+        <div class="info-section">
+            <h3>本月出勤概況</h3>
+            <div id="attendance-log">
+                <p class="loading-placeholder">載入打卡記錄中...</p>
+                </div>
+        </div>
+
+         <div class="info-section">
+            <h3>獎金任務列表</h3> <div id="bonus-details">
+                <div class="loading-placeholder">載入獎金任務進度...</div>
+                </div>
+            <button id="view-bonus-list-btn" class="btn btn-sm btn-info" style="margin-top: 15px;">查看所有可選任務</button>
+        </div>
+        
+        <div id="bonus-list-modal" class="modal" style="display: none;">
+             <div class="modal-content" style="max-width: 600px;">
+                 <span class="close-btn" onclick="closeModal('bonus-list-modal')">&times;</span>
+                 <h4>獎金任務清單</h4>
+                 <div id="bonus-list-content">
+                      <p>載入中...</p>
+                 </div>
+                 <button type="button" class="btn btn-secondary" style="margin-top: 15px;" onclick="closeModal('bonus-list-modal')">關閉</button>
+             </div>
+        </div>
+
+        <div class="info-section">
+            <h3>薪資總覽</h3>
+            <div id="payroll-details">
+                <p id="payroll-status" class="payroll-placeholder">讀取薪資顯示設定...</p>
+                </div>
+        </div>
+
+        <!-- 添加薪資比較功能 -->
+        <div class="info-section" id="salary-comparison-section">
+            <h3>薪資比較</h3>
+            <div class="salary-comparison-container">
+                <button id="compare-salary-btn" class="btn btn-info">比較歷史薪資</button>
+                <div id="salary-compare-panel" style="display:none; margin-top: 15px;">
+                    <div class="form-row" style="display: flex; gap: 10px; margin-bottom: 15px;">
+                        <div class="form-group" style="flex: 1;">
+                            <label for="compare-month-1">月份1</label>
+                            <select id="compare-month-1" class="form-control"></select>
+                        </div>
+                        <div class="form-group" style="flex: 0 0 50px; text-align: center; display: flex; align-items: flex-end; justify-content: center;">
+                            <span style="font-weight: bold;">VS</span>
+                        </div>
+                        <div class="form-group" style="flex: 1;">
+                            <label for="compare-month-2">月份2</label>
+                            <select id="compare-month-2" class="form-control"></select>
+                        </div>
+                    </div>
+                    <button id="run-comparison-btn" class="btn btn-sm btn-primary">執行比較</button>
+                    <div id="comparison-result" style="margin-top: 15px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="info-section" id="available-bonus-tasks">
+            <h3>可選獎金任務</h3>
+            <div class="section-content">
+                <div class="loading-placeholder">載入可選任務中...</div>
+                <!-- Available tasks will be rendered here -->
+            </div>
+        </div>
+
+        <div class="info-section" id="bonus-history">
+            <h3>本月獎金紀錄</h3>
+            <div class="section-content">
+                <div class="loading-placeholder">載入本月紀錄中...</div>
+                <!-- Bonus history for the selected month will be rendered here -->
+            </div>
+        </div>
+
+        <p id="salary-message" class="message"></p>
+    </div>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <!-- 引入 PDF 產生相關函式庫 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="js/firebase-config.js?v=20250417v2"></script>
+    <script src="js/init.js?v=20250417v2"></script>
+    <script src="js/main.js?v=20250417v2"></script>
+    <script src="js/auth.js?v=20250417v2"></script>
+    <script src="js/salary-view-logic.js?v=20250417v2"></script>
+    <script src="js/version-check.js?v=20250417v2"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                console.log(`Waiting for central initialization via init.js (${window.location.pathname})...`);
+                // 1. 等待並獲取實例
+                const { db, fbAuth } = await initializeFirebaseAndAuth();
+
+                console.log(`Firebase initialized. Proceeding with ${window.location.pathname} logic.`);
+                // 2. 設定 Auth 監聽器
+                if (typeof setupAuthStateListener === 'function') { setupAuthStateListener(fbAuth); }
+
+                console.log(`Proceeding with ${window.location.pathname} logic after listener setup.`);
+                // 3. 執行權限檢查 (假設 salary 需要 Level 1)
+                const currentUser = await requireLogin(1, fbAuth, db);
+
+                // 4. 如果權限檢查通過，調用頁面初始化函數
+                if (currentUser && typeof initSalaryViewPage === 'function') {
+                    initSalaryViewPage(currentUser, db); // <-- Call correct function
+                } else if (!currentUser) {
+                    console.log(`requireLogin failed for ${window.location.pathname}.`);
+                } else {
+                     console.error("initSalaryViewPage function not found! Check salary-view-logic.js");
+                     const msgElement = document.getElementById('salary-message');
+                     if(msgElement) msgElement.textContent = '頁面初始化函數錯誤。';
+                }
+            } catch (error) {
+                 console.error(`Error during initialization or page logic (${window.location.pathname}):`, error);
+                 if (!document.body.innerHTML.includes('系統核心初始化失敗')) {
+                      document.body.innerHTML = `<p style="color:red; text-align:center; padding-top: 50px;">頁面載入失敗: ${error.message}</p>`;
+                 }
+            }
+        });
+    </script>
+    </body>
+</html>

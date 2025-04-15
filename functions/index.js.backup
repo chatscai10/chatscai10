@@ -1,0 +1,994 @@
+// functions/index.js - 測試版 (修正 checkMissedClockIn 為 v2，並加入詳細 Log)
+
+// --- 引入 ---
+const { onRequest, onCall, HttpsError } = require("firebase-functions/v2/https");
+const { onDocumentCreated, onDocumentUpdated } = require("firebase-functions/v2/firestore");
+const { onSchedule } = require("firebase-functions/v2/scheduler"); // <--- 確保引入 v2 scheduler
+const { defineString, defineSecret } = require("firebase-functions/params");
+const { logger } = require("firebase-functions");
+const functions = require("firebase-functions"); // 保留 v1 SDK (可能某些輔助函數仍依賴)
+const admin = require("firebase-admin");
+const axios = require("axios");
+const line = require('@line/bot-sdk');
+const TelegramBot = require('node-telegram-bot-api');
+const { getMessaging } = require("firebase-admin/messaging");
+
+// --- 初始化 Firebase Admin SDK ---
+try {
+    if (!admin.apps.length) {
+        admin.initializeApp();
+        logger.info("Firebase Admin SDK Initialized.");
+    }
+} catch (e) { logger.error("Firebase Admin Init Error:", e); }
+const db = admin.firestore();
+const auth = admin.auth();
+
+// --- 參數定義 ---
+const LINE_CHANNEL_ID_PARAM = defineString("LINE_CHANNEL_ID");
+const LINE_OA_TOKEN_PARAM = defineSecret("LINE_OA_TOKEN");
+const TELEGRAM_BOT_TOKEN_PARAM = defineSecret("TELEGRAM_BOT_TOKEN");
+
+// --- API Clients 變數宣告 ---
+let lineClient = null;
+let telegramBot = null;
+
+// --- 常量定義 ---
+const NOTIFICATION_CONFIG_PATH = 'settings/notification_config';
+const USER_NOTIFICATION_PREFS_PATH = 'user_notification_preferences';
+const MAX_NOTIFICATION_ATTEMPTS = 3; // 重試次數
+const NOTIFICATION_RETRY_DELAY = 5000; // 重試間隔(ms)
+
+// --- 輔助函數 ---
+
+/**
+ * 初始化並獲取 Line Client
+ */
+function getLineClient() {
+  if (!lineClient) {
+    try {
+      const lineConfig = {
+        channelId: LINE_CHANNEL_ID_PARAM.value(),
+        channelAccessToken: LINE_OA_TOKEN_PARAM.value()
+      };
+      if (!lineConfig.channelId || !lineConfig.channelAccessToken) {
+        logger.error("LINE Channel ID or Access Token parameter is missing.");
+        return null;
+      }
+      lineClient = new line.Client(lineConfig);
+    } catch (error) {
+      logger.error(`Error initializing LINE client: ${error.message}`);
+      return null;
+    }
+  }
+  return lineClient;
+}
+
+/**
+ * 初始化並獲取 Telegram Bot
+ */
+function getTelegramBot() {
+  if (!telegramBot) {
+    try {
+      const token = TELEGRAM_BOT_TOKEN_PARAM.value();
+      if (!token) {
+        logger.error("Telegram Bot Token parameter is missing.");
+        return null;
+      }
+      telegramBot = new TelegramBot(token, { polling: false });
+    } catch (error) {
+      logger.error(`Error initializing Telegram bot: ${error.message}`);
+      return null;
+    }
+  }
+  return telegramBot;
+}
+
+/**
+ * 格式化時間戳 (輔助函數)
+ */
+function formatTimestamp(timestamp, format = 'YYYY-MM-DD HH:mm') {
+    if (!timestamp) return 'N/A';
+    try {
+        const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+        // 簡單的格式化，可以考慮引入 date-fns 或 moment.js
+        const year = date.getFullYear();
+        const month = (date.getMonth() + 1).toString().padStart(2, '0');
+        const day = date.getDate().toString().padStart(2, '0');
+        const hours = date.getHours().toString().padStart(2, '0');
+        const minutes = date.getMinutes().toString().padStart(2, '0');
+        if (format === 'YYYY-MM-DD HH:mm') {
+            return `${year}-${month}-${day} ${hours}:${minutes}`;
+        } else if (format === 'YYYY-MM-DD') {
+            return `${year}-${month}-${day}`;
+        }
+        return date.toLocaleString();
+    } catch (e) {
+        logger.warn("Error formatting timestamp:", e);
+        return 'Invalid Date';
+    }
+}
+
+/**
+ * 統一的通知發送函數 - 支持多平台和模板
+ * @param {string} type - 通知類型 (e.g., 'leave', 'schedule', 'clockin_reminder')
+ * @param {object} data - 要替換模板變數的數據 (e.g., { userName: '...', date: '...', message: '...' })
+ * @param {object} [options={}] - 其他選項
+ * @param {string} [options.userId] - 目標個人用戶ID (用於個人通知)
+ * @param {boolean} [options.skipGlobal=false] - 是否跳過發送全局通知
+ * @param {boolean} [options.skipPersonal=false] - 是否跳過發送個人通知
+ * @param {boolean} [options.isAdminTarget=false] - 是否發送到管理員目標ID
+ * @param {number} [attempt=1] - 當前重試次數
+ */
+async function sendNotification(type, data, options = {}, attempt = 1) {
+    logger.info(`Attempt ${attempt}: Preparing notification type: ${type}`, { data, options });
+
+    try {
+        // 獲取全局通知設定
+        const configDoc = await db.collection('settings').doc(NOTIFICATION_CONFIG_PATH).get();
+        if (!configDoc.exists) {
+            logger.warn('Notification config not found, aborting sendNotification.');
+            return { success: false, error: 'Notification config not found' };
+        }
+        const config = configDoc.data();
+        const templates = config.templates || {};
+        const defaultTemplate = templates[type] || {
+            line: `${type} notification: ${data.message || JSON.stringify(data)}`,
+            telegram: `${type} notification: ${data.message || JSON.stringify(data)}`,
+            // email: { subject: `${type} notification`, body: `${data.message || JSON.stringify(data)}` }
+        };
+
+        // 處理變數替換
+        const replacePlaceholders = (text, contextData) => {
+            if (!text) return '';
+            return text.replace(/\${([^}]+)}/g, (match, key) => {
+                return contextData[key] !== undefined ? contextData[key] : match;
+            });
+        };
+
+        const results = {
+            globalLine: { sent: false, skipped: false },
+            globalTelegram: { sent: false, skipped: false },
+            // globalEmail: { sent: false, skipped: false },
+            personalLine: { sent: false, skipped: false },
+            personalTelegram: { sent: false, skipped: false },
+            // personalEmail: { sent: false, skipped: false },
+        };
+
+        const lineClientInstance = getLineClient();
+        const telegramBotInstance = getTelegramBot();
+        // const emailTransporterInstance = getEmailTransporter();
+
+        // --- 發送全局通知 ---
+        if (!options.skipGlobal) {
+            // 全局 LINE 通知
+            const lineTargetId = options.isAdminTarget ? config.line?.adminTargetId : config.line?.targetId;
+            if (config.line?.enabled && lineTargetId && (!config.line.notifyOn || config.line.notifyOn[type])) {
+                if (lineClientInstance) {
+                    try {
+                        const lineMessage = replacePlaceholders(defaultTemplate.line, data);
+                        await lineClientInstance.pushMessage(lineTargetId, { type: 'text', text: lineMessage });
+                        results.globalLine = { sent: true };
+                        logger.info(`Global LINE notification sent for type: ${type} to ${lineTargetId}`);
+                    } catch (error) {
+                        results.globalLine = { sent: false, error: error.message };
+                        logger.error(`Error sending global LINE notification: ${error.message}`);
+                    }
+                } else {
+                    results.globalLine = { sent: false, error: 'LINE client init failed' };
+                }
+            } else {
+                results.globalLine.skipped = true;
+            }
+
+            // 全局 Telegram 通知
+            const telegramTargetId = options.isAdminTarget ? config.telegram?.adminChatId : config.telegram?.chatId;
+            if (config.telegram?.enabled && telegramTargetId && (!config.telegram.notifyOn || config.telegram.notifyOn[type])) {
+                if (telegramBotInstance) {
+                    try {
+                        const telegramMessage = replacePlaceholders(defaultTemplate.telegram, data);
+                        await telegramBotInstance.sendMessage(telegramTargetId, telegramMessage);
+                        results.globalTelegram = { sent: true };
+                        logger.info(`Global Telegram notification sent for type: ${type} to ${telegramTargetId}`);
+                    } catch (error) {
+                        results.globalTelegram = { sent: false, error: error.message };
+                        logger.error(`Error sending global Telegram notification: ${error.message}`);
+                    }
+                } else {
+                    results.globalTelegram = { sent: false, error: 'Telegram bot init failed' };
+                }
+            } else {
+                results.globalTelegram.skipped = true;
+            }
+
+            // TODO: Add Global Email Notification
+        } else {
+             results.globalLine.skipped = true;
+             results.globalTelegram.skipped = true;
+             // results.globalEmail.skipped = true;
+        }
+
+        // --- 發送個人通知 ---
+        if (options.userId && !options.skipPersonal) {
+            let userData = null;
+            let prefs = null;
+
+            try {
+                const userDoc = await db.collection('users').doc(options.userId).get();
+                const prefsDoc = await db.collection(USER_NOTIFICATION_PREFS_PATH).doc(options.userId).get();
+
+                if (userDoc.exists) {
+                    userData = userDoc.data();
+                } else {
+                     logger.warn(`User data not found for personal notification: ${options.userId}`);
+                     options.skipPersonal = true; // Skip if user data missing
+                }
+
+                if (prefsDoc.exists) {
+                    prefs = prefsDoc.data();
+                } else {
+                    // Use default preferences if not set (e.g., allow LINE by default)
+                    prefs = { platforms: { line: true }, subscriptions: {} }; // Assuming all types allowed if no specific subscription found
+                    logger.info(`User preferences not found for ${options.userId}, using defaults.`);
+                }
+
+            } catch (fetchError) {
+                 logger.error(`Failed to fetch user data or preferences for ${options.userId}:`, fetchError);
+                 options.skipPersonal = true; // Skip if data fetching fails
+            }
+
+
+            if (!options.skipPersonal && userData) {
+                // 檢查用戶是否訂閱此類通知
+                const isSubscribed = (prefs.subscriptions && prefs.subscriptions[type] !== false);
+
+                if (isSubscribed) {
+                    // 檢查是否在靜音時間
+                    let inQuietHours = false;
+                    if (prefs.quiet_hours?.enabled && prefs.quiet_hours.start && prefs.quiet_hours.end) {
+                       try {
+                            const now = new Date();
+                            const currentHour = now.getHours();
+                            const currentMinute = now.getMinutes();
+                            const currentTimeMinutes = currentHour * 60 + currentMinute;
+
+                            const startParts = prefs.quiet_hours.start.split(':');
+                            const endParts = prefs.quiet_hours.end.split(':');
+
+                            const startTimeMinutes = parseInt(startParts[0]) * 60 + parseInt(startParts[1]);
+                            const endTimeMinutes = parseInt(endParts[0]) * 60 + parseInt(endParts[1]);
+
+                            if (!isNaN(startTimeMinutes) && !isNaN(endTimeMinutes)) {
+                                if (startTimeMinutes <= endTimeMinutes) {
+                                    inQuietHours = currentTimeMinutes >= startTimeMinutes && currentTimeMinutes < endTimeMinutes; // End is exclusive
+                                } else { // Handles overnight quiet hours (e.g., 22:00 to 07:00)
+                                    inQuietHours = currentTimeMinutes >= startTimeMinutes || currentTimeMinutes < endTimeMinutes;
+                                }
+                             } else {
+                                logger.warn(`Invalid quiet hours format for user ${options.userId}: ${prefs.quiet_hours.start}-${prefs.quiet_hours.end}`);
+                             }
+                       } catch (quietHoursError) {
+                           logger.error(`Error checking quiet hours for user ${options.userId}:`, quietHoursError);
+                           inQuietHours = false; // Default to not in quiet hours if error
+                       }
+                    }
+
+                    if (!inQuietHours) {
+                        const personalDataContext = { ...data, name: userData.name || '使用者' };
+
+                        // 個人 LINE 通知
+                        if (prefs.platforms?.line !== false && userData.lineUserId) {
+                            if (lineClientInstance) {
+                                try {
+                                    const personalLineMessage = replacePlaceholders(defaultTemplate.line, personalDataContext);
+                                    await lineClientInstance.pushMessage(userData.lineUserId, { type: 'text', text: personalLineMessage });
+                                    results.personalLine = { sent: true };
+                                    logger.info(`Personal LINE notification sent to user: ${options.userId}`);
+                                } catch (error) {
+                                    results.personalLine = { sent: false, error: error.message };
+                                    logger.error(`Error sending personal LINE notification to ${options.userId}: ${error.message}`);
+                                }
+                             } else {
+                                results.personalLine = { sent: false, error: 'LINE client init failed' };
+                            }
+                        } else {
+                           results.personalLine.skipped = true;
+                        }
+
+                        // 個人 Telegram 通知
+                        if (prefs.platforms?.telegram === true && userData.telegramChatId) {
+                             if (telegramBotInstance) {
+                                try {
+                                    const personalTelegramMessage = replacePlaceholders(defaultTemplate.telegram, personalDataContext);
+                                    await telegramBotInstance.sendMessage(userData.telegramChatId, personalTelegramMessage);
+                                    results.personalTelegram = { sent: true };
+                                    logger.info(`Personal Telegram notification sent to user: ${options.userId}`);
+                                } catch (error) {
+                                    results.personalTelegram = { sent: false, error: error.message };
+                                    logger.error(`Error sending personal Telegram notification to ${options.userId}: ${error.message}`);
+                                }
+                             } else {
+                                 results.personalTelegram = { sent: false, error: 'Telegram bot init failed' };
+                             }
+                        } else {
+                            results.personalTelegram.skipped = true;
+                        }
+
+                        // TODO: Add Personal Email Notification
+
+                    } else {
+                        results.personalLine.skipped = true; results.personalLine.reason = 'Quiet hours';
+                        results.personalTelegram.skipped = true; results.personalTelegram.reason = 'Quiet hours';
+                        // results.personalEmail.skipped = true; results.personalEmail.reason = 'Quiet hours';
+                        logger.info(`Skipped personal notification to user ${options.userId} due to quiet hours`);
+                    }
+                } else {
+                     results.personalLine.skipped = true; results.personalLine.reason = 'Not subscribed';
+                     results.personalTelegram.skipped = true; results.personalTelegram.reason = 'Not subscribed';
+                     // results.personalEmail.skipped = true; results.personalEmail.reason = 'Not subscribed';
+                    logger.info(`Skipped personal notification to user ${options.userId} as they are not subscribed to ${type}`);
+                }
+            } else {
+                 results.personalLine.skipped = true; results.personalLine.reason = 'User data missing or skipPersonal flag';
+                 results.personalTelegram.skipped = true; results.personalTelegram.reason = 'User data missing or skipPersonal flag';
+                 // results.personalEmail.skipped = true; results.personalEmail.reason = 'User data missing or skipPersonal flag';
+                 if (!userData) logger.warn(`Personal notification skipped because user data was missing for ${options.userId}`);
+            }
+        } else {
+             results.personalLine.skipped = true; results.personalLine.reason = 'No userId provided or skipPersonal flag';
+             results.personalTelegram.skipped = true; results.personalTelegram.reason = 'No userId provided or skipPersonal flag';
+             // results.personalEmail.skipped = true; results.personalEmail.reason = 'No userId provided or skipPersonal flag';
+        }
+
+        // Check if any notification failed and needs retry
+        const needsRetry = Object.values(results).some(res => res.sent === false && res.error && !res.skipped);
+
+        if (needsRetry && attempt < MAX_NOTIFICATION_ATTEMPTS) {
+            logger.warn(`Notification attempt ${attempt} had failures for type ${type}, retrying in ${NOTIFICATION_RETRY_DELAY}ms...`, { results });
+            await new Promise(resolve => setTimeout(resolve, NOTIFICATION_RETRY_DELAY));
+            // Only retry failed parts? Or retry all? Simpler to retry all for now.
+            return sendNotification(type, data, options, attempt + 1);
+        } else if (needsRetry) {
+            logger.error(`Notification type ${type} failed after ${MAX_NOTIFICATION_ATTEMPTS} attempts.`, { data, options, results });
+        }
+
+        return { success: !needsRetry, results };
+
+    } catch (error) {
+        logger.error(`Critical error in sendNotification (Attempt ${attempt}) for type ${type}: ${error.message}`, { error });
+        if (attempt < MAX_NOTIFICATION_ATTEMPTS) {
+            logger.warn(`Retrying critical error in ${NOTIFICATION_RETRY_DELAY}ms...`);
+            await new Promise(resolve => setTimeout(resolve, NOTIFICATION_RETRY_DELAY));
+            return sendNotification(type, data, options, attempt + 1);
+        } else {
+            logger.error(`Notification type ${type} failed critically after ${MAX_NOTIFICATION_ATTEMPTS} attempts.`);
+            return { success: false, error: `Critical error after ${MAX_NOTIFICATION_ATTEMPTS} attempts: ${error.message}`, results: {} };
+        }
+    }
+}
+
+// 【保留修改後的 verifyLineToken】
+async function verifyLineToken(idToken) {
+    logger.info("Entering verifyLineToken function.");
+    if (!idToken) {
+        logger.error("verifyLineToken called with null or empty idToken.");
+        throw new functions.https.HttpsError('invalid-argument', 'ID Token 不可為空');
+    }
+
+    let channelId;
+    try {
+        channelId = LINE_CHANNEL_ID_PARAM.value();
+    } catch (e) {
+        logger.error("Failed to get LINE_CHANNEL_ID from params inside verifyLineToken:", e);
+        throw new functions.https.HttpsError('internal', '無法讀取 LINE Channel ID 設定。請檢查環境變數或 Secret Manager 配置。', { detail: e.message });
+    }
+    if (!channelId) {
+        logger.error("LINE Login Channel ID is configured but value is empty inside verifyLineToken.");
+        throw new functions.https.HttpsError('internal', 'LINE Login Channel ID 未設定值。');
+    }
+
+    const params = new URLSearchParams();
+    params.append('id_token', idToken);
+    params.append('client_id', channelId);
+
+    try {
+        const response = await axios.post('https://api.line.me/oauth2/v2.1/verify', params, {
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            timeout: 15000
+        });
+
+        if (response.data && response.data.aud !== channelId) {
+            logger.error("Token verification failed: Audience mismatch.", {
+                expectedAud: channelId,
+                actualAud: response.data.aud,
+                lineUserId: response.data.sub
+            });
+            throw new Error(`Token audience (aud: ${response.data.aud}) does not match configured Channel ID (${channelId}).`);
+        }
+
+        return response.data;
+
+    } catch (error) {
+        let errorDetails = {
+            message: error.message,
+            requestConfig: {
+                url: error.config?.url,
+                method: error.config?.method,
+                headers: error.config?.headers,
+            }
+        };
+        let logMessage = "Error during LINE verify API call";
+        let lineErrorMsg = error.message;
+        let statusCode = 'UNKNOWN';
+
+        if (axios.isAxiosError(error)) {
+            logMessage = "Axios error during LINE verify API call";
+            statusCode = error.response?.status || 'Network/Timeout';
+            errorDetails.axiosError = {
+                status: statusCode,
+                statusText: error.response?.statusText,
+                responseData: error.response?.data // ** 非常重要 **
+            };
+            lineErrorMsg = error.response?.data?.error_description || error.response?.data?.message || error.message;
+        }
+
+        logger.error(logMessage, errorDetails);
+        throw new Error(`與 LINE 驗證伺服器通信失敗或 Token 無效 (Status: ${statusCode} - ${lineErrorMsg})`);
+    }
+}
+
+// 【保留 findOrCreateUser 函數】
+async function findOrCreateUser(lineUserId, lineDisplayName, linePictureUrl) {
+    logger.info(`findOrCreateUser started for LINE User ID: ${lineUserId}`);
+    let authUid = null;
+    let employeeData = null;
+    let employeeDocId = null;
+    let isNewUser = false;
+    const employeesRef = db.collection('employees');
+
+    // 1. 嘗試用 lineUserId 尋找 Firestore 中的員工記錄
+    const querySnapshot = await employeesRef.where('lineUserId', '==', lineUserId).limit(1).get();
+
+    if (!querySnapshot.empty) {
+        // --- 找到現有員工記錄 ---
+        const doc = querySnapshot.docs[0];
+        employeeDocId = doc.id;
+        employeeData = doc.data();
+        authUid = employeeData.authUid; // 取得記錄中的 Firebase Auth UID
+
+        // 確保 employeeData 有基本欄位 (相容舊資料)
+        if (!employeeData.name) employeeData.name = lineDisplayName;
+        if (employeeData.level === undefined) employeeData.level = 0;
+        if (employeeData.isActive === undefined) employeeData.isActive = true; // 假設找到就預設是 active
+
+        if (authUid) {
+            // --- 有 Auth UID，檢查 Auth 帳號是否存在且同步資訊 ---
+            try {
+                const userRecord = await auth.getUser(authUid);
+                let updatePayload = {};
+                if (lineDisplayName && userRecord.displayName !== lineDisplayName) {
+                    updatePayload.displayName = lineDisplayName;
+                }
+                if (linePictureUrl && userRecord.photoURL !== linePictureUrl) {
+                    updatePayload.photoURL = linePictureUrl;
+                }
+                if (Object.keys(updatePayload).length > 0) {
+                    await auth.updateUser(authUid, updatePayload);
+                }
+                // 同步 Firestore (如果 Firestore 的資料比較舊)
+                let firestoreUpdatePayload = {};
+                if(employeeData.name !== lineDisplayName) firestoreUpdatePayload.name = lineDisplayName;
+                if(employeeData.pictureUrl !== linePictureUrl) firestoreUpdatePayload.pictureUrl = linePictureUrl || null;
+                if(Object.keys(firestoreUpdatePayload).length > 0) {
+                    await employeesRef.doc(employeeDocId).update(firestoreUpdatePayload);
+                    employeeData = { ...employeeData, ...firestoreUpdatePayload };
+                }
+
+            } catch (error) {
+                if (error.code === 'auth/user-not-found') {
+                    logger.warn(`Auth user ${authUid} linked to ${employeeDocId} not found. Attempting to recreate/relink...`);
+                    try {
+                        await auth.createUser({
+                            uid: authUid,
+                            displayName: lineDisplayName,
+                            photoURL: linePictureUrl
+                        });
+                    } catch (recreateError) {
+                        logger.warn(`Recreating Auth user with old UID ${authUid} failed. Creating NEW Auth user...`, recreateError);
+                        try {
+                            const newUserRecord = await auth.createUser({
+                                displayName: lineDisplayName,
+                                photoURL: linePictureUrl
+                            });
+                            const newAuthUid = newUserRecord.uid;
+                            await employeesRef.doc(employeeDocId).update({ authUid: newAuthUid });
+                            authUid = newAuthUid;
+                            employeeData.authUid = newAuthUid;
+                        } catch (finalCreateError) {
+                            logger.error(`Failed to create new Auth user after previous one was missing for ${employeeDocId}:`, finalCreateError);
+                            throw new functions.https.HttpsError('internal', '處理用戶認證關聯時發生錯誤。');
+                        }
+                    }
+                } else {
+                    logger.error(`Error fetching auth user ${authUid} for employee ${employeeDocId}:`, error);
+                    throw error;
+                }
+            }
+        } else {
+            logger.warn(`Firestore record ${employeeDocId} exists but is missing authUid. Creating and linking Auth user...`);
+            try {
+                const newUserRecord = await auth.createUser({
+                    displayName: lineDisplayName,
+                    photoURL: linePictureUrl
+                });
+                authUid = newUserRecord.uid;
+                await employeesRef.doc(employeeDocId).update({ authUid: authUid });
+                employeeData.authUid = authUid;
+            } catch (linkError) {
+                logger.error(`Error creating/linking Auth user for existing record ${employeeDocId}:`, linkError);
+                throw new functions.https.HttpsError('internal', '關聯新認證到現有記錄時出錯。');
+            }
+        }
+
+    } else {
+        // --- 全新使用者，Firestore 和 Auth 都沒有 ---
+        isNewUser = true;
+        logger.info(`New user detected with LINE User ID: ${lineUserId}. Creating Firestore record and Auth user.`);
+        try {
+            // 1. 創建 Firebase Auth 帳號
+            const newUserRecord = await auth.createUser({
+                displayName: lineDisplayName,
+                photoURL: linePictureUrl
+            });
+            authUid = newUserRecord.uid;
+
+            // 2. 準備 Firestore 員工資料
+            employeeData = {
+                authUid: authUid,
+                lineUserId: lineUserId,
+                name: lineDisplayName,
+                pictureUrl: linePictureUrl || null,
+                level: 0,
+                registrationTimestamp: admin.firestore.FieldValue.serverTimestamp(),
+                isActive: true,
+                store: null,
+                phone: null,
+            };
+
+            // 3. 創建 Firestore 員工記錄
+            const docRef = await employeesRef.add(employeeData);
+            employeeDocId = docRef.id;
+
+        } catch (error) {
+            logger.error("New user creation failed (Auth or Firestore):", error);
+            if (authUid && !employeeDocId) {
+                logger.warn(`Deleting orphaned Auth user ${authUid} because Firestore record creation failed.`);
+                await auth.deleteUser(authUid).catch(delErr => logger.error(`Failed to delete orphaned Auth user ${authUid}:`, delErr));
+            }
+            throw new functions.https.HttpsError('internal', '創建新用戶記錄時失敗。');
+        }
+    }
+
+    if (!authUid || !employeeData || !employeeDocId) {
+        logger.error("User data incomplete after findOrCreate process. This should not happen.", { authUid, employeeDocId, hasData: !!employeeData });
+        throw new functions.https.HttpsError('internal', '無法完整獲取或建立用戶資訊。');
+    }
+
+    employeeData.id = employeeDocId; // Add docId to returned data
+    return { authUid, employeeData, employeeDocId, isNewUser };
+}
+
+// --- 輔助函數 mapHttpsErrorCodeToHttpStatus 保持不變 ---
+function mapHttpsErrorCodeToHttpStatus(code) {
+    // ... (mapHttpsErrorCodeToHttpStatus 函數邏輯保持不變) ...
+    switch (code) {
+        case 'unauthenticated': return 401;
+        case 'permission-denied': return 403;
+        case 'invalid-argument': return 400;
+        case 'not-found': return 404;
+        case 'already-exists': return 409;
+        case 'failed-precondition': return 400;
+        case 'aborted': return 409;
+        case 'out-of-range': return 400;
+        case 'unavailable': return 503;
+        case 'deadline-exceeded': return 504;
+        case 'internal':
+        case 'unknown':
+        default: return 500;
+    }
+}
+
+// ===========================================
+// == 導出函數 ==
+// ===========================================
+
+/**
+ * LIFF登入處理函數 (Cloud Function v2 onCall)
+ * 接受 LINE ID Token, 驗證後查找或創建用戶，生成 Firebase 自定義 Token。
+ */
+exports.handleLiffLogin = onCall({
+    // Optional: configure CORS, memory, timeout, secrets, etc.
+    // secrets: [LINE_CHANNEL_ID_PARAM, LINE_OA_TOKEN_PARAM], // Secrets needed by verifyLineToken indirectly
+    // enforceAppCheck: true, // Consider enabling App Check
+    maxInstances: 10
+}, async (request) => {
+    logger.info("handleLiffLogin function invoked.", { hasAuth: !!request.auth });
+
+    // 0. Basic Validation
+    if (!request.data || !request.data.idToken) {
+        logger.warn("handleLiffLogin call missing idToken in data payload.");
+        throw new HttpsError('invalid-argument', '請求中缺少 LINE ID Token');
+    }
+    const lineIdToken = request.data.idToken;
+
+    try {
+        // 1. 驗證 LINE ID Token
+        logger.info("Calling verifyLineToken...");
+        const lineProfile = await verifyLineToken(lineIdToken);
+        logger.info("LINE Token verified successfully.", { lineUserId: lineProfile.sub });
+
+        const { sub: lineUserId, name: lineDisplayName, picture: linePictureUrl } = lineProfile;
+
+        // 2. 查找或創建用戶 (Firestore & Auth)
+        logger.info("Calling findOrCreateUser...");
+        const { authUid, employeeData, employeeDocId, isNewUser } = await findOrCreateUser(lineUserId, lineDisplayName, linePictureUrl);
+        logger.info("findOrCreateUser completed.", { authUid, employeeDocId, isNewUser });
+
+        // 3. 檢查用戶狀態
+        if (!employeeData.isActive) {
+             logger.warn(`Login attempt by inactive user: ${authUid} (Employee: ${employeeDocId})`);
+             throw new HttpsError('permission-denied', '您的帳號已被停用，請聯繫管理員。');
+        }
+
+        // 4. 生成 Firebase 自定義 Token
+        logger.info(`Creating Firebase custom token for UID: ${authUid}`);
+        const firebaseToken = await auth.createCustomToken(authUid);
+        logger.info("Firebase custom token created successfully.");
+
+        // 5. 準備回傳資料 (確保包含 level 和 store)
+        const roles = {
+            level: employeeData.level ?? 0, // Default to 0 if missing
+            store: employeeData.store || null
+        };
+
+        // Optionally trigger a welcome notification for new users
+        if (isNewUser) {
+             logger.info(`Sending welcome notification for new user ${authUid}`);
+             sendNotification('newUserWelcome',
+                 { userName: lineDisplayName || '新用戶' },
+                 { userId: authUid } // Send personal welcome
+             ).catch(e => logger.error("Failed to send welcome notification:", e)); // Don't block login for notification failure
+        }
+
+
+        return {
+            success: true,
+            firebaseToken: firebaseToken,
+            userInfo: {
+                authUid: authUid,
+                employeeDocId: employeeDocId,
+                name: employeeData.name || lineDisplayName,
+                pictureUrl: employeeData.pictureUrl || linePictureUrl || null,
+                roles: roles, // Pass roles object
+                isNewUser: isNewUser
+            }
+        };
+
+    } catch (error) {
+        logger.error("Error in handleLiffLogin:", {
+             errorMessage: error.message,
+             errorCode: error.code, // HttpsError code
+             errorDetails: error.details // HttpsError details
+        });
+
+        // Map error to HttpsError if it's not already one
+        if (error instanceof HttpsError) {
+            throw error;
+        } else if (error.message.includes("LINE 驗證伺服器通信失敗") || error.message.includes("Token audience")) {
+             throw new HttpsError('unauthenticated', `LINE Token 驗證失敗: ${error.message}`);
+        } else if (error.message.includes("創建新用戶記錄時失敗") || error.message.includes("關聯新認證到現有記錄時出錯")) {
+            throw new HttpsError('internal', `用戶資料處理錯誤: ${error.message}`);
+        } else {
+            throw new HttpsError('internal', `登入處理時發生未預期的錯誤: ${error.message}`);
+        }
+    }
+});
+
+/**
+ * 新增假單時觸發通知
+ */
+exports.sendLeaveNotification = onDocumentCreated('leave_requests/{docId}', async (event) => {
+    const leaveRequest = event.data.data();
+    const docId = event.params.docId;
+    if (!leaveRequest || !leaveRequest.userId) {
+         logger.warn("Leave request created without data or userId", { docId });
+         return;
+    }
+
+    try {
+        const userDoc = await db.collection('users').doc(leaveRequest.userId).get();
+        if (!userDoc.exists) {
+            logger.warn(`User not found for leave request: ${leaveRequest.userId} (Doc: ${docId})`);
+            return;
+        }
+
+        const userData = userDoc.data();
+        const notificationData = {
+            title: '新排假申請',
+            userName: userData.name || '員工',
+            userId: leaveRequest.userId,
+            startDate: formatTimestamp(leaveRequest.startDate, 'YYYY-MM-DD'),
+            endDate: formatTimestamp(leaveRequest.endDate, 'YYYY-MM-DD'),
+            reason: leaveRequest.reason || '未說明',
+            leaveDocId: docId,
+            message: `${userData.name || '員工'} 申請了從 ${formatTimestamp(leaveRequest.startDate, 'YYYY-MM-DD')} 到 ${formatTimestamp(leaveRequest.endDate, 'YYYY-MM-DD')} 的假期。\n原因: ${leaveRequest.reason || '未說明'}`
+        };
+
+        // Send to global admin target
+        await sendNotification('leave', notificationData, { isAdminTarget: true });
+        logger.info(`Leave notification sent for doc ${docId}`);
+
+    } catch (error) {
+        logger.error(`Error in sendLeaveNotification for doc ${docId}: ${error.message}`, { error });
+    }
+});
+
+/**
+ * 新人註冊完成後觸發通知 (當 level > 0 時)
+ */
+exports.sendRegistrationCompleteNotification = onDocumentUpdated('users/{userId}', async (event) => {
+    const beforeData = event.data.before.data();
+    const afterData = event.data.after.data();
+    const userId = event.params.userId;
+
+    // 檢查是否是從 level 0 變為 > 0
+    if (beforeData && beforeData.level === 0 && afterData && afterData.level > 0) {
+        logger.info(`User ${userId} registration approved (Level ${beforeData.level} -> ${afterData.level}). Sending notification.`);
+
+        const notificationData = {
+             title: '新人註冊完成',
+             userName: afterData.name || '新員工',
+             userId: userId,
+             store: afterData.store || '未分配',
+             approvedLevel: afterData.level,
+             message: `新員工 ${afterData.name || '未知'} (${afterData.store || '未分配門店'}) 的註冊已審核通過，等級設為 ${afterData.level}。`
+        };
+
+        try {
+            // 發送全局通知給管理員
+            await sendNotification('registerComplete', notificationData, { isAdminTarget: true });
+
+            // 同時也發送個人通知給該員工
+            await sendNotification('registrationApproved', {
+                 title: '註冊審核通過',
+                 name: afterData.name || '員工',
+                 message: `恭喜！您的帳號註冊已審核通過。您現在可以使用系統的完整功能了。`
+            }, { userId: userId });
+
+        } catch (error) {
+             logger.error(`Error sending registration complete notification for user ${userId}: ${error.message}`, { error });
+        }
+    }
+});
+
+/**
+ * 排班變更時觸發通知
+ * 監聽 'schedule_changes' 集合的新文件
+ */
+exports.sendScheduleChangeNotification = onDocumentCreated('schedule_changes/{docId}', async (event) => {
+    const change = event.data.data();
+    const docId = event.params.docId;
+    if (!change || !change.userId || !change.date) {
+         logger.warn("Schedule change created without required data", { docId });
+         return;
+    }
+
+    try {
+        const userDoc = await db.collection('users').doc(change.userId).get();
+        if (!userDoc.exists) {
+            logger.warn(`User not found for schedule change: ${change.userId} (Doc: ${docId})`);
+            return;
+        }
+
+        const userData = userDoc.data();
+        const notificationData = {
+            title: '排班變更通知',
+            userName: userData.name || '員工',
+            userId: change.userId,
+            date: change.date, // Assuming date is stored as YYYY-MM-DD string
+            oldShift: change.oldShift || '未排班',
+            newShift: change.newShift || '取消排班',
+            store: userData.store || 'N/A',
+            changer: change.changerName || '系統', // Who made the change
+            note: change.note || '',
+            message: `【排班變更】\n員工: ${userData.name || '未知'} (${userData.store || 'N/A'})\n日期: ${change.date}\n原班別: ${change.oldShift || '未排班'}\n新班別: ${change.newShift || '取消排班'}\n操作者: ${change.changerName || '系統'}\n${change.note ? '備註: ' + change.note : ''}`
+        };
+
+        // 發送個人通知給相關員工
+        await sendNotification('scheduleChangePersonal', notificationData, { userId: change.userId });
+
+        // 根據設定決定是否發送全局通知 (可能不需要，或者發給店長？)
+        // Example: sendNotification('scheduleChangeGlobal', notificationData, { skipPersonal: true });
+
+        logger.info(`Schedule change notification sent for user ${change.userId} (Doc: ${docId})`);
+
+    } catch (error) {
+        logger.error(`Error in sendScheduleChangeNotification for doc ${docId}: ${error.message}`, { error });
+    }
+});
+
+/**
+ * 收到新訂單時觸發通知
+ */
+exports.sendOrderNotification = onDocumentCreated('orders/{docId}', async (event) => {
+    const order = event.data.data();
+    const docId = event.params.docId;
+    if (!order || !order.userId || !order.store) {
+         logger.warn("Order created without required data", { docId });
+         return;
+    }
+
+     try {
+        const userDoc = await db.collection('users').doc(order.userId).get();
+        if (!userDoc.exists) {
+            logger.warn(`User not found for order: ${order.userId} (Doc: ${docId})`);
+            return;
+        }
+        const userData = userDoc.data();
+
+        const orderItemsSummary = order.items?.map(item => `${item.name} x${item.quantity}`).join(', ') || '無品項';
+        const totalAmount = order.totalAmount ? `總計: ${order.totalAmount}` : '';
+
+        const notificationData = {
+             title: `新叫貨單 (${order.store})`,
+             store: order.store,
+             orderUser: userData.name || order.userId,
+             orderTime: formatTimestamp(order.timestamp),
+             itemsSummary: orderItemsSummary,
+             totalAmount: totalAmount,
+             orderDocId: docId,
+             message: `【新叫貨單】\n門店: ${order.store}\n填寫人: ${userData.name || order.userId}\n時間: ${formatTimestamp(order.timestamp)}\n品項: ${orderItemsSummary}\n${totalAmount}\n${order.notes ? '備註: ' + order.notes : ''}`
+        };
+
+        // 發送全局通知 (可能給供應商或管理員)
+        await sendNotification('newOrder', notificationData, { isAdminTarget: true }); // Example: send to admin target
+
+        logger.info(`New order notification sent for doc ${docId}`);
+
+    } catch (error) {
+        logger.error(`Error in sendOrderNotification for doc ${docId}: ${error.message}`, { error });
+    }
+});
+
+/**
+ * 定期檢查未打卡員工並發送提醒
+ * Runs every weekday (Monday to Friday) at 9:00 AM Asia/Taipei.
+ */
+exports.checkMissedClockIn = onSchedule({
+    schedule: '0 9 * * 1-5', // 週一至週五上午9點
+    timeZone: 'Asia/Taipei',
+    // secrets: [LINE_OA_TOKEN_PARAM, TELEGRAM_BOT_TOKEN_PARAM] // Secrets needed by sendNotification
+}, async (event) => {
+    logger.info("Running scheduled job: checkMissedClockIn");
+    const today = new Date();
+    const todayStr = today.toISOString().split('T')[0]; // YYYY-MM-DD format
+
+    try {
+        // 1. 獲取今天的班表 (假設班表存儲在 'schedules' 集合，文檔ID為 'YYYY-MM-DD')
+        const scheduleDoc = await db.collection('schedules').doc(todayStr).get();
+        if (!scheduleDoc.exists) {
+            logger.info(`No schedule found for today (${todayStr}). Skipping clock-in check.`);
+            return;
+        }
+        const scheduleData = scheduleDoc.data();
+        const scheduledEmployees = scheduleData.shifts || {}; // Assuming shifts is an object { userId: shiftInfo, ... }
+
+        // 2. 獲取今天已打卡的員工
+        const clockInSnapshot = await db.collection('clockin_records')
+            .where('date', '==', todayStr)
+            .get();
+        const clockedInUserIds = new Set(clockInSnapshot.docs.map(doc => doc.data().userId));
+
+        // 3. 找出今天有班但未打卡的員工
+        const missedClockInUserIds = [];
+        for (const userId in scheduledEmployees) {
+            // 檢查是否有班 (shiftInfo 不為 null 或空) 且 未打卡
+            if (scheduledEmployees[userId] && !clockedInUserIds.has(userId)) {
+                missedClockInUserIds.push(userId);
+            }
+        }
+
+        if (missedClockInUserIds.length === 0) {
+            logger.info("All scheduled employees have clocked in today.");
+            return;
+        }
+
+        logger.info(`Found ${missedClockInUserIds.length} employees who missed clock-in today:`, missedClockInUserIds);
+
+        // 4. 發送提醒通知
+        for (const userId of missedClockInUserIds) {
+            try {
+                const userDoc = await db.collection('users').doc(userId).get();
+                if (userDoc.exists) {
+                    const userData = userDoc.data();
+                    const notificationData = {
+                        title: '打卡提醒',
+                        name: userData.name || '員工',
+                        date: todayStr,
+                        message: `提醒您，今天是 ${todayStr}，您尚未完成打卡。請盡快打卡！`
+                    };
+                    // 發送個人通知
+                    await sendNotification('clockinReminder', notificationData, { userId: userId });
+                } else {
+                    logger.warn(`User ${userId} found in schedule but user document does not exist.`);
+                }
+            } catch (userError) {
+                logger.error(`Error processing or notifying user ${userId} for missed clock-in: ${userError.message}`);
+            }
+        }
+
+        logger.info("Finished sending clock-in reminders.");
+
+    } catch (error) {
+        logger.error(`Error during checkMissedClockIn job: ${error.message}`, { error });
+    }
+});
+
+// TODO: Add other scheduled tasks like generating salary reports, etc.
+// TODO: Add Backup Scheduled Task (`scheduledFirestoreBackup` from previous response)
+
+// --- Other potential triggers or functions ---
+
+// Example: Function to handle leave request approval/rejection and notify user
+exports.handleLeaveStatusChange = onDocumentUpdated('leave_requests/{docId}', async (event) => {
+    const beforeData = event.data.before.data();
+    const afterData = event.data.after.data();
+    const docId = event.params.docId;
+    const userId = afterData.userId;
+
+    // Check if status changed and the user ID exists
+    if (!userId || beforeData.status === afterData.status || !afterData.status) {
+        return; // No status change or missing data
+    }
+
+    logger.info(`Leave request ${docId} status changed from ${beforeData.status} to ${afterData.status} for user ${userId}`);
+
+    try {
+        const userDoc = await db.collection('users').doc(userId).get();
+        if (!userDoc.exists) {
+             logger.warn(`User ${userId} not found for leave status notification.`);
+             return;
+        }
+        const userData = userDoc.data();
+
+        let notificationType = '';
+        let notificationData = {
+             title: '請假申請狀態更新',
+             name: userData.name || '員工',
+             startDate: formatTimestamp(afterData.startDate, 'YYYY-MM-DD'),
+             endDate: formatTimestamp(afterData.endDate, 'YYYY-MM-DD'),
+             status: afterData.status === 'approved' ? '已批准' : (afterData.status === 'rejected' ? '已拒絕' : afterData.status),
+             reason: afterData.rejectionReason || '', // Include rejection reason if available
+             message: `您的請假申請 (從 ${formatTimestamp(afterData.startDate, 'YYYY-MM-DD')} 到 ${formatTimestamp(afterData.endDate, 'YYYY-MM-DD')}) `
+        };
+
+        if (afterData.status === 'approved') {
+            notificationType = 'leaveApproved';
+            notificationData.message += `已被批准。`;
+        } else if (afterData.status === 'rejected') {
+            notificationType = 'leaveRejected';
+            notificationData.message += `已被拒絕。`;
+            if(afterData.rejectionReason) {
+                 notificationData.message += `\n拒絕原因: ${afterData.rejectionReason}`;
+            }
+        } else {
+            // Handle other statuses if needed
+            return;
+        }
+
+        // Send personal notification to the employee
+        await sendNotification(notificationType, notificationData, { userId: userId });
+
+    } catch (error) {
+        logger.error(`Error sending leave status change notification for doc ${docId}: ${error.message}`, { error });
+    }
+});

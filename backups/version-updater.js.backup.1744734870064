@@ -1,0 +1,204 @@
+/**
+ * version-updater.js - 版本更新工具
+ * 用於更新所有HTML頁面中的資源版本號，確保用戶能即時獲取最新版本
+ */
+
+'use strict';
+
+const VERSION_UPDATER = {
+    // 當前版本號 (應與init.js中保持一致)
+    currentVersion: '20250417v1',
+    
+    // Firestore 數據庫連接
+    db: null,
+    
+    // 初始化
+    init: function(db, container) {
+        this.db = db;
+        
+        if (!container) {
+            console.error('缺少容器元素，無法初始化版本更新工具');
+            return;
+        }
+        
+        this.renderUI(container);
+        this.bindEvents();
+    },
+    
+    // 渲染介面
+    renderUI: function(container) {
+        const html = `
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>版本管理</h5>
+                </div>
+                <div class="card-body">
+                    <div class="form-group mb-3">
+                        <label for="current-version">當前系統版本</label>
+                        <input type="text" id="current-version" class="form-control" value="${this.currentVersion}" readonly>
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        <label for="new-version">新版本號</label>
+                        <input type="text" id="new-version" class="form-control" placeholder="格式: YYYYMMDDVX 例如: 20250420v1">
+                        <div class="form-text">格式為年月日+版本號，例如: 20250420v1</div>
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        <label for="version-notes">版本更新說明</label>
+                        <textarea id="version-notes" class="form-control" rows="4" placeholder="每行一個更新項目"></textarea>
+                        <div class="form-text">列出此版本的主要更新內容，每行一個項目</div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <button id="update-version-btn" class="btn btn-primary">更新版本</button>
+                        <button id="check-html-btn" class="btn btn-outline-secondary">檢查HTML資源版本</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="version-update-results" class="mt-3" style="display: none;">
+                <h6>更新結果:</h6>
+                <pre id="update-results-content" class="border p-3 bg-light" style="max-height: 300px; overflow-y: auto;"></pre>
+            </div>
+        `;
+        
+        container.innerHTML = html;
+    },
+    
+    // 綁定事件
+    bindEvents: function() {
+        const updateBtn = document.getElementById('update-version-btn');
+        const checkHtmlBtn = document.getElementById('check-html-btn');
+        
+        if (updateBtn) {
+            updateBtn.addEventListener('click', () => this.updateVersion());
+        }
+        
+        if (checkHtmlBtn) {
+            checkHtmlBtn.addEventListener('click', () => this.checkHtmlResources());
+        }
+    },
+    
+    // 檢查版本號格式是否有效
+    isValidVersionFormat: function(version) {
+        return /^\d{8}v\d+$/.test(version);
+    },
+    
+    // 更新版本
+    updateVersion: function() {
+        const newVersion = document.getElementById('new-version').value.trim();
+        const versionNotes = document.getElementById('version-notes').value.trim();
+        
+        // 顯示結果區域
+        const resultsDiv = document.getElementById('version-update-results');
+        const resultsContent = document.getElementById('update-results-content');
+        
+        if (resultsDiv) resultsDiv.style.display = 'block';
+        if (resultsContent) resultsContent.textContent = '處理中...';
+        
+        // 驗證版本號格式
+        if (!this.isValidVersionFormat(newVersion)) {
+            if (resultsContent) {
+                resultsContent.textContent = '錯誤: 版本號格式無效。正確格式為年月日+版本號，例如: 20250420v1';
+            }
+            return;
+        }
+        
+        // 檢查是否有更新說明
+        if (!versionNotes) {
+            if (resultsContent) {
+                resultsContent.textContent = '警告: 未提供版本更新說明。仍然繼續更新。';
+            }
+            // 仍然繼續，只是警告
+        }
+        
+        // 整理版本更新說明
+        const updateNotes = versionNotes.split('\n')
+            .map(line => line.trim())
+            .filter(line => line.length > 0);
+        
+        // 更新 Firestore 中的版本資訊
+        if (this.db) {
+            this.db.collection('settings').doc('version_info').set({
+                currentVersion: newVersion,
+                previousVersion: this.currentVersion,
+                updateNotes: updateNotes,
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            })
+            .then(() => {
+                if (resultsContent) {
+                    resultsContent.textContent = `版本資訊已成功更新至 ${newVersion}。\n\n` +
+                        '請記得更新 init.js 中的 appVersion 變數！\n' +
+                        '路徑: js/init.js\n' +
+                        `修改: let appVersion = '${this.currentVersion}' 為 let appVersion = '${newVersion}'`;
+                }
+            })
+            .catch(error => {
+                if (resultsContent) {
+                    resultsContent.textContent = `更新版本資訊時發生錯誤: ${error.message}`;
+                }
+            });
+        } else {
+            if (resultsContent) {
+                resultsContent.textContent = '錯誤: 無法連接到資料庫。請確保已正確初始化 Firestore。';
+            }
+        }
+    },
+    
+    // 檢查HTML頁面的資源版本
+    checkHtmlResources: function() {
+        const resultsDiv = document.getElementById('version-update-results');
+        const resultsContent = document.getElementById('update-results-content');
+        
+        if (resultsDiv) resultsDiv.style.display = 'block';
+        if (resultsContent) resultsContent.textContent = '請求HTML文件清單中...';
+        
+        // 這裡需要後端支持，先返回模擬數據
+        const htmlFiles = [
+            'index.html',
+            'admin.html',
+            'order.html',
+            'sales.html',
+            'leave.html',
+            'salary.html',
+            'salary-view.html',
+            'schedule-view.html',
+            'announce.html',
+            'cram-school-view.html'
+        ];
+        
+        let results = '資源版本檢查結果:\n\n';
+        let outdatedFiles = 0;
+        
+        // 模擬檢查過程 (實際實現需要伺服器端支持)
+        htmlFiles.forEach(file => {
+            // 假設這些文件的版本號
+            const version = file === 'index.html' || file === 'admin.html' || file === 'order.html' 
+                ? '20250417v1' 
+                : '20250405v3';
+            
+            const isLatest = version === this.currentVersion;
+            
+            results += `${file}: ${version} ${isLatest ? '✓' : '✗ (需更新)'}\n`;
+            
+            if (!isLatest) outdatedFiles++;
+        });
+        
+        results += '\n總結:\n';
+        results += `檢查了 ${htmlFiles.length} 個HTML文件\n`;
+        results += `發現 ${outdatedFiles} 個文件使用的資源版本過舊\n`;
+        results += '\n注意: 建議手動更新這些文件中的資源版本號\n';
+        
+        if (resultsContent) {
+            resultsContent.textContent = results;
+        }
+    }
+};
+
+// 導出方法
+window.initVersionUpdater = function(db, container) {
+    VERSION_UPDATER.init(db, container);
+};
+
+console.log('version-updater.js 載入完成'); 

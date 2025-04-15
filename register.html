@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>不早脆皮雞排 - 新人註冊</title>
+        <link rel="stylesheet" href="css/style.css">
+        </head>
+<body>
+    <div id="shared-menu-placeholder"></div> <div class="container">
+    </div>
+    <div class="container">
+        <h2>新人註冊</h2>
+        <p>請填寫您的基本資料。</p>
+
+        <form id="register-form">
+            <input type="hidden" id="employee-doc-id-holder"> <div class="form-group">
+                <label for="reg-name">姓名: <span style="color:red;">*</span></label>
+                <input type="text" id="reg-name" name="name" required>
+            </div>
+            <div class="form-group">
+                <label for="reg-id">身分證: <span style="color:red;">*</span></label>
+                <input type="password" id="reg-id" name="id" required>
+            </div>
+            <div class="form-group">
+                <label for="reg-birth">出生日期: <span style="color:red;">*</span></label>
+                <input type="date" id="reg-birth" name="birth" required> </div>
+            <div class="form-group">
+                <label for="reg-gender">性別: <span style="color:red;">*</span></label>
+                <select id="reg-gender" name="gender" required> <option value="">-- 請選擇 --</option> <option value="男">男</option>
+                    <option value="女">女</option>
+                    <option value="其他">其他</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="reg-email">EMAIL: <span style="color:red;">*</span></label>
+                <input type="email" id="reg-email" name="email" required> </div>
+            <div class="form-group">
+                <label for="reg-phone">聯絡電話: <span style="color:red;">*</span></label>
+                <input type="tel" id="reg-phone" name="phone" required> </div>
+            <div class="form-group">
+                <label for="reg-address">地址: <span style="color:red;">*</span></label>
+                <textarea id="reg-address" name="address" rows="3" required></textarea> </div>
+
+            <fieldset>
+                 <legend>緊急聯絡人</legend>
+                 <div class="form-group">
+                     <label for="reg-emergency">姓名: <span style="color:red;">*</span></label>
+                     <input type="text" id="reg-emergency" name="emergency" required> </div>
+                 <div class="form-group">
+                     <label for="reg-relation">關係: <span style="color:red;">*</span></label>
+                     <input type="text" id="reg-relation" name="relation" required> </div>
+                 <div class="form-group">
+                     <label for="reg-emergencyPhone">電話: <span style="color:red;">*</span></label>
+                     <input type="tel" id="reg-emergencyPhone" name="emergencyPhone" required> </div>
+             </fieldset>
+
+            <div class="form-group">
+                <label for="reg-startDate">到職日: <span style="color:red;">*</span></label>
+                <input type="date" id="reg-startDate" name="startDate" required> </div>
+            <div class="form-group">
+                <label for="reg-license">持有駕照: <span style="color:red;">*</span></label>
+                 <select id="reg-license" name="license" required>
+                     <option value="">-- 請選擇駕照類型 --</option>
+                     <option value="機車">機車</option>
+                     <option value="汽車(含機車)">汽車(含機車)</option>
+                     <option value="無">無</option>
+                 </select>
+                 </div>
+
+            <button type="submit" class="btn">提交註冊資料</button>
+            <p id="register-message" class="message"></p>
+        </form>
+        <p class="login-link">已經有帳號了? <a href="index.html">返回登入</a></p>
+    </div>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <script src="js/firebase-config.js?v=20250417v2"></script> <script src="js/init.js?v=20250417v2"></script> <script src="js/main.js?v=20250417v2"></script> <script src="js/auth.js?v=20250417v2"></script> <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                console.log("Waiting for central initialization via init.js (register.html)...");
+                // 1. 等待並獲取實例
+                const { db, fbAuth } = await initializeFirebaseAndAuth();
+                console.log("Firebase initialized. Proceeding with register.html logic.");
+
+                // 2. 設定 Auth 監聽器
+                if (typeof setupAuthStateListener === 'function') { setupAuthStateListener(fbAuth); }
+
+                // 3. 執行權限檢查 (register 頁面 Level 0 即可訪問)
+                const currentUser = await requireLogin(0, fbAuth, db);
+
+                // 4. 如果權限檢查通過 (表示用戶是 Level 0 且在允許的頁面)
+                if (currentUser) {
+                    const employeeDocIdForUpdate = sessionStorage.getItem('pendingEmployeeDocId');
+                    const messageElement = document.getElementById('register-message');
+                    if (!employeeDocIdForUpdate) {
+                         console.error("Cannot find pendingEmployeeDocId in sessionStorage!");
+                         if(messageElement) messageElement.textContent = '錯誤：缺少員工記錄資訊，無法提交。請重新登入。';
+                         const formEl = document.getElementById('register-form');
+                         if(formEl) formEl.style.display = 'none';
+                         return;
+                    }
+                    console.log("Found pendingEmployeeDocId:", employeeDocIdForUpdate);
+                    const hiddenInput = document.getElementById('employee-doc-id-holder');
+                    if(hiddenInput) hiddenInput.value = employeeDocIdForUpdate;
+
+                    // (姓名不預填)
+
+                    const registerForm = document.getElementById('register-form');
+                    if (registerForm && typeof handleRegister === 'function') {
+                         // 移除舊監聽器 (如果有的話) 再綁定
+                         registerForm.removeEventListener('submit', handleRegister); // 移除舊的 (handleRegister 需調整以接收 db)
+                         registerForm.addEventListener('submit', (event) => handleRegister(event, db)); // 綁定新的，傳遞 db
+                    } else {
+                        console.error("Register form or handleRegister function not found.");
+                        if(messageElement) messageElement.textContent = '頁面載入錯誤，無法提交表單。';
+                    }
+                } else {
+                     // 如果 requireLogin 返回 null，它內部已經處理了跳轉
+                     console.log("requireLogin(0) failed or returned null for register.html.");
+                }
+            } catch (error) {
+                 console.error("Error waiting for Firebase or executing page logic (register.html):", error);
+                  if (!document.body.innerHTML.includes('系統核心初始化失敗')) {
+                       document.body.innerHTML = `<p style="color:red; text-align:center; padding-top: 50px;">頁面載入失敗: ${error.message}</p>`;
+                  }
+            }
+        });
+    </script>
+    </body>
+</html>

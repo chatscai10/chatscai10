@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>薪資與獎金管理 - 不早系統</title>
+        <link rel="stylesheet" href="css/style.css">
+        <!-- 添加Chart.js庫用於薪資比較圖表 -->
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+        <style>
+            .tabs {
+                display: flex;
+                margin-bottom: 20px;
+                border-bottom: 1px solid #ddd;
+            }
+            .tab {
+                padding: 10px 20px;
+                cursor: pointer;
+                border: 1px solid transparent;
+                border-bottom: none;
+                margin-right: 5px;
+            }
+            .tab.active {
+                background-color: #f9f9f9;
+                border-color: #ddd;
+                border-bottom-color: white;
+                margin-bottom: -1px;
+            }
+            .tab-content {
+                display: none;
+                padding: 15px;
+                background-color: #f9f9f9;
+                border-radius: 0 0 4px 4px;
+            }
+            .tab-content.active {
+                display: block;
+            }
+            .form-row {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 15px;
+                margin-bottom: 15px;
+            }
+            .form-group {
+                flex: 1;
+                min-width: 200px;
+            }
+            .form-group label {
+                display: block;
+                margin-bottom: 5px;
+            }
+            .form-control {
+                width: 100%;
+                padding: 8px;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+            }
+            .btn-primary {
+                background-color: #4CAF50;
+                color: white;
+                padding: 10px 15px;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+            }
+            .btn-primary:hover {
+                background-color: #45a049;
+            }
+            .data-table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-top: 20px;
+            }
+            .data-table th, .data-table td {
+                border: 1px solid #ddd;
+                padding: 8px;
+                text-align: left;
+            }
+            .data-table th {
+                background-color: #f2f2f2;
+            }
+            .data-table tr:nth-child(even) {
+                background-color: #f9f9f9;
+            }
+            .message {
+                padding: 10px;
+                margin: 10px 0;
+                border-radius: 4px;
+            }
+            .info-message {
+                background-color: #e3f2fd;
+                border: 1px solid #bbdefb;
+            }
+            .error-message {
+                background-color: #ffebee;
+                border: 1px solid #ffcdd2;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="shared-menu-placeholder"></div>
+        
+        <div class="container">
+            <h1>薪資與獎金管理</h1>
+            
+            <div class="tabs">
+                <div class="tab active" data-tab="salary">薪資管理</div>
+                <div class="tab" data-tab="bonus">獎金管理</div>
+            </div>
+            
+            <div id="salary-tab" class="tab-content active">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="salary-year-month">選擇年月：</label>
+                        <select id="salary-year-month" class="form-control">
+                            <!-- 動態填充年月選項 -->
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="salary-store">選擇分店：</label>
+                        <select id="salary-store" class="form-control">
+                            <option value="all">所有分店</option>
+                            <!-- 動態填充分店選項 -->
+                        </select>
+                    </div>
+                    
+                    <div class="form-group" style="align-self: flex-end;">
+                        <button id="view-salary-btn" class="btn-primary">查詢薪資</button>
+                    </div>
+                </div>
+                
+                <!-- 新增薪資導航控制和歷史比較功能 -->
+                <div class="salary-navigation" style="display: flex; justify-content: space-between; align-items: center; margin: 15px 0; padding: 10px; background-color: #f8f9fa; border-radius: 6px;">
+                    <div class="month-navigation">
+                        <button id="prev-salary-month" class="btn-sm" style="background: none; border: none; cursor: pointer;">
+                            <span style="font-size: 1.2em; color: #666;">❮</span> 上個月
+                        </button>
+                        <span id="salary-month-display" style="margin: 0 15px; font-weight: bold;"></span>
+                        <button id="next-salary-month" class="btn-sm" style="background: none; border: none; cursor: pointer;">
+                            下個月 <span style="font-size: 1.2em; color: #666;">❯</span>
+                        </button>
+                    </div>
+                    <div class="history-controls">
+                        <button id="compare-salary-btn" class="btn-sm" style="background-color: #6c757d; color: white; border: none; border-radius: 4px; padding: 6px 12px; cursor: pointer;">
+                            薪資比較
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- 薪資比較模式控制面板 - 默認隱藏 -->
+                <div id="salary-compare-panel" style="display: none; margin-bottom: 15px; padding: 15px; background-color: #e9f7ef; border-radius: 6px; border-left: 4px solid #28a745;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <h4 style="margin: 0; color: #2c3e50;">薪資歷史比較</h4>
+                        <button id="close-compare-btn" style="background: none; border: none; color: #666; cursor: pointer; font-size: 1.2em;">&times;</button>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group" style="flex: 2;">
+                            <label>比較月份：</label>
+                            <div style="display: flex; gap: 10px;">
+                                <select id="compare-month-1" class="form-control">
+                                    <!-- 動態填充年月選項 -->
+                                </select>
+                                <select id="compare-month-2" class="form-control">
+                                    <!-- 動態填充年月選項 -->
+                                </select>
+                                <select id="compare-month-3" class="form-control" style="display: none;">
+                                    <!-- 動態填充年月選項 -->
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group" style="flex: 1; align-self: flex-end;">
+                            <button id="add-compare-month" class="btn-sm" style="background: none; border: 1px solid #28a745; color: #28a745; border-radius: 4px; padding: 6px 12px; margin-right: 5px;">+</button>
+                            <button id="run-comparison-btn" class="btn-primary" style="background-color: #28a745;">比較</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="salary-message" class="message info-message">
+                    此功能正在開發中，敬請期待！
+                </div>
+                
+                <!-- 新增比較結果容器 - 默認隱藏 -->
+                <div id="salary-comparison-results" style="display: none; margin-top: 20px;">
+                    <h3>薪資比較結果</h3>
+                    <div class="comparison-charts" style="margin-bottom: 20px;">
+                        <!-- 圖表將由JS動態填充 -->
+                    </div>
+                    <div class="comparison-table">
+                        <table class="data-table">
+                            <thead id="comparison-table-head">
+                                <!-- 表頭將由JS動態填充 -->
+                            </thead>
+                            <tbody id="comparison-table-body">
+                                <!-- 表格內容將由JS動態填充 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <div id="salary-data-container" style="display:none;">
+                    <h3>薪資明細表</h3>
+                    <table id="salary-table" class="data-table">
+                        <thead>
+                            <tr>
+                                <th>員工姓名</th>
+                                <th>分店</th>
+                                <th>基本工時</th>
+                                <th>加班工時</th>
+                                <th>基本薪資</th>
+                                <th>加班薪資</th>
+                                <th>其他扣款</th>
+                                <th>總計</th>
+                                <th>狀態</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="salary-data">
+                            <!-- 薪資資料將由JS動態填充 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div id="bonus-tab" class="tab-content">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="bonus-year-month">選擇年月：</label>
+                        <select id="bonus-year-month" class="form-control">
+                            <!-- 動態填充年月選項 -->
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="bonus-type">獎金類型：</label>
+                        <select id="bonus-type" class="form-control">
+                            <option value="performance">績效獎金</option>
+                            <option value="season">季節獎金</option>
+                            <option value="special">特別獎金</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group" style="align-self: flex-end;">
+                        <button id="view-bonus-btn" class="btn-primary">查詢獎金</button>
+                    </div>
+                </div>
+                
+                <div id="bonus-message" class="message info-message">
+                    此功能正在開發中，敬請期待！
+                </div>
+                
+                <div id="bonus-data-container" style="display:none;">
+                    <h3>獎金分配表</h3>
+                    <table id="bonus-table" class="data-table">
+                        <thead>
+                            <tr>
+                                <th>員工姓名</th>
+                                <th>分店</th>
+                                <th>獎金類型</th>
+                                <th>基準金額</th>
+                                <th>績效係數</th>
+                                <th>最終獎金</th>
+                                <th>狀態</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bonus-data">
+                            <!-- 獎金資料將由JS動態填充 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+        <script src="js/firebase-config.js?v=20250417v2"></script>
+        <script src="js/init.js?v=20250417v2"></script>
+        <script src="js/main.js?v=20250417v2"></script>
+        <script src="js/auth.js?v=20250417v2"></script>
+        <script src="js/salary-view-logic.js?v=20250417v2"></script>
+        
+        <script>
+            document.addEventListener('DOMContentLoaded', async () => {
+                try {
+                    console.log("Initializing salary view page...");
+                    const { db, fbAuth } = await initializeFirebaseAndAuth();
+                    
+                    // 設定身份驗證監聽器
+                    if (typeof setupAuthStateListener === 'function') {
+                        setupAuthStateListener(fbAuth);
+                    }
+                    
+                    // 設定標籤切換功能
+                    const tabs = document.querySelectorAll('.tab');
+                    tabs.forEach(tab => {
+                        tab.addEventListener('click', () => {
+                            const tabId = tab.getAttribute('data-tab');
+                            
+                            // 切換標籤和內容的active狀態
+                            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                            
+                            tab.classList.add('active');
+                            document.getElementById(`${tabId}-tab`).classList.add('active');
+                        });
+                    });
+                    
+                    // 檢查登入並初始化頁面
+                    const currentUser = await requireLogin(1, fbAuth, db); // 需要普通員工權限(1)即可
+                    if (currentUser && typeof initSalaryViewPage === 'function') {
+                        initSalaryViewPage(currentUser, db);
+                    } else if (!currentUser) {
+                        console.log("User not authorized for salary management page");
+                    } else {
+                        console.error("initSalaryViewPage function not defined");
+                        document.getElementById('salary-message').textContent = '頁面初始化錯誤';
+                        document.getElementById('salary-message').className = 'message error-message';
+                        document.getElementById('bonus-message').textContent = '頁面初始化錯誤';
+                        document.getElementById('bonus-message').className = 'message error-message';
+                    }
+                } catch (error) {
+                    console.error("Error initializing salary view page:", error);
+                    document.getElementById('salary-message').textContent = `頁面載入錯誤: ${error.message}`;
+                    document.getElementById('salary-message').className = 'message error-message';
+                    document.getElementById('bonus-message').textContent = `頁面載入錯誤: ${error.message}`;
+                    document.getElementById('bonus-message').className = 'message error-message';
+                }
+            });
+        </script>
+    </body>
+</html> 

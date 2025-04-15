@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>投票系統</title>
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Add specific styles for referendum if needed -->
+    <style>
+        .poll-item {
+            border: 1px solid #ccc;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+        }
+        .poll-item h3 {
+            margin-top: 0;
+        }
+        .poll-item button {
+            margin-right: 10px;
+            cursor: pointer;
+            padding: 8px 12px;
+            border: 1px solid #007bff;
+            background-color: #007bff;
+            color: white;
+            border-radius: 4px;
+        }
+        .poll-item button:hover {
+            background-color: #0056b3;
+        }
+        .poll-item button:disabled {
+            background-color: #ccc;
+            border-color: #ccc;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div id="shared-menu-placeholder"></div> <!-- Added shared menu placeholder -->
+    <header>
+        <h1>投票系統</h1>
+        <!-- Include main navigation/header if applicable -->
+    </header>
+
+    <main>
+        <div id="referendum-content">
+            <p>正在檢查登入狀態...</p>
+        </div>
+    </main>
+
+    <footer>
+        <!-- Footer content -->
+    </footer>
+
+    <!-- Firebase SDK -->
+    <!-- REMOVE Old SDK loading -->
+    <!-- <script src="/__/firebase/9.6.1/firebase-app-compat.js"></script>
+    <script src="/__/firebase/9.6.1/firebase-auth-compat.js"></script>
+    <script src="/__/firebase/9.6.1/firebase-firestore-compat.js"></script>
+    <script src="/__/firebase/9.6.1/firebase-functions-compat.js"></script>
+    <script src="/__/firebase/init.js"></script> -->
+
+    <!-- ADD Standard Firebase SDK Loading (match other pages) -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+    <!-- Removed functions-compat as it wasn't in other pages and likely handled by backend -->
+    <!-- ADDED: Firebase Functions Compat SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-functions-compat.js"></script>
+
+    <!-- ADD Standard Project JS Loading -->
+    <script src="js/firebase-config.js?v=20250417v2"></script>
+    <script src="js/init.js?v=20250417v2"></script>
+    <script src="js/main.js?v=20250417v2"></script>
+    <script src="js/auth.js?v=20250417v2"></script>
+
+    <!-- Your referendum logic (Removed type="module" for consistency) -->
+    <script src="js/referendum-logic.js?v=20250417v2"></script>
+
+    <!-- ADD Standard Initialization Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                console.log(`Waiting for central initialization via init.js (${window.location.pathname})...`);
+                // 1. 等待並獲取實例
+                const { db, fbAuth } = await initializeFirebaseAndAuth();
+
+                console.log(`Firebase initialized. Proceeding with ${window.location.pathname} logic.`);
+                // 2. 設定 Auth 監聽器
+                if (typeof setupAuthStateListener === 'function') { setupAuthStateListener(fbAuth); }
+
+                console.log(`Proceeding with ${window.location.pathname} logic after listener setup.`);
+                // 3. 執行權限檢查 (假設 referendum 需要 Level 1? 或是 Level 0?)
+                // Adjust level as needed
+                const currentUser = await requireLogin(1, fbAuth, db);
+
+                // 4. 如果權限檢查通過，調用頁面初始化函數
+                if (currentUser && typeof initReferendumPage === 'function') {
+                    initReferendumPage(currentUser, db); // <-- 傳遞 currentUser 和 db
+                } else if (!currentUser) {
+                    console.log(`requireLogin failed for ${window.location.pathname}.`);
+                } else {
+                     console.error("initReferendumPage function not found! Check referendum-logic.js");
+                     const contentDiv = document.getElementById('referendum-content');
+                     if(contentDiv) contentDiv.innerHTML = '<p class="message error-message">頁面初始化函數錯誤。</p>';
+                }
+            } catch (error) {
+                 console.error(`Error during initialization or page logic (${window.location.pathname}):`, error);
+                 if (!document.body.innerHTML.includes('系統核心初始化失敗')) {
+                      document.body.innerHTML = `<p style="color:red; text-align:center; padding-top: 50px;">頁面載入失敗: ${error.message}</p>`;
+                 }
+            }
+        });
+    </script>
+
+</body>
+</html>

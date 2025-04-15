@@ -1,0 +1,38 @@
+<!-- 菜單按鈕 -->
+<button id="menu-toggle-btn" class="menu-toggle-button" aria-label="Toggle Menu">&#9776; 菜單</button>
+
+<!-- 菜單遮罩 -->
+<div id="sliding-menu-overlay" class="sliding-menu-overlay"></div>
+
+<!-- 菜單容器 -->
+<div id="floating-menu-panel" class="sliding-menu">
+    <div class="menu-header">
+        <div class="user-info">
+            <img id="user-profile-pic" src="images/default-avatar.png" alt="用戶頭像">
+            <div class="user-details">
+                <div id="user-display-name">訪客</div>
+                <div id="user-role">未登入</div>
+            </div>
+        </div>
+    </div>
+    <ul class="menu-list">
+        <li><a href="announce.html">公告</a></li>
+        <li><a href="clockin.html">打卡</a></li>
+        <li><a href="leave.html">請假</a></li>
+        <li><a href="schedule-view.html">班表</a></li>
+        <li class="menu-item has-children">
+            <a href="#">更多功能</a>
+            <ul class="submenu">
+                <li><a href="salary.html">薪資查詢</a></li>
+                <li><a href="order.html">訂貨</a></li>
+                <li><a href="sales.html">業績查詢</a></li>
+            </ul>
+        </li>
+        <li class="admin-only"><a href="admin.html">管理頁面</a></li>
+        <li id="logout-button" style="display: none;"><a href="#" data-action="logout">登出</a></li>
+        <li id="login-button"><a href="index.html">登入</a></li>
+    </ul>
+    <div class="menu-footer">
+        <div class="version">版本: v2.0.1</div>
+    </div>
+</div>

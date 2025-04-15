@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>吃雞排找不早 - 營業額登錄</title> <link rel="stylesheet" href="css/style.css">
+   
+    <style>
+        /* 可將特定樣式移至 style.css */
+        fieldset {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #fdfdfd;
+        }
+        legend {
+            font-weight: bold;
+            font-size: 1.1em;
+            padding: 0 10px;
+        }
+        /* 讓動態生成的欄位稍微分開 */
+         .dynamic-field-group {
+             margin-bottom: 15px;
+         }
+         .required-mark { color: red; margin-left: 2px; }
+    </style>
+</head>
+<body>
+    <div id="shared-menu-placeholder"></div>
+
+    <div class="container">
+        <h2>每日營業額登錄</h2>
+
+        <form id="sales-form">
+            <fieldset>
+                <legend>基本資訊</legend>
+                <div class="form-group">
+                    <label>登錄人員:</label>
+                    <span id="sales-employee-name" style="font-weight: bold;">讀取中...</span>
+                </div>
+                <div class="form-group">
+                    <label for="sales-store">店名: <span style="color:red;">*</span></label>
+                    <select id="sales-store" name="store" class="form-control" required>
+                        <option value="">-- 請選擇分店 --</option>
+                        <!-- 選項將由JavaScript動態載入 -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="sales-record-date">登記日期: <span style="color:red;">*</span></label>
+                    <input type="date" id="sales-record-date" name="recordDate" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="sales-order-number">現場訂單編號: <span style="color:red;">*</span></label>
+                    <input type="text" id="sales-order-number" name="orderNumber" class="form-control" required>
+                </div>
+            </fieldset>
+
+            <fieldset id="income-section">
+                <legend>收入項目</legend>
+                <div class="loading-placeholder">正在載入收入欄位...</div>
+                </fieldset>
+
+            <fieldset id="expense-section">
+                <legend>支出項目</legend>
+                 <div class="loading-placeholder">正在載入支出欄位...</div>
+                 <div class="form-group dynamic-field-group" style="margin-top: 15px; border-top: 1px dashed #ccc; padding-top: 15px;">
+                     <label for="other-expense-input">其他支出 (非必填):</label>
+                     <textarea id="other-expense-input" name="other_expense" class="form-control" rows="3" placeholder="若有多筆請用逗號分隔，格式：項目名稱(金額)&#10;例如：買菜(500),電話費(299)"></textarea>
+                     <small class="form-text text-muted">格式：項目名稱(金額)。多筆請用逗號 `,` 分隔。</small>
+                 </div>
+            </fieldset>
+
+            <button type="submit" id="submit-sales" class="btn" style="margin-top: 30px;">送出營業額資料</button>
+            <p id="sales-message" class="message" style="margin-top: 15px;"></p>
+        </form>
+
+         </div>
+
+
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <script src="js/firebase-config.js?v=20250417v2"></script>
+    <script src="js/init.js?v=20250417v2"></script>
+    <script src="js/main.js?v=20250417v2"></script>
+    <script src="js/auth.js?v=20250417v2"></script>
+    <script src="js/sales-logic.js?v=20250417v2"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                console.log(`Waiting for central initialization via init.js (${window.location.pathname})...`);
+                // 1. 等待並獲取實例
+                const { db, fbAuth } = await initializeFirebaseAndAuth();
+
+                console.log(`Firebase initialized. Proceeding with ${window.location.pathname} logic.`);
+                // 2. 設定 Auth 監聽器
+                if (typeof setupAuthStateListener === 'function') { setupAuthStateListener(fbAuth); }
+
+                console.log(`Proceeding with ${window.location.pathname} logic after listener setup.`);
+                // 3. 執行權限檢查 (假設 sales 需要 Level 1)
+                const currentUser = await requireLogin(1, fbAuth, db);
+
+                // 4. 如果權限檢查通過，調用頁面初始化函數
+                if (currentUser && typeof initSalesPage === 'function') {
+                    initSalesPage(currentUser, db); // <-- 傳遞 currentUser 和 db
+                } else if (!currentUser) {
+                    console.log(`requireLogin failed for ${window.location.pathname}.`);
+                } else {
+                     console.error("initSalesPage function not found! Check sales-logic.js");
+                     const msgElement = document.getElementById('sales-message');
+                     if(msgElement) msgElement.textContent = '頁面初始化函數錯誤。';
+                }
+            } catch (error) {
+                 console.error(`Error during initialization or page logic (${window.location.pathname}):`, error);
+                 if (!document.body.innerHTML.includes('系統核心初始化失敗')) {
+                      document.body.innerHTML = `<p style="color:red; text-align:center; padding-top: 50px;">頁面載入失敗: ${error.message}</p>`;
+                 }
+            }
+        });
+    </script>
+    </body>
+</html>

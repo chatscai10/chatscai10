@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>吃雞排找不早 - 管理後台</title>
+    <link rel="stylesheet" href="css/style.css?v=20250417v2">
+    <link rel="stylesheet" href="css/version-check.css?v=20250417v2">
+    <link rel="stylesheet" href="css/inventory-check.css?v=20250417v2">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js?v=20250417v2"></script>
+    <style>
+        /* Base Styles */
+        body { 
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f6f9;
+            display: flex;
+            min-height: 100vh;
+            position: relative;
+            transition: padding-left 0.3s;
+        }
+    
+        /* Admin Modals */
+        .admin-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            overflow: auto;
+        }
+        
+        .admin-modal .modal-content {
+            background-color: #fff;
+            margin: 50px auto;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            width: 80%;
+            max-width: 800px;
+            position: relative;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .admin-modal .modal-close-btn {
+            position: absolute;
+            right: 15px;
+            top: 10px;
+            font-size: 24px;
+            cursor: pointer;
+            color: #888;
+        }
+        
+        .admin-modal .modal-close-btn:hover {
+            color: #333;
+        }
+        
+        .admin-modal h3 {
+            margin-top: 0;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .admin-modal .message {
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+            display: none;
+        }
+        
+        .admin-modal .message:not(:empty) {
+            display: block;
+        }
+        
+        .admin-modal .success-message {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .admin-modal .error-message {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .admin-modal .info-message {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .admin-modal .form-actions {
+            margin-top: 20px;
+            text-align: right;
+        }
+
+        /* Menu Toggle Button */
+        .menu-toggle {
+            background: transparent;
+        }
+        .save-message {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border-radius: 4px;
+            z-index: 1000;
+            display: none;
+            animation: fadeIn 0.3s, fadeOut 0.3s 2.7s;
+            animation-fill-mode: forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+        .export-csv-btn {
+            margin-bottom: 15px;
+        }
+        
+        /* 加載覆蓋層樣式 */
+        #loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s;
+        }
+        
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="admin-layout">
+    <!-- 加載覆蓋層 -->
+    <div id="loading-overlay">
+        <div class="spinner"></div>
+        <h3>管理介面載入中...</h3>
+        <p>正在準備所有元件，請稍候...</p>
+    </div>
+
+    <div id="admin-sliding-menu-overlay" class="sliding-menu-overlay"></div>
+    <div id="admin-floating-menu-panel" class="floating-menu">
+        <div class="user-info" id="admin-user-info">
+            <strong id="admin-user-name">載入中...</strong>
+            <span id="admin-user-level"></span>
+        </div>
+        <div id="admin-menu-links-container">
+            <ul>
+                <li><a href="/admin.html#section-dashboard" data-section="dashboard">儀表板</a></li>
+                <li><a href="/admin.html#section-parameters" data-section="parameters">參數設定</a></li>
+                <li><a href="/admin.html#section-schedule" data-section="schedule">排班管理</a></li>
+                <li><a href="/admin.html#section-schedule-stats" data-section="schedule-stats">排班統計</a></li>
+                <li><a href="/admin.html#section-sales-stats" data-section="sales-stats">營業統計</a></li>
+                <li><a href="/admin.html#section-salary-stats" data-section="salary-stats">薪資統計</a></li>
+                <li><a href="/admin.html#section-announce" data-section="announce">公告管理</a></li>
+                <li><a href="/admin.html#section-user-management" data-section="user-management">員工管理</a></li>
+                <li><a href="/admin.html#section-inventory" data-section="inventory">庫存盤點管理</a></li>
+                <li><a href="/admin.html#section-bonus-groups" data-section="bonus-groups">獎金小組管理</a></li>
+                <li><a href="/admin.html#section-bonus-tasks" data-section="bonus-tasks">獎金任務設定</a></li>
+                <li><a href="/admin.html#section-version-management" data-section="version-management">版本管理</a></li>
+                <li><a href="/admin.html#section-analysis" data-section="analysis">數據分析</a></li>
+                <li><a href="index.html">返回前台</a></li>
+            </ul>
+        </div>
+        <button id="admin-menu-logout-btn" class="btn">登出系統</button>
+    </div>
+
+    <button id="admin-menu-toggle-btn" class="menu-toggle" aria-label="切換選單">
+        <div></div>
+        <div></div>
+        <div></div>
+    </button>
+
+    <div class="container">
+        <div id="admin-content-area" class="admin-content">
+            <!-- Dashboard Section -->
+            <section class="admin-section" id="dashboard-section">
+                <h2>系統儀表板</h2>
+                <div class="section-content">
+                    <p>載入中...</p>
+                </div>
+            </section>
+
+            <!-- Parameters Section -->
+            <section class="admin-section" id="parameters-section" style="display: none;">
+                <h2>參數設定</h2>
+                <div class="section-content">
+                    <div id="consolidated-params-message" style="margin-bottom: 15px;"></div>
+                    <div id="parameter-categories-container">
+                        <fieldset id="param-category-main" class="collapsed">
+                            <legend class="category-toggle">基本設定</legend>
+                            <div class="category-content-wrapper">
+                                <div class="category-content-placeholder">點擊展開載入</div>
+                            </div>
+                        </fieldset>
+                        <fieldset id="param-category-scheduling" class="collapsed">
+                            <legend class="category-toggle">排班設定</legend>
+                            <div class="category-content-wrapper">
+                                <div class="category-content-placeholder">點擊展開載入</div>
+                            </div>
+                        </fieldset>
+                        <fieldset id="param-category-notifications" class="collapsed">
+                            <legend class="category-toggle">通知設定</legend>
+                            <div class="category-content-wrapper">
+                                <div class="category-content-placeholder">點擊展開載入</div>
+                            </div>
+                        </fieldset>
+                        <fieldset id="param-category-payroll" class="collapsed">
+                            <legend class="category-toggle">薪資設定</legend>
+                            <div class="category-content-wrapper">
+                                <div class="category-content-placeholder">點擊展開載入</div>
+                            </div>
+                        </fieldset>
+                        <fieldset id="param-category-permissions" class="collapsed">
+                            <legend class="category-toggle">權限設定</legend>
+                            <div class="category-content-wrapper">
+                                <div class="category-content-placeholder">點擊展開載入</div>
+                            </div>
+                        </fieldset>
+                        <fieldset id="param-category-sales-fields" class="collapsed">
+                            <legend class="category-toggle">銷售欄位設定</legend>
+                            <div class="category-content-wrapper">
+                                <div class="category-content-placeholder">點擊展開載入</div>
+                            </div>
+                        </fieldset>
+                        <fieldset id="param-category-order-items" class="collapsed">
+                            <legend class="category-toggle">叫貨品項設定</legend>
+                            <div class="category-content-wrapper">
+                                <div class="category-content-placeholder">點擊展開載入</div>
+                            </div>
+                        </fieldset>
+                        <fieldset id="param-category-bonus-tasks" class="collapsed">
+                            <legend class="category-toggle">獎金任務設定</legend>
+                            <div class="category-content-wrapper">
+                                <div class="category-content-placeholder">點擊展開載入</div>
+                            </div>
+                        </fieldset>
+                        <fieldset id="param-category-score" class="collapsed">
+                            <legend class="category-toggle">分數設定</legend>
+                            <div class="category-content-wrapper">
+                                <div class="category-content-placeholder">點擊展開載入</div>
+                            </div>
+                        </fieldset>
+                        <fieldset id="param-category-inventory" class="collapsed">
+                            <legend class="category-toggle">庫存盤點設定</legend>
+                            <div class="category-content-wrapper">
+                                <div class="category-content-placeholder">點擊展開載入</div>
+                            </div>
+                        </fieldset>
+                        <fieldset id="param-category-others" class="collapsed">
+                            <legend class="category-toggle">其他設定</legend>
+                            <div class="category-content-wrapper">
+                                <div class="category-content-placeholder">點擊展開載入</div>
+                            </div>
+                        </fieldset>
+                    </div>
+                </div>
+                <div class="floating-save-button-container">
+                    <button id="save-all-params-btn" class="btn btn-primary">儲存所有參數設定</button>
+                </div>
+            </section>
+
+            <!-- Schedule Management Section -->
+            <section class="admin-section" id="schedule-section" style="display: none;">
+                <h2>排班管理</h2>
+                <div class="section-content">
+                    <p>載入中...</p>
+                </div>
+            </section>
+
+            <!-- Schedule Statistics Section -->
+            <section class="admin-section" id="schedule-stats-section" style="display: none;">
+                <h2>排班統計</h2>
+                <div class="section-content">
+                    <p>載入中...</p>
+                </div>
+            </section>
+
+            <!-- Sales Statistics Section -->
+            <section class="admin-section" id="sales-stats-section" style="display: none;">
+                <h2>營業統計</h2>
+                <div class="section-content">
+                    <p>載入中...</p>
+                </div>
+            </section>
+
+            <!-- Salary Statistics Section -->
+            <section class="admin-section" id="salary-stats-section" style="display: none;">
+                <h2>薪資統計</h2>
+                <div class="section-content">
+                    <p>載入中...</p>
+                </div>
+            </section>
+
+            <!-- Announcement Management Section -->
+            <section class="admin-section" id="announce-section" style="display: none;">
+                <h2>公告管理</h2>
+                <div class="section-content">
+                    <p>載入中...</p>
+                </div>
+            </section>
+
+            <!-- Employee Management Section -->
+            <section class="admin-section" id="user-management-section" style="display: none;">
+                <h2>員工管理</h2>
+                <div class="section-content">
+                    <p>載入中...</p>
+                </div>
+            </section>
+
+            <!-- Inventory Management Section -->
+            <section class="admin-section" id="inventory-section" style="display: none;">
+                <h2>庫存盤點管理</h2>
+                <div class="section-content">
+                    <p>載入中...</p>
+                </div>
+            </section>
+
+            <!-- Version Management Section -->
+            <section class="admin-section" id="version-management-section" style="display: none;">
+                <h2>版本管理</h2>
+                <div class="section-content">
+                    <p>載入中...</p>
+                </div>
+            </section>
+
+            <!-- Analysis Section -->
+            <section class="admin-section" id="analysis-section" style="display: none;">
+                <h2>數據分析</h2>
+                <div class="section-content">
+                    <button id="export-csv-btn" class="btn btn-primary export-csv-btn">匯出CSV數據</button>
+                    <div class="admin-param-tabs" id="analysis-tabs">
+                        <button class="active" data-tab="sales-analysis">銷售分析</button>
+                        <button data-tab="salary-analysis">薪資分析</button>
+                        <button data-tab="store-analysis">分店分析</button>
+                    </div>
+                    <div class="admin-param-content" id="sales-analysis-content">
+                        <div class="chart-container">
+                            <canvas id="sales-chart"></canvas>
+                        </div>
+                        <div id="sales-table-container" class="table-container">
+                            <h3>銷售數據表</h3>
+                            <table id="sales-data-table" class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>日期</th>
+                                        <th>分店</th>
+                                        <th>營業額</th>
+                                        <th>客數</th>
+                                        <th>來客數</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td colspan="5" style="text-align: center;">載入中...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="admin-param-content" id="salary-analysis-content" style="display: none;">
+                        <div class="chart-container">
+                            <canvas id="salary-chart"></canvas>
+                        </div>
+                        <div id="salary-table-container" class="table-container">
+                            <h3>薪資數據表</h3>
+                            <table id="salary-data-table" class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>員工</th>
+                                        <th>分店</th>
+                                        <th>本月薪資</th>
+                                        <th>上月薪資</th>
+                                        <th>變動</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td colspan="5" style="text-align: center;">載入中...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="admin-param-content" id="store-analysis-content" style="display: none;">
+                        <div class="chart-container">
+                            <canvas id="store-chart"></canvas>
+                        </div>
+                        <div id="store-table-container" class="table-container">
+                            <h3>分店績效表</h3>
+                            <table id="store-data-table" class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>分店</th>
+                                        <th>總營業額</th>
+                                        <th>平均營業額</th>
+                                        <th>總來客數</th>
+                                        <th>員工數</th>
+                                        <th>人均產值</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td colspan="6" style="text-align: center;">載入中...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Bonus Groups Section -->
+            <section class="admin-section" id="bonus-groups-section" style="display: none;">
+                <h2>獎金小組管理</h2>
+                <div class="section-content">
+                    <p>載入中...</p>
+                </div>
+            </section>
+
+            <section class="admin-section" id="section-bonus-tasks" style="display: none;">
+                <h2>獎金任務設定</h2>
+                <div class="section-content">
+                    <p>載入中...</p>
+                </div>
+                
+                <!-- Bonus Task Modal -->
+                <div id="bonus-task-modal" class="admin-modal">
+                    <div class="modal-content">
+                        <span class="modal-close-btn">&times;</span>
+                        <h3 id="bonus-task-modal-title">新增獎金任務</h3>
+                        <div id="bonus-task-modal-message" class="message"></div>
+                        
+                        <form id="bonus-task-form-modal">
+                            <input type="hidden" id="modal-bonus-task-id">
+                            
+                            <div class="form-group">
+                                <label for="modal-bonus-task-name">任務名稱</label>
+                                <input type="text" id="modal-bonus-task-name" class="form-control" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="modal-bonus-task-reward">獎勵金額</label>
+                                <input type="number" id="modal-bonus-task-reward" class="form-control" min="0" step="any" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="modal-bonus-task-desc">任務描述</label>
+                                <textarea id="modal-bonus-task-desc" class="form-control"></textarea>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="modal-bonus-task-min-level">最低要求等級</label>
+                                <input type="number" id="modal-bonus-task-min-level" class="form-control" min="0" value="0">
+                            </div>
+                            
+                            <div class="form-check">
+                                <input type="checkbox" id="modal-bonus-task-active" class="form-check-input">
+                                <label for="modal-bonus-task-active" class="form-check-label">啟用此任務</label>
+                            </div>
+                            
+                            <div class="form-check mb-3">
+                                <input type="checkbox" id="modal-bonus-task-selectable" class="form-check-input">
+                                <label for="modal-bonus-task-selectable" class="form-check-label">可讓用戶選擇</label>
+                            </div>
+                            
+                            <h4>解鎖條件</h4>
+                            <div class="form-group">
+                                <label for="modal-unlock-min-tenure">最低年資 (天)</label>
+                                <input type="number" id="modal-unlock-min-tenure" class="form-control" min="0">
+                            </div>
+                            
+                            <h4>評估設定</h4>
+                            <div class="form-group">
+                                <label for="modal-eval-trigger">觸發評估類型</label>
+                                <select id="modal-eval-trigger" class="form-control">
+                                    <option value="MONTHLY">每月評估</option>
+                                    <option value="DAILY">每日評估</option>
+                                    <option value="MANUAL">手動評估</option>
+                                </select>
+                            </div>
+                            
+                            <div id="monthly-eval-options">
+                                <div class="form-group">
+                                    <label for="modal-eval-frequency">評估時間點</label>
+                                    <select id="modal-eval-frequency" class="form-control">
+                                        <option value="START_OF_MONTH">月初</option>
+                                        <option value="END_OF_MONTH">月底</option>
+                                        <option value="MID_MONTH">月中 (15日)</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="modal-eval-offset">評估月份偏移</label>
+                                    <select id="modal-eval-offset" class="form-control">
+                                        <option value="-1">上個月 (最常用)</option>
+                                        <option value="0">當月</option>
+                                        <option value="-2">前兩個月</option>
+                                        <option value="-3">前三個月</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <h4>條件設定</h4>
+                            <div class="form-group">
+                                <label for="modal-conditions-logic">條件邏輯</label>
+                                <select id="modal-conditions-logic" class="form-control">
+                                    <option value="AND">全部條件必須滿足 (AND)</option>
+                                    <option value="OR">任一條件滿足即可 (OR)</option>
+                                </select>
+                            </div>
+                            
+                            <div id="conditions-container">
+                                <p class="text-muted" id="no-conditions-msg">尚未新增任何條件。</p>
+                            </div>
+                            
+                            <button type="button" id="add-condition-btn" class="btn btn-sm btn-info mt-2">新增條件</button>
+                            
+                            <div class="form-actions mt-4">
+                                <button type="button" id="save-bonus-task-btn" class="btn btn-primary">儲存任務</button>
+                                <button type="button" id="cancel-bonus-task-btn" class="btn btn-secondary">取消</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <div id="save-message" class="save-message">參數已儲存</div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-functions-compat.js"></script>
+    <script src="js/firebase-config.js?v=20250417v3"></script>
+    <script src="js/init.js?v=20250417v3"></script>
+    <script src="js/auth.js?v=20250417v3"></script>
+    <script src="js/admin-logic.js?v=20250417v3"></script>
+    <script src="js/admin-parameters.js?v=20250417v3"></script>
+    <script src="js/admin-analysis.js?v=20250417v3"></script>
+    <script src="js/inventory-check.js?v=20250417v3"></script>
+    <script src="js/admin-inventory.js?v=20250417v3"></script>
+    <script src="js/admin-bonus-tasks.js?v=20250417v3"></script>
+    <script src="js/admin-leave-requests.js?v=20250417v3"></script>
+    <script src="js/version-updater.js?v=20250417v3"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                console.log("Firebase initialization in admin.html");
+                // 初始化Firebase
+                const { db, fbAuth } = await initializeFirebaseAndAuth();
+                console.log("Firebase initialized in admin.html");
+                
+                // 監聽認證狀態變化
+                fbAuth.onAuthStateChanged(async (user) => {
+                    if (user) {
+                        console.log("User authenticated, fetching user data...");
+                        try {
+                            // 檢查用戶是否有管理員權限 (等級 9 或以上)
+                            const customClaims = await user.getIdTokenResult();
+                            const userLevel = customClaims.claims.level || 0;
+                            
+                            if (userLevel >= 9) {
+                                console.log("Admin access granted. User level:", userLevel);
+                                
+                                // 獲取更多用戶信息 - 使用備用路徑嘗試獲取
+                                let userData = null;
+                                
+                                try {
+                                    const userDoc = await db.collection('users').doc(user.uid).get();
+                                    if (userDoc.exists) {
+                                        userData = userDoc.data();
+                                    } else {
+                                        console.log("User document does not exist in 'users' collection, trying 'employees'");
+                                        const employeeQuery = await db.collection('employees')
+                                            .where('authUid', '==', user.uid)
+                                            .limit(1)
+                                            .get();
+                                            
+                                        if (!employeeQuery.empty) {
+                                            userData = employeeQuery.docs[0].data();
+                                        } else {
+                                            // 使用token中的基本信息
+                                            userData = {
+                                                name: customClaims.claims.name || user.displayName,
+                                                level: userLevel,
+                                                roles: { level: userLevel }
+                                            };
+                                            console.log("Using basic user info from token claims");
+                                        }
+                                    }
+                                    
+                                    // 顯示使用者名稱
+                                    const userNameElement = document.getElementById('admin-user-name');
+                                    const userLevelElement = document.getElementById('admin-user-level');
+                                    
+                                    if (userNameElement) {
+                                        userNameElement.textContent = userData.name || '管理員';
+                                    }
+                                    
+                                    if (userLevelElement) {
+                                        userLevelElement.textContent = `權限等級: ${userLevel}`;
+                                    }
+                                    
+                                    // 初始化管理介面
+                                    if (typeof initAdminPage === 'function') {
+                                        await initAdminPage(userData, db, fbAuth);
+                                    } else {
+                                        console.error("Admin initialization function not found");
+                                    }
+                                    
+                                    // 隱藏加載覆蓋層
+                                    const loadingOverlay = document.getElementById('loading-overlay');
+                                    if (loadingOverlay) {
+                                        loadingOverlay.style.opacity = 0;
+                                        setTimeout(() => {
+                                            loadingOverlay.style.display = 'none';
+                                        }, 500);
+                                    }
+                                    
+                                } catch (userDataError) {
+                                    console.error("Error fetching user data:", userDataError);
+                                    alert("獲取用戶數據時發生錯誤，但仍授予臨時訪問權限");
+                                    
+                                    // 使用備用數據初始化
+                                    const fallbackData = {
+                                        name: customClaims.claims.name || user.displayName || "管理員",
+                                        level: userLevel,
+                                        roles: { level: userLevel }
+                                    };
+                                    
+                                    if (typeof initAdminPage === 'function') {
+                                        await initAdminPage(fallbackData, db, fbAuth);
+                                    }
+                                    
+                                    // 隱藏加載覆蓋層
+                                    const loadingOverlay = document.getElementById('loading-overlay');
+                                    if (loadingOverlay) {
+                                        loadingOverlay.style.opacity = 0;
+                                        setTimeout(() => {
+                                            loadingOverlay.style.display = 'none';
+                                        }, 500);
+                                    }
+                                }
+                            } else {
+                                console.log("User does not have admin privileges");
+                                alert("您沒有管理員權限");
+                                window.location.href = "index.html";
+                            }
+                        } catch (error) {
+                            console.error("Error checking admin rights:", error);
+                            alert("檢查管理員權限時發生錯誤");
+                            window.location.href = "index.html";
+                        }
+                    } else {
+                        console.log("User not logged in, redirecting...");
+                        window.location.href = "index.html";
+                    }
+                });
+                
+            } catch (error) {
+                console.error("Error initializing admin page:", error);
+                document.body.innerHTML = `<div class="error-container"><h1>發生錯誤</h1><p>${error.message}</p><a href="index.html" class="btn">返回首頁</a></div>`;
+            }
+        });
+
+        // 菜單交互部分
+        document.addEventListener('DOMContentLoaded', () => {
+            const menuBtn = document.getElementById('admin-menu-toggle-btn');
+            const menu = document.getElementById('admin-floating-menu-panel');
+            const overlay = document.getElementById('admin-sliding-menu-overlay');
+            
+            if (menuBtn && menu && overlay) {
+                menuBtn.addEventListener('click', () => {
+                    document.body.classList.toggle('menu-open');
+                });
+                
+                overlay.addEventListener('click', () => {
+                    document.body.classList.remove('menu-open');
+                });
+                
+                // 菜單項目點擊事件 - 切換顯示區塊
+                const menuLinks = document.querySelectorAll('#admin-menu-links-container a');
+                menuLinks.forEach(link => {
+                    link.addEventListener('click', (e) => {
+                        const section = link.getAttribute('data-section');
+                        if (section) {
+                            e.preventDefault();
+                            
+                            // 隱藏所有區塊
+                            document.querySelectorAll('.admin-section').forEach(sec => {
+                                sec.style.display = 'none';
+                            });
+                            
+                            // 顯示選中區塊
+                            const targetSection = document.getElementById(`${section}-section`);
+                            if (targetSection) {
+                                targetSection.style.display = 'block';
+                                
+                                // 更新URL
+                                window.history.pushState(null, '', `/admin.html#section-${section}`);
+                            }
+                            
+                            // 關閉菜單
+                            document.body.classList.remove('menu-open');
+                        }
+                    });
+                });
+
+                // 登出按鈕
+                const logoutBtn = document.getElementById('admin-menu-logout-btn');
+                if (logoutBtn) {
+                    logoutBtn.addEventListener('click', () => {
+                        firebase.auth().signOut().then(() => {
+                            window.location.href = "index.html";
+                        }).catch(error => {
+                            console.error("Logout error:", error);
+                            alert("登出時發生錯誤，請刷新頁面重試");
+                        });
+                    });
+                }
+            }
+        });
+    </script>
+</body>
+</html>
