@@ -609,10 +609,32 @@ async function requireLogin(defaultMinLevel = 1, fbAuth, db) {
 async function handleLogout(fbAuth) { // Accept fbAuth
     if (!fbAuth) { console.error("handleLogout: fbAuth missing!"); return; }
     console.log("Logging out...");
-    try { await fbAuth.signOut(); } catch (e) { console.error("Firebase signout error", e); }
-    finally {
+    try { 
+        // 清除會話存儲
+        sessionStorage.removeItem('userInfo');
+        sessionStorage.removeItem('idToken');
+        sessionStorage.removeItem('userRoles');
+        sessionStorage.removeItem('permissions');
         sessionStorage.removeItem('loggedInUser');
-        if (liff.isInClient()) { liff.logout(); }
+        
+        // Firebase登出
+        await fbAuth.signOut(); 
+        console.log("Firebase登出成功");
+        
+        // LIFF登出 (如果可用)
+        if (typeof liff !== 'undefined' && liff.isLoggedIn()) {
+            try {
+                liff.logout();
+                console.log("LINE LIFF登出成功");
+            } catch (liffError) {
+                console.warn("LINE LIFF登出失敗:", liffError);
+            }
+        }
+    } catch (e) { 
+        console.error("登出過程中發生錯誤:", e); 
+    }
+    finally {
+        // 確保即使出錯，也會重定向
         window.location.href = '/index.html';
     }
 }
@@ -761,115 +783,142 @@ async function logout(fbAuth) {
 }
 
 /**
- * Require login and check level (加入頁面權限檢查和 Level 0 處理)
- * @param {number|FirebaseAuth} defaultMinLevelOrFbAuth - 如果未設定權限，使用的預設最低等級，或 Firebase Auth 實例
- * @param {FirebaseAuth|Firestore} fbAuthOrDb - Firebase Auth 實例或 Firestore 實例
- * @param {Firestore} [dbParam] - Firestore 實例，當第一個參數是數字時使用
- * @returns {Promise<object|null>} - Returns user info object or null
+ * 使用email和密碼執行登錄
+ * @param {string} email - 用戶電子郵件
+ * @param {string} password - 用戶密碼
  */
-async function requireLogin(defaultMinLevelOrFbAuth, fbAuthOrDb, dbParam) {
-    // 處理參數兼容性
-    let defaultMinLevel = 1;
-    let fbAuth, db;
+async function login(email, password) {
+    console.log("開始登錄流程，使用email和密碼");
     
-    // 檢查第一個參數的類型，並據此分配參數
-    if (typeof defaultMinLevelOrFbAuth === 'number') {
-        // 標準調用: (level, fbAuth, db)
-        defaultMinLevel = defaultMinLevelOrFbAuth;
-        fbAuth = fbAuthOrDb;
-        db = dbParam;
-    } else {
-        // 舊版調用: (fbAuth, db)
-        defaultMinLevel = 1; // 使用預設等級
-        fbAuth = defaultMinLevelOrFbAuth;
-        db = fbAuthOrDb;
-        console.warn("警告: requireLogin 使用了舊的參數順序 (fbAuth, db)，請更新為 (level, fbAuth, db)");
+    if (!email || !password) {
+        console.error("登錄失敗：缺少電子郵件或密碼");
+        showLoginError("請輸入電子郵件和密碼");
+        return;
     }
     
-    // 檢查 fbAuth 和 db 是否有效
-    if (!fbAuth || !db) {
-        console.error("requireLogin: fbAuth or db instance not provided!");
-        // 避免在 index.html 上無限重定向自己
-        if (window.location.pathname !== '/' && !window.location.pathname.endsWith('index.html')) {
-            window.location.href = '/index.html';
-        }
-        return null;
-    }
-
-    // 1. 檢查登入狀態 (優先 Session Storage)
-    const currentUserInfo = checkLoginStatus(fbAuth);
-    if (!currentUserInfo) {
-        console.log("requireLogin: User not logged in. Redirecting...");
-        if (window.location.pathname !== '/' && !window.location.pathname.endsWith('index.html')) {
-            window.location.href = '/index.html';
-        }
-        return null;
-    }
-
-    // 2. 獲取用戶等級
-    const userLevel = currentUserInfo.roles?.level ?? -1; // 預設 -1 (異常)
-
-    // 3. 處理異常或 Level 0
-    if (userLevel < 0) {
-        console.warn(`requireLogin: User level unknown or invalid (${userLevel}) for ${currentUserInfo.authUid}. Logging out.`);
-        alert('帳號狀態異常，請聯繫管理員或重新登入。');
-        handleLogout(fbAuth); // 登出
-        return null;
-    }
-
-    if (userLevel === 0) {
-        // Level 0 用戶的處理
-        const currentPath = window.location.pathname;
-        const allowedPendingPages = ['/register.html', '/pending.html'];
-
-        if (allowedPendingPages.includes(currentPath)) {
-            // 允許訪問註冊頁或等待頁
-            console.log(`requireLogin: Level 0 user accessing allowed page ${currentPath}. OK.`);
-            // 特別檢查：如果在註冊頁，必須要有 pendingEmployeeDocId
-            if (currentPath === '/register.html' && !sessionStorage.getItem('pendingEmployeeDocId')) {
-                console.warn("Level 0 user on register.html but missing pendingEmployeeDocId. Redirecting to index.");
-                alert('缺少註冊資訊，請重新登入。');
-                window.location.href = '/index.html';
-                return null;
-            }
-            return currentUserInfo; // 返回用戶信息，允許留在當前頁面
-        } else if (currentPath === '/' || currentPath.endsWith('index.html')) {
-             // 在首頁， auth.js 的 loginWithLiff 或 handleExistingFirebaseSession 會處理跳轉邏輯
-             console.log("requireLogin: Level 0 user on index page. Allowing auth.js to handle redirection.");
-             return currentUserInfo;
+    try {
+        showLoading('正在登錄...');
+        
+        // 使用Firebase驗證登錄
+        const userCredential = await fbAuth.signInWithEmailAndPassword(email, password);
+        const user = userCredential.user;
+        
+        console.log(`用戶已成功登錄: ${user.email} (${user.uid})`);
+        
+        // 獲取用戶完整資料
+        const userDoc = await db.collection('users').doc(user.uid).get();
+        let userData = {};
+        
+        if (userDoc.exists) {
+            userData = userDoc.data();
+            console.log("從Firestore獲取到的用戶資料:", userData);
         } else {
-            // 訪問其他任何頁面，都強制跳轉到 pending.html
-            console.warn(`requireLogin: Level 0 user denied access to ${currentPath}. Redirecting to pending.html.`);
-            window.location.href = '/pending.html';
-            return null;
+            console.warn(`用戶 ${user.uid} 在Firestore中沒有對應的文檔記錄`);
+            
+            // 創建基本用戶資料
+            userData = {
+                uid: user.uid,
+                email: user.email,
+                displayName: user.displayName || email.split('@')[0],
+                photoURL: user.photoURL || null,
+                createdAt: new Date(),
+                level: 1,
+                roles: { customer: true }
+            };
+            
+            // 嘗試保存新用戶資料
+            try {
+                await db.collection('users').doc(user.uid).set(userData);
+                console.log("已為新用戶創建基本資料");
+            } catch (saveErr) {
+                console.error("保存新用戶資料時出錯:", saveErr);
+            }
         }
+        
+        // 合併基本用戶資料和Firestore文檔資料
+        const mergedUserData = {
+            uid: user.uid,
+            email: user.email,
+            displayName: userData.displayName || user.displayName || email.split('@')[0],
+            photoURL: userData.photoURL || user.photoURL,
+            level: userData.level || 1,
+            roles: userData.roles || { customer: true },
+            isLoggedIn: true,
+            loginMethod: 'email',
+            lastLogin: new Date().toISOString()
+        };
+        
+        // 優先使用Firestore中的名稱
+        if (userData.name) {
+            mergedUserData.name = userData.name;
+        }
+        
+        // 確保roles是對象格式
+        if (!mergedUserData.roles || typeof mergedUserData.roles !== 'object') {
+            mergedUserData.roles = { customer: true };
+        }
+        
+        // 將用戶資料存儲到sessionStorage以便在整個應用中使用
+        console.log("存儲用戶資料到sessionStorage:", mergedUserData);
+        sessionStorage.setItem('user', JSON.stringify(mergedUserData));
+        sessionStorage.setItem('isLoggedIn', 'true');
+        sessionStorage.setItem('loginMethod', 'email');
+        sessionStorage.setItem('userLevel', mergedUserData.level || 1);
+        
+        // 更新最後登錄時間
+        try {
+            await db.collection('users').doc(user.uid).update({
+                lastLogin: new Date(),
+                lastLoginMethod: 'email'
+            });
+        } catch (updateErr) {
+            console.warn("更新最後登錄時間失敗:", updateErr);
+        }
+        
+        // 檢查用戶是否有管理員權限，以便決定重定向到哪個頁面
+        const isAdmin = 
+            (mergedUserData.level && mergedUserData.level >= 9) || 
+            (mergedUserData.roles && mergedUserData.roles.admin) ||
+            (mergedUserData.roles && mergedUserData.roles.permissions && 
+             (mergedUserData.roles.permissions.includes('admin') || 
+              mergedUserData.roles.permissions.includes('full_access')));
+        
+        // 登錄成功，隱藏加載提示
+        hideLoading();
+        
+        // 若有回調URL參數，則重定向到該URL，否則重定向到主頁或管理頁面
+        const urlParams = new URLSearchParams(window.location.search);
+        const callbackUrl = urlParams.get('callback');
+        
+        if (callbackUrl) {
+            console.log(`重定向到回調URL: ${callbackUrl}`);
+            window.location.href = callbackUrl;
+        } else if (isAdmin) {
+            console.log("檢測到管理員登錄，重定向到管理頁面");
+            window.location.href = '/admin.html';
+        } else {
+            console.log("登錄成功，重定向到主頁");
+            window.location.href = '/index.html';
+        }
+    } catch (error) {
+        hideLoading();
+        console.error("登錄失敗:", error);
+        
+        // 根據錯誤類型顯示適當的錯誤消息
+        let errorMessage = "登錄失敗，請檢查您的電子郵件和密碼";
+        
+        if (error.code === 'auth/user-not-found') {
+            errorMessage = "找不到此電子郵件對應的帳戶";
+        } else if (error.code === 'auth/wrong-password') {
+            errorMessage = "密碼不正確，請重試";
+        } else if (error.code === 'auth/invalid-email') {
+            errorMessage = "電子郵件格式無效";
+        } else if (error.code === 'auth/user-disabled') {
+            errorMessage = "此帳戶已被停用，請聯繫管理員";
+        } else if (error.code === 'auth/too-many-requests') {
+            errorMessage = "登錄嘗試次數過多，請稍後再試";
+        }
+        
+        showLoginError(errorMessage);
     }
-
-    // --- 對於 Level > 0 的用戶，檢查頁面權限 ---
-    const permissions = await fetchPagePermissions(db);
-    let requiredLevel = defaultMinLevel; // 先使用函數傳入的預設值
-
-    // 獲取當前頁面文件名 (處理根目錄和 .html 後綴)
-    let currentPage = window.location.pathname.substring(window.location.pathname.lastIndexOf('/') + 1);
-    if (currentPage === '') currentPage = 'index.html'; // 根目錄視為 index.html
-    // if (!currentPage.endsWith('.html')) currentPage += '.html'; // 確保有 .html 後綴 (如果需要)
-
-    if (permissions && permissions.hasOwnProperty(currentPage)) {
-        requiredLevel = permissions[currentPage];
-        console.log(`Permission check for ${currentPage}: Required Level ${requiredLevel} (from settings)`);
-    } else {
-        console.log(`Permission check for ${currentPage}: Required Level ${requiredLevel} (using default)`);
-    }
-
-    // 比較用戶等級和所需等級
-    if (userLevel < requiredLevel) {
-        console.warn(`requireLogin: User Level ${userLevel} insufficient (needs ${requiredLevel} for ${currentPage}). Redirecting to index.`);
-        alert(`權限不足 (需要等級 ${requiredLevel})。您將被導向首頁。`);
-        window.location.href = '/index.html'; // 跳轉到首頁
-        return null;
-    }
-    // --- 權限檢查結束 ---
-
-    console.log(`requireLogin: User ${currentUserInfo.name || currentUserInfo.authUid} (Level ${userLevel}) OK for ${currentPage} (Requires ${requiredLevel}).`);
-    return currentUserInfo; // 權限足夠，返回用戶資訊
 }
